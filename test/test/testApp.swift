@@ -1,9 +1,3 @@
-//
-//  testApp.swift
-//  test
-//
-//  Created by Vladimir Balbabyan on 30.06.26.
-//
 
 import SwiftUI
 
