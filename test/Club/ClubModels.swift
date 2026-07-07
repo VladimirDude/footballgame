@@ -1,20 +1,9 @@
 import Foundation
 
-struct ClubProfileSummary: Codable {
-    let id: String
-    let name: String
-    let officialName: String?
-}
-
-struct ClubPlayersResponse: Codable {
-    let id: String
-    let players: [ClubSquadPlayer]
-}
-
 struct ClubSquadPlayer: Codable {
     let id: String
     let name: String
-    let image: String? // <-- Add this line here
+    let image: String?
     let position: String
     let marketValue: Int?
     let nationality: [String]

@@ -9,6 +9,12 @@ struct MainTabView: View {
                     Text("Search")
                 }
 
+            ClubsView()
+                .tabItem {
+                    Image(systemName: "shield.lefthalf.filled")
+                    Text("Clubs")
+                }
+
             NavigationStack {
                 GameView()
             }
@@ -16,7 +22,7 @@ struct MainTabView: View {
                 Image(systemName: "gamecontroller.fill")
                 Text("Game")
             }
-            
+
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")

@@ -434,7 +434,6 @@ struct HLPlayer: Equatable {
     let name: String
     let clubName: String
     let marketValue: Int
-    let image: String
 }
 
 struct HLPlayerCard: View {
@@ -445,7 +444,6 @@ struct HLPlayerCard: View {
         VStack(spacing: 12) {
             PlayerPortraitImage(
                 playerID: player.id,
-                imageValue: player.image,
                 style: .card
             )
 

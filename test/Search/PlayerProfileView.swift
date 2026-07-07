@@ -1,70 +1,148 @@
 import SwiftUI
 
 struct PlayerProfileView: View {
+    let playerID: String
+    private let store = ClubDataStore.shared
 
-    let player: Player
+    private var detail: PlayerDetail? {
+        store.playerDetail(id: playerID)
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                PlayerPortraitImage(
-                    playerID: player.id,
-                    imageValue: player.image,
-                    style: .hero
-                )
-                .padding(.top, 8)
-
-                VStack(spacing: 8) {
-                    Text(player.name)
-                        .font(.title.bold())
-                        .multilineTextAlignment(.center)
-
-                    HStack(spacing: 8) {
-                        Text(CountryFlags.primaryFlag(from: player.nationalities ?? []))
-                            .font(.title2)
-                        Text(player.club)
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+        Group {
+            if let detail {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        heroSection(detail)
+                        statsSection(detail)
+                        nationalitySection(detail)
+                        clubSection(detail)
                     }
-
-                    Text(player.position)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-
-                    Text(player.marketValue)
-                        .font(.title3.bold())
-                        .foregroundColor(.green)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule()
-                                .fill(Color.green.opacity(0.12))
-                        )
-                }
-
-                Divider()
                     .padding(.horizontal)
+                    .padding(.bottom, 24)
+                }
+            } else {
+                ContentUnavailableView("Player not found", systemImage: "person.slash")
+            }
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(detail?.name ?? "Player")
+        .navigationBarTitleDisplayMode(.inline)
+    }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    if let nationalities = player.nationalities, !nationalities.isEmpty {
-                        Label {
-                            Text(nationalities.joined(separator: ", "))
-                        } icon: {
-                            Image(systemName: "flag.fill")
-                                .foregroundColor(.secondary)
+    private func heroSection(_ detail: PlayerDetail) -> some View {
+        VStack(spacing: 14) {
+            PlayerPortraitImage(playerID: detail.id, style: .hero)
+
+            VStack(spacing: 6) {
+                Text(detail.name)
+                    .font(.title.bold())
+                    .multilineTextAlignment(.center)
+
+                Text(detail.position)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(Color.white.opacity(0.18)))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(BrowseTheme.pitchGradient)
+        )
+    }
+
+    private func statsSection(_ detail: PlayerDetail) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            StatTile(
+                title: "Market Value",
+                value: detail.formattedMarketValue,
+                icon: "eurosign.circle.fill",
+                tint: .green
+            )
+            StatTile(
+                title: "Squad Rank",
+                value: "#\(detail.squadRank) of \(detail.squadSize)",
+                icon: "list.number",
+                tint: BrowseTheme.accent
+            )
+            StatTile(
+                title: "Position Group",
+                value: detail.positionGroup.rawValue,
+                icon: detail.positionGroup.icon,
+                tint: .blue
+            )
+            StatTile(
+                title: "Photo",
+                value: detail.hasPortrait ? "Available" : "Placeholder",
+                icon: detail.hasPortrait ? "photo.fill" : "person.fill.questionmark",
+                tint: detail.hasPortrait ? .purple : .gray
+            )
+        }
+    }
+
+    private func nationalitySection(_ detail: PlayerDetail) -> some View {
+        BrowseCard {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeader(title: "Nationality", icon: "flag.fill")
+
+                if detail.nationalities.isEmpty {
+                    Text("Unknown")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(detail.nationalities, id: \.self) { country in
+                        HStack(spacing: 10) {
+                            Text(CountryFlags.flag(for: country))
+                                .font(.title2)
+                            Text(country)
+                                .font(.body)
                         }
                     }
-
-                    Text("Data from bundled squad list")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
             }
-            .padding()
         }
-        .navigationTitle("Player")
-        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func clubSection(_ detail: PlayerDetail) -> some View {
+        BrowseCard {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeader(title: "Current Club", icon: "shield.fill")
+
+                NavigationLink {
+                    ClubDetailView(clubID: detail.clubID)
+                } label: {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(BrowseTheme.pitchGradient)
+                            Text(detail.clubName.prefix(1).uppercased())
+                                .font(.headline.bold())
+                                .foregroundStyle(.white)
+                        }
+                        .frame(width: 44, height: 44)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(detail.clubName)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("View full squad")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption.bold())
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 }

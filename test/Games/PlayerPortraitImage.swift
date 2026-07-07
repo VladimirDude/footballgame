@@ -59,7 +59,6 @@ enum PlayerPortraitLoader {
 
 struct PlayerPortraitImage: View {
     let playerID: String
-    let imageValue: String
     var style: PlayerPortraitStyle = .compact
 
     private var size: CGFloat { style.size }
