@@ -3,12 +3,14 @@ import UIKit
 
 enum PlayerPortraitStyle {
     case compact
+    case game
     case card
     case hero
 
     var size: CGFloat {
         switch self {
         case .compact: 56
+        case .game: 80
         case .card: 128
         case .hero: 128
         }
@@ -17,6 +19,7 @@ enum PlayerPortraitStyle {
     var cornerRadius: CGFloat {
         switch self {
         case .compact: 10
+        case .game: 14
         case .card: 14
         case .hero: 14
         }
@@ -25,6 +28,7 @@ enum PlayerPortraitStyle {
     var placeholderIconSize: CGFloat {
         switch self {
         case .compact: 24
+        case .game: 30
         case .card: 44
         case .hero: 44
         }
@@ -75,11 +79,20 @@ struct PlayerPortraitImage: View {
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous))
-        .overlay(
+        .overlay(portraitBorder)
+        .shadow(color: .black.opacity(style == .compact ? 0.2 : 0.28), radius: style == .compact ? 3 : 8, y: style == .compact ? 2 : 4)
+    }
+
+    @ViewBuilder
+    private var portraitBorder: some View {
+        switch style {
+        case .game:
+            RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        default:
             RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
                 .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
-        )
-        .shadow(color: .black.opacity(0.2), radius: style == .compact ? 3 : 6, y: 2)
+        }
     }
 
     private var portraitPlaceholder: some View {

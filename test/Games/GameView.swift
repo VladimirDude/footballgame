@@ -4,10 +4,9 @@ import Combine
 struct GameView: View {
     private let store = ClubDataStore.shared
 
-    // Global Game Mode Selector (0 = Guess Club, 1 = Higher/Lower)
-    @State private var selectedGameMode: Int = 0
+    @State private var selectedTab: GameTab = .guessClub
 
-    // --- Tab 1: Guess the Club States ---
+    // Guess the Club
     @State private var round: GameRound?
     @State private var guess = ""
     @State private var errorMessage: String?
@@ -15,215 +14,400 @@ struct GameView: View {
     @State private var currentDifficulty: GameDifficulty = .easy
     @State private var revealedSlots: Set<String> = []
     @State private var hasUsedHint = false
+    @State private var gcStreak = 0
+    @AppStorage("guessClubBestStreak") private var gcBestStreak = 0
 
-    enum GameResult { case won, lost }
+    // Guess the National Team
+    @State private var gnRound: NationalTeamRound?
+    @State private var gnGuess = ""
+    @State private var gnErrorMessage: String?
+    @State private var gnResult: GameResult?
+    @State private var gnDifficulty: NationalTeamDifficulty = .easy
+    @State private var gnRevealedSlots: Set<String> = []
+    @State private var gnHasUsedHint = false
+    @State private var gnStreak = 0
+    @AppStorage("guessNationBestStreak") private var gnBestStreak = 0
 
-    // --- Tab 2: Higher or Lower States ---
-    @State private var hlScore: Int = 0
-    // Uses AppStorage to permanently save the high score to the device storage
-    @AppStorage("higherOrLowerHighScore") private var hlHighScore: Int = 0
+    // Guess the Player
+    @State private var gpRound: GuessPlayerRound?
+    @State private var gpGuess = ""
+    @State private var gpResult: GameResult?
+    @State private var gpShowClubHint = false
+    @State private var gpShakeWrong = false
+    @State private var gpStreak = 0
+    @AppStorage("guessPlayerBestStreak") private var gpBestStreak = 0
+    @State private var gpTimeRemaining = 10
+    @State private var gpTimerActive = false
+
+    private let gpTotalTime = 10
+
+    // Higher or Lower
+    @State private var hlScore = 0
+    @AppStorage("higherOrLowerHighScore") private var hlHighScore = 0
     @State private var hlPlayerLeft: HLPlayer?
     @State private var hlPlayerRight: HLPlayer?
-    @State private var hlShowRightValue: Bool = false
-    @State private var hlIsGameOver: Bool = false
-    @State private var hlSlideIn: Bool = false
-    @State private var hlShakeTrigger: Bool = false
+    @State private var hlShowRightValue = false
+    @State private var hlIsGameOver = false
+    @State private var hlSlideIn = false
+    @State private var hlShakeTrigger = false
+    @State private var hlRevealState: HLRevealState = .hidden
+    @State private var hlLastGuessCorrect: Bool?
+    @State private var hlTimeRemaining = 5
+    @State private var hlTimerActive = false
 
-    // --- Timer States for Higher or Lower ---
-    @State private var timeRemaining: Int = 5
-    @State private var hlTimerActive: Bool = false
     private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
-            // Pitch Gradient Background
-            LinearGradient(
-                colors: [Color(red: 0.1, green: 0.55, blue: 0.2), Color(red: 0.05, green: 0.4, blue: 0.15)],
-                startPoint: .top, endPoint: .bottom
-            ).ignoresSafeArea()
+            GamePitchBackground()
 
             VStack(spacing: 12) {
-                // Top Custom Mode Switching Bar
-                gameModeSelector
-                
-                if selectedGameMode == 0 {
-                    // --- MODE 1: GUESS THE CLUB ---
-                    VStack(spacing: 12) {
-                        header
-                        
-                        if let errorMessage = errorMessage {
-                            Spacer()
-                            Text(errorMessage).foregroundColor(.white).padding()
-                            Button("Try Again") { startNewRound() }.buttonStyle(.borderedProminent)
-                            Spacer()
-                        } else if let round = round {
-                            ScrollView {
-                                VStack(spacing: 16) {
-                                    Text("Guess the club from the flags & positions")
-                                        .font(.subheadline)
-                                        .foregroundColor(.white.opacity(0.9))
-                                    
-                                    formationView(round.formation).id(round.clubID)
-                                    hintButton
-                                    guessSection
-                                    
-                                    if let gameResult = gameResult {
-                                        resultBanner(for: gameResult, clubName: round.clubName)
-                                    }
-                                }.padding(.bottom, 80)
-                            }
-                        }
+                GameModeSwitcher(selection: $selectedTab, onSelect: handleTabSelection)
+
+                Group {
+                    switch selectedTab {
+                    case .guessClub:
+                        guessClubContent
+                    case .guessNation:
+                        guessNationContent
+                    case .guessPlayer:
+                        guessPlayerContent
+                    case .higherLower:
+                        higherLowerContent
                     }
-                } else {
-                    // --- MODE 2: HIGHER OR LOWER ---
-                    higherOrLowerGameInterface
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
+                .id(selectedTab)
             }
+            .animation(.spring(response: 0.38, dampingFraction: 0.86), value: selectedTab)
+            .frame(maxHeight: .infinity, alignment: .top)
             .padding(.horizontal)
+            .adaptiveContentWidth(AdaptiveLayout.gameMaxWidth)
         }
         .onAppear {
             if round == nil { startNewRound() }
         }
-        // Strict Time-Out Listener Loop
+        .onChange(of: currentDifficulty) { _, _ in
+            gcStreak = 0
+            startNewRound()
+        }
+        .onChange(of: gnDifficulty) { _, _ in
+            gnStreak = 0
+            startNewNationRound()
+        }
+        .onChange(of: selectedTab) { _, tab in
+            gpTimerActive = tab == .guessPlayer && gpResult == nil
+        }
         .onReceive(countdownTimer) { _ in
-            guard selectedGameMode == 1, hlTimerActive, !hlShowRightValue, !hlIsGameOver else { return }
-            
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-            } else {
-                // Time Expired: Automatically trigger loss sequence
-                hlTimerActive = false
-                hlIsGameOver = true
-                withAnimation(.easeOut(duration: 0.25)) {
-                    hlShowRightValue = true
-                }
-                withAnimation(.default) {
-                    hlShakeTrigger = true
-                }
-            }
+            tickHigherLowerTimer()
+            tickGuessPlayerTimer()
         }
     }
 
-    // Modern Custom Tab Picker Switch
-    private var gameModeSelector: some View {
-        HStack(spacing: 0) {
-            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { selectedGameMode = 0 } }) {
-                Text("Guess the Club")
-                    .font(.subheadline.bold())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(selectedGameMode == 0 ? Color.white.opacity(0.15) : Color.clear)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.2)) { selectedGameMode = 1 }
-                if hlPlayerLeft == nil { setupInitialHLRound() }
-            }) {
-                Text("Higher or Lower")
-                    .font(.subheadline.bold())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(selectedGameMode == 1 ? Color.white.opacity(0.15) : Color.clear)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
+    private func tickHigherLowerTimer() {
+        guard selectedTab == .higherLower, hlTimerActive, !hlShowRightValue, !hlIsGameOver else { return }
+
+        if hlTimeRemaining > 0 {
+            hlTimeRemaining -= 1
+        } else {
+            hlTimerActive = false
+            hlIsGameOver = true
+            hlLastGuessCorrect = false
+            hlRevealState = .wrong
+            HapticFeedback.error()
+            withAnimation(.easeOut(duration: 0.25)) { hlShowRightValue = true }
+            withAnimation(.default) { hlShakeTrigger = true }
         }
-        .padding(4)
-        .background(Color.black.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .padding(.top, 8)
     }
 
-    // ==========================================
-    // MARK: - GUESS THE CLUB COMPONENT VIEWS
-    // ==========================================
-    
-    private var header: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Guess the Club").font(.title2.bold()).foregroundColor(.white)
+    private func tickGuessPlayerTimer() {
+        guard selectedTab == .guessPlayer, gpTimerActive, gpResult == nil else { return }
+
+        if gpTimeRemaining > 0 {
+            gpTimeRemaining -= 1
+        } else {
+            handleGuessPlayerTimeout()
+        }
+    }
+
+    private func handleGuessPlayerTimeout() {
+        gpTimerActive = false
+        gpStreak = 0
+        gpShowClubHint = true
+
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.78)) {
+            gpResult = .lost
+        }
+        HapticFeedback.error()
+        withAnimation(.default) { gpShakeWrong.toggle() }
+    }
+
+    // MARK: - Tab Content
+
+    @ViewBuilder
+    private var guessClubContent: some View {
+        if let errorMessage {
+            VStack(spacing: 12) {
                 Spacer()
-                if round != nil {
-                    Button("New Game") { startNewRound() }
-                        .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(Color.white.opacity(0.2)).clipShape(Capsule())
-                        .foregroundColor(.white)
-                }
+                Text(errorMessage).foregroundStyle(.white)
+                Button("Try Again", action: startNewRound)
+                    .buttonStyle(.borderedProminent)
+                Spacer()
             }
-            DifficultyPicker(selectedDifficulty: $currentDifficulty)
-        }.padding(.top, 8)
+        } else if let round {
+            GuessClubGameView(
+                round: round,
+                guess: $guess,
+                gameResult: gameResult,
+                streak: gcStreak,
+                bestStreak: gcBestStreak,
+                revealedSlots: $revealedSlots,
+                hasUsedHint: hasUsedHint,
+                canUseHint: canUseHint(for: round),
+                difficulty: $currentDifficulty,
+                onNewGame: startNewRound,
+                onRevealHint: revealRandomPlayer,
+                onSubmit: submitClubGuess,
+                onNextRound: advanceClubRound
+            )
+        }
     }
 
     @ViewBuilder
-    private func formationView(_ lines: [[FormationSlot]]) -> some View {
-        VStack(spacing: 28) {
-            ForEach(Array(lines.enumerated()), id: \.offset) { _, row in
-                HStack(spacing: row.count > 3 ? 14 : 22) {
-                    ForEach(row, id: \.id) { slot in
-                        FlippableFormationSlot(slot: slot, revealedPlayerIds: $revealedSlots)
-                            .allowsHitTesting(!hasUsedHint && gameResult == nil)
+    private var guessPlayerContent: some View {
+        if let currentRound = gpRound {
+            GuessPlayerGameView(
+                round: currentRound,
+                guess: $gpGuess,
+                gameResult: gpResult,
+                streak: gpStreak,
+                bestStreak: gpBestStreak,
+                timeRemaining: gpResult == nil ? gpTimeRemaining : nil,
+                totalTime: gpTotalTime,
+                showClubHint: gpShowClubHint,
+                shakeWrong: gpShakeWrong,
+                onRevealClubHint: {
+                    withAnimation(.spring(response: 0.42, dampingFraction: 0.75)) {
+                        gpShowClubHint = true
+                    }
+                },
+                onSubmit: submitPlayerGuess,
+                onNextRound: {
+                    if gpResult == .won {
+                        advancePlayerRound()
+                    } else {
+                        startNewPlayerRound()
                     }
                 }
+            )
+        } else {
+            VStack(spacing: 12) {
+                Spacer()
+                ProgressView().tint(.white)
+                Text("Loading star players...")
+                    .foregroundStyle(.white.opacity(0.8))
+                Spacer()
             }
-        }.padding(20).background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
-    }
-
-    private var canUseHint: Bool {
-        guard let round = round, !hasUsedHint, gameResult == nil else { return false }
-        return revealedSlots.count < round.formation.flatMap { $0 }.count
-    }
-
-    private var hintButton: some View {
-        Button {
-            revealRandomPlayer()
-            withAnimation { hasUsedHint = true }
-        } label: {
-            HStack {
-                Image(systemName: hasUsedHint ? "lightbulb.slash.fill" : "lightbulb.fill")
-                Text(hasUsedHint ? "Hint Used" : "Reveal Random Player")
-            }
-            .frame(maxWidth: .infinity).padding(14)
-            .background(canUseHint ? Color.orange : Color.black.opacity(0.3))
-            .foregroundColor(canUseHint ? .white : .white.opacity(0.4))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-        }.disabled(!canUseHint)
-    }
-
-    private var guessSection: some View {
-        VStack(spacing: 10) {
-            TextField("Type club name...", text: $guess)
-                .textFieldStyle(.roundedBorder).autocorrectionDisabled().onSubmit(submitGuess)
-            Button(action: submitGuess) {
-                Text(gameResult == nil ? "Submit Guess" : "Guess Locked")
-                    .frame(maxWidth: .infinity).padding(12)
-                    .background(gameResult == nil ? Color.white : Color.white.opacity(0.35))
-                    .foregroundColor(gameResult == nil ? .green : .white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }.disabled(gameResult != nil)
+            .onAppear { startNewPlayerRound() }
         }
     }
 
-    private func resultBanner(for result: GameResult, clubName: String) -> some View {
-        Text(result == .won ? "Correct! \(clubName)" : "Wrong! It was \(clubName)")
-            .foregroundColor(.white)
-            .padding().background(Color.black.opacity(0.25)).clipShape(RoundedRectangle(cornerRadius: 14))
+    @ViewBuilder
+    private var guessNationContent: some View {
+        if let gnErrorMessage {
+            VStack(spacing: 12) {
+                Spacer()
+                Text(gnErrorMessage).foregroundStyle(.white)
+                Button("Try Again", action: startNewNationRound)
+                    .buttonStyle(.borderedProminent)
+                Spacer()
+            }
+        } else if let gnRound {
+            GuessNationalTeamGameView(
+                round: gnRound,
+                guess: $gnGuess,
+                gameResult: gnResult,
+                streak: gnStreak,
+                bestStreak: gnBestStreak,
+                revealedSlots: $gnRevealedSlots,
+                hasUsedHint: gnHasUsedHint,
+                canUseHint: canUseNationHint(for: gnRound),
+                difficulty: $gnDifficulty,
+                onNewGame: startNewNationRound,
+                onRevealHint: revealRandomNationPlayer,
+                onSubmit: submitNationGuess,
+                onNextRound: advanceNationRound
+            )
+        }
     }
 
-    private func submitGuess() {
-        guard gameResult == nil, let round = round else { return }
-        gameResult = ClubGuessValidator.isCorrect(guess: guess, round: round) ? .won : .lost
+    private var higherLowerContent: some View {
+        HigherOrLowerGameView(
+            streak: hlScore,
+            bestStreak: hlHighScore,
+            timeRemaining: (!hlShowRightValue && !hlIsGameOver) ? hlTimeRemaining : nil,
+            left: hlPlayerLeft,
+            right: hlPlayerRight,
+            revealState: hlRevealState,
+            slideIn: hlSlideIn,
+            shakeTrigger: hlShakeTrigger,
+            showRightValue: hlShowRightValue,
+            isGameOver: hlIsGameOver,
+            lastGuessCorrect: hlLastGuessCorrect,
+            onHigher: { processHLGuess(guessedHigher: true) },
+            onLower: { processHLGuess(guessedHigher: false) },
+            onContinue: cycleToNextHLRound
+        )
+    }
+
+    // MARK: - Tab Selection
+
+    private func handleTabSelection(_ tab: GameTab) {
+        switch tab {
+        case .higherLower where hlPlayerLeft == nil:
+            setupInitialHLRound()
+        case .guessPlayer where gpRound == nil:
+            startNewPlayerRound()
+        case .guessNation where gnRound == nil:
+            startNewNationRound()
+        default:
+            break
+        }
+    }
+
+    // MARK: - Guess Nation Logic
+
+    private func canUseNationHint(for round: NationalTeamRound) -> Bool {
+        guard !gnHasUsedHint, gnResult == nil else { return false }
+        return gnRevealedSlots.count < round.formation.flatMap { $0 }.count
+    }
+
+    private func submitNationGuess() {
+        guard gnResult == nil, let round = gnRound else { return }
+        let won = NationalTeamGuessValidator.isCorrect(guess: gnGuess, round: round)
+
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
+            gnResult = won ? .won : .lost
+        }
+
+        if won {
+            gnStreak += 1
+            if gnStreak > gnBestStreak { gnBestStreak = gnStreak }
+            HapticFeedback.success()
+        } else {
+            gnStreak = 0
+            HapticFeedback.error()
+        }
+
+        for slot in round.formation.flatMap({ $0 }) { gnRevealedSlots.insert(slot.id) }
+    }
+
+    private func advanceNationRound() {
+        let previousName = gnRound?.nationName
+        gnResult = nil
+        gnGuess = ""
+        gnRevealedSlots.removeAll()
+        gnHasUsedHint = false
+
+        var newRound: NationalTeamRound?
+        for _ in 0..<12 {
+            guard let candidate = store.randomNationalTeamRound(for: gnDifficulty) else { break }
+            if candidate.nationName != previousName {
+                newRound = candidate
+                break
+            }
+        }
+
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
+            gnRound = newRound ?? store.randomNationalTeamRound(for: gnDifficulty)
+        }
+    }
+
+    private func revealRandomNationPlayer() {
+        guard let round = gnRound,
+              let random = round.formation.flatMap({ $0 }).filter({ !gnRevealedSlots.contains($0.id) }).randomElement()
+        else { return }
+        withAnimation { gnRevealedSlots.insert(random.id) }
+        gnHasUsedHint = true
+    }
+
+    private func startNewNationRound() {
+        gnErrorMessage = nil
+        gnResult = nil
+        gnGuess = ""
+        gnRevealedSlots.removeAll()
+        gnHasUsedHint = false
+        if let newRound = store.randomNationalTeamRound(for: gnDifficulty) {
+            gnRound = newRound
+        } else {
+            gnErrorMessage = "No national teams found for \(gnDifficulty.rawValue) mode."
+        }
+    }
+
+    // MARK: - Guess Club Logic
+
+    private func canUseHint(for round: GameRound) -> Bool {
+        guard !hasUsedHint, gameResult == nil else { return false }
+        return revealedSlots.count < round.formation.flatMap { $0 }.count
+    }
+
+    private func submitClubGuess() {
+        guard gameResult == nil, let round else { return }
+        let won = ClubGuessValidator.isCorrect(guess: guess, round: round)
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
+            gameResult = won ? .won : .lost
+        }
+
+        if won {
+            gcStreak += 1
+            if gcStreak > gcBestStreak { gcBestStreak = gcStreak }
+            HapticFeedback.success()
+        } else {
+            gcStreak = 0
+            HapticFeedback.error()
+        }
+
         for slot in round.formation.flatMap({ $0 }) { revealedSlots.insert(slot.id) }
     }
 
+    private func advanceClubRound() {
+        let previousID = round?.clubID
+        gameResult = nil
+        guess = ""
+        revealedSlots.removeAll()
+        hasUsedHint = false
+
+        var newRound: GameRound?
+        for _ in 0..<12 {
+            guard let candidate = store.randomGameRound(for: currentDifficulty) else { break }
+            if candidate.clubID != previousID {
+                newRound = candidate
+                break
+            }
+        }
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
+            round = newRound ?? store.randomGameRound(for: currentDifficulty)
+        }
+    }
+
     private func revealRandomPlayer() {
-        guard let round = round, let random = round.formation.flatMap({ $0 }).filter({ !revealedSlots.contains($0.id) }).randomElement() else { return }
-        revealedSlots.insert(random.id)
+        guard let round,
+              let random = round.formation.flatMap({ $0 }).filter({ !revealedSlots.contains($0.id) }).randomElement()
+        else { return }
+        withAnimation { revealedSlots.insert(random.id) }
+        hasUsedHint = true
     }
 
     private func startNewRound() {
-        errorMessage = nil; gameResult = nil; guess = ""; revealedSlots.removeAll(); hasUsedHint = false
+        errorMessage = nil
+        gameResult = nil
+        guess = ""
+        revealedSlots.removeAll()
+        hasUsedHint = false
         if let newRound = store.randomGameRound(for: currentDifficulty) {
             round = newRound
         } else {
@@ -231,123 +415,72 @@ struct GameView: View {
         }
     }
 
-    // ==========================================
-    // MARK: - HIGHER OR LOWER MODE INTERFACE
-    // ==========================================
-    
-    private var higherOrLowerGameInterface: some View {
-        VStack(spacing: 16) {
-            // Score tracking row
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Streak").font(.caption).foregroundColor(.white.opacity(0.7))
-                    Text("\(hlScore)").font(.title2.bold()).foregroundColor(.white)
-                }
-                Spacer()
-                VStack(alignment: .trailing) {
-                    Text("Best Streak").font(.caption).foregroundColor(.white.opacity(0.7))
-                    Text("\(hlHighScore)").font(.title2.bold()).foregroundColor(.orange)
-                }
-            }
-            .padding(.horizontal, 8)
-            .padding(.top, 4)
+    // MARK: - Guess Player Logic
 
-            // Anti-Cheat Progress Bar UI
-            if !hlShowRightValue && !hlIsGameOver {
-                VStack(spacing: 4) {
-                    ProgressView(value: Double(timeRemaining), total: 5.0)
-                        .progressViewStyle(.linear)
-                        .tint(timeRemaining <= 2 ? .red : .orange)
-                        .scaleEffect(x: 1, y: 1.5, anchor: .center)
-                        .animation(.easeInOut(duration: 0.2), value: timeRemaining)
-                    
-                    Text("\(timeRemaining) seconds left!")
-                        .font(.caption.bold())
-                        .foregroundColor(timeRemaining <= 2 ? .red : .white.opacity(0.8))
-                }
-                .padding(.horizontal, 8)
-            }
+    private func submitPlayerGuess() {
+        guard gpResult == nil, let round = gpRound else { return }
+        gpTimerActive = false
 
-            if let left = hlPlayerLeft, let right = hlPlayerRight {
-                VStack(spacing: 12) {
-                    HLPlayerCard(player: left, displayValue: true)
-                    
-                    Text("VS")
-                        .font(.caption.bold())
-                        .foregroundColor(.white)
-                        .padding(.vertical, 4).padding(.horizontal, 14)
-                        .background(Capsule().fill(Color.black.opacity(0.3)))
-                    
-                    HLPlayerCard(player: right, displayValue: hlShowRightValue)
-                        .offset(x: hlSlideIn ? 0 : 350)
-                        .opacity(hlSlideIn ? 1 : 0)
-                        .modifier(HLShakeEffect(animatableData: hlShakeTrigger ? 1 : 0))
-                }
-                
-                if !hlShowRightValue {
-                    HStack(spacing: 16) {
-                        Button(action: { processHLGuess(guessedHigher: true) }) {
-                            Text("HIGHER ⬆️")
-                                .font(.headline).bold()
-                                .frame(maxWidth: .infinity).padding(.vertical, 14)
-                                .background(Color.orange)
-                                .foregroundColor(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        
-                        Button(action: { processHLGuess(guessedHigher: false) }) {
-                            Text("LOWER ⬇️")
-                                .font(.headline).bold()
-                                .frame(maxWidth: .infinity).padding(.vertical, 14)
-                                .background(Color.white.opacity(0.2))
-                                .foregroundColor(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                    }
-                    .padding(.top, 10)
-                } else {
-                    Button(action: cycleToNextHLRound) {
-                        Text(hlIsGameOver ? "Try Again 🔄" : "Next Matchup ➡️")
-                            .font(.headline).bold()
-                            .frame(maxWidth: .infinity).padding(.vertical, 14)
-                            .background(hlIsGameOver ? Color.red : Color.white)
-                            .foregroundColor(hlIsGameOver ? .white : .green)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    .padding(.top, 10)
-                }
-            } else {
-                Spacer()
-                Text("Loading database elements...").foregroundColor(.white)
-                Spacer()
-            }
-            Spacer()
+        let won = PlayerGuessValidator.isCorrect(guess: gpGuess, round: round)
+
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.78)) {
+            gpResult = won ? .won : .lost
+        }
+
+        if won {
+            gpStreak += 1
+            if gpStreak > gpBestStreak { gpBestStreak = gpStreak }
+            HapticFeedback.success()
+        } else {
+            gpStreak = 0
+            gpShowClubHint = true
+            HapticFeedback.error()
+            withAnimation(.default) { gpShakeWrong.toggle() }
         }
     }
 
-    // ==========================================
-    // MARK: - HIGHER OR LOWER GAME LOGIC
-    // ==========================================
-    
-    private func fetchAllPlayersFromStore() -> [HLPlayer] {
-        return store.fetchHigherOrLowerPool()
+    private func resetGuessPlayerTimer() {
+        gpTimeRemaining = gpTotalTime
+        gpTimerActive = true
     }
 
+    private func startNewPlayerRound() {
+        gpGuess = ""
+        gpResult = nil
+        gpShowClubHint = false
+        gpShakeWrong = false
+        gpRound = store.randomGuessPlayerRound()
+        resetGuessPlayerTimer()
+    }
+
+    private func advancePlayerRound() {
+        let previousID = gpRound?.id
+        gpGuess = ""
+        gpResult = nil
+        gpShowClubHint = false
+        gpShakeWrong = false
+
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
+            gpRound = store.randomGuessPlayerRound(
+                excluding: Set([previousID].compactMap { $0 })
+            )
+        }
+        resetGuessPlayerTimer()
+    }
+
+    // MARK: - Higher or Lower Logic
+
     private func setupInitialHLRound() {
-        let pool = fetchAllPlayersFromStore()
+        let pool = store.fetchHigherOrLowerPool()
         guard pool.count >= 2 else { return }
-        
+
         let randomized = pool.shuffled()
         hlPlayerLeft = randomized[0]
         hlPlayerRight = randomized[1]
-        
-        hlShowRightValue = false
-        hlIsGameOver = false
-        hlShakeTrigger = false
-        
-        timeRemaining = 5
+        resetHLRoundState()
+        hlTimeRemaining = 5
         hlTimerActive = true
-        
+
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             hlSlideIn = true
         }
@@ -355,31 +488,32 @@ struct GameView: View {
 
     private func processHLGuess(guessedHigher: Bool) {
         guard let left = hlPlayerLeft, let right = hlPlayerRight else { return }
-        
-        hlTimerActive = false // Pause countdown instantly on guess submit
-        
-        withAnimation(.easeOut(duration: 0.25)) {
-            hlShowRightValue = true
-        }
-        
+
+        hlTimerActive = false
+        withAnimation(.easeOut(duration: 0.25)) { hlShowRightValue = true }
+
         let isCorrect: Bool
         if right.marketValue == left.marketValue {
-            isCorrect = true // Equal values count as a point win!
+            isCorrect = true
         } else if guessedHigher {
             isCorrect = right.marketValue > left.marketValue
         } else {
             isCorrect = right.marketValue < left.marketValue
         }
-        
+
         if isCorrect {
             hlScore += 1
             if hlScore > hlHighScore { hlHighScore = hlScore }
             hlIsGameOver = false
+            hlRevealState = .correct
+            hlLastGuessCorrect = true
+            HapticFeedback.success()
         } else {
             hlIsGameOver = true
-            withAnimation(.default) {
-                hlShakeTrigger = true
-            }
+            hlRevealState = .wrong
+            hlLastGuessCorrect = false
+            HapticFeedback.error()
+            withAnimation(.default) { hlShakeTrigger = true }
         }
     }
 
@@ -389,43 +523,48 @@ struct GameView: View {
             setupInitialHLRound()
         } else {
             hlPlayerLeft = hlPlayerRight
-            let pool = fetchAllPlayersFromStore().filter { $0.name != hlPlayerLeft?.name }
-            
-            if let newRight = pool.randomElement() {
-                hlPlayerRight = newRight
-            }
-            
+            let pool = store.fetchHigherOrLowerPool().filter { $0.name != hlPlayerLeft?.name }
+            hlPlayerRight = pool.randomElement()
             hlSlideIn = false
-            hlShowRightValue = false
-            hlShakeTrigger = false
-            
-            timeRemaining = 5
+            resetHLRoundState()
+            hlTimeRemaining = 5
             hlTimerActive = true
-            
+
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 hlSlideIn = true
             }
         }
     }
-}
 
-// ==========================================
-// MARK: - EXTERNAL STRUCTS & COMPONENTS
-// ==========================================
+    private func resetHLRoundState() {
+        hlShowRightValue = false
+        hlIsGameOver = false
+        hlShakeTrigger = false
+        hlRevealState = .hidden
+        hlLastGuessCorrect = nil
+    }
+}
 
 struct DifficultyPicker: View {
     @Binding var selectedDifficulty: GameDifficulty
+
     var body: some View {
         HStack {
             ForEach(GameDifficulty.allCases, id: \.self) { diff in
-                Button(diff.rawValue) { withAnimation { selectedDifficulty = diff } }
-                    .font(.subheadline.bold())
-                    .frame(maxWidth: .infinity).padding(10)
-                    .background(selectedDifficulty == diff ? Color.orange : Color.white.opacity(0.08))
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                Button(diff.rawValue) {
+                    withAnimation { selectedDifficulty = diff }
+                }
+                .font(.subheadline.bold())
+                .frame(maxWidth: .infinity)
+                .padding(10)
+                .background(selectedDifficulty == diff ? Color.orange : Color.white.opacity(0.08))
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
-        }.padding(6).background(Color.black.opacity(0.2)).clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .padding(6)
+        .background(Color.black.opacity(0.2))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -434,72 +573,4 @@ struct HLPlayer: Equatable {
     let name: String
     let clubName: String
     let marketValue: Int
-}
-
-struct HLPlayerCard: View {
-    let player: HLPlayer
-    let displayValue: Bool
-
-    var body: some View {
-        VStack(spacing: 12) {
-            PlayerPortraitImage(
-                playerID: player.id,
-                style: .card
-            )
-
-            VStack(spacing: 4) {
-                Text(player.name)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-
-                Text(player.clubName)
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.72))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
-
-                if displayValue {
-                    Text(formatCurrency(player.marketValue))
-                        .font(.title3.bold())
-                        .foregroundColor(.yellow)
-                        .padding(.top, 2)
-                } else {
-                    Text("Market Value: ???")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.white.opacity(0.45))
-                        .padding(.top, 2)
-                }
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .padding(.vertical, 16)
-        .padding(.horizontal, 14)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.1))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.14), lineWidth: 1)
-        )
-    }
-
-    private func formatCurrency(_ val: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "EUR"
-        formatter.maximumFractionDigits = 0
-        return formatter.string(from: NSNumber(value: val)) ?? "€\(val)"
-    }
-}
-
-struct HLShakeEffect: GeometryEffect {
-    var animatableData: CGFloat
-    func effectValue(size: CGSize) -> ProjectionTransform {
-        ProjectionTransform(CGAffineTransform(translationX: 8 * sin(animatableData * .pi * 4), y: 0))
-    }
 }

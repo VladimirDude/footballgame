@@ -14,6 +14,7 @@ struct FormationSlot: Identifiable, Hashable {
     let role: String
     let flag: String
     let playerName: String
+    var showsClub: Bool = false
 }
 
 struct GameRound {

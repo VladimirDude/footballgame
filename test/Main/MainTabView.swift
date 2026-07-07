@@ -9,12 +9,6 @@ struct MainTabView: View {
                     Text("Search")
                 }
 
-            ClubsView()
-                .tabItem {
-                    Image(systemName: "shield.lefthalf.filled")
-                    Text("Clubs")
-                }
-
             NavigationStack {
                 GameView()
             }
@@ -29,6 +23,7 @@ struct MainTabView: View {
                     Text("Settings")
                 }
         }
-        .accentColor(.orange)
+        .tabViewStyle(.sidebarAdaptable)
+        .tint(BrowseTheme.accent)
     }
 }

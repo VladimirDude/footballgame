@@ -2,14 +2,25 @@ import SwiftUI
 
 @main
 struct testApp: App {
-    // This connects to the same key used in SettingsView
-    @AppStorage("isDarkMode") private var isDarkMode = false
+    @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
+
+    private var appearanceMode: AppearanceMode {
+        AppearanceMode(rawValue: appearanceModeRaw) ?? .system
+    }
 
     var body: some Scene {
         WindowGroup {
             MainTabView()
-                // This forces the entire app to react to your toggle
-                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .preferredColorScheme(appearanceMode.colorScheme)
+                .onAppear(perform: migrateLegacyAppearanceSetting)
         }
+    }
+
+    private func migrateLegacyAppearanceSetting() {
+        guard UserDefaults.standard.object(forKey: "appearanceMode") == nil,
+              let isDarkMode = UserDefaults.standard.object(forKey: "isDarkMode") as? Bool else {
+            return
+        }
+        appearanceModeRaw = isDarkMode ? AppearanceMode.dark.rawValue : AppearanceMode.light.rawValue
     }
 }

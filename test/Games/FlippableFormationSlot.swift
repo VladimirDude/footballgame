@@ -30,14 +30,25 @@ struct FlippableFormationSlot: View {
     }
 
     private var frontFace: some View {
-        VStack(spacing: 4) {
-            Text(slot.flag)
-                .font(.system(size: 28))
+        VStack(spacing: slot.showsClub ? 2 : 4) {
+            if slot.showsClub {
+                Text(slot.flag)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.65)
+                    .frame(height: 22)
+            } else {
+                Text(slot.flag)
+                    .font(.system(size: 28))
+            }
 
             Text(slot.role)
                 .font(.caption2.bold())
                 .foregroundColor(.white.opacity(0.85))
         }
+        .padding(.horizontal, slot.showsClub ? 2 : 0)
     }
 
     private var backFace: some View {

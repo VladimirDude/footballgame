@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ClubDetailView: View {
     let clubID: String
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     private let store = ClubDataStore.shared
 
     private var club: BundledClub? { store.club(id: clubID) }
@@ -49,6 +50,7 @@ struct ClubDetailView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 24)
                 }
+                .adaptiveContentWidth(AdaptiveLayout.detailMaxWidth)
             } else {
                 ContentUnavailableView("Club not found", systemImage: "shield.slash")
             }
@@ -93,7 +95,11 @@ struct ClubDetailView: View {
     }
 
     private func statsGrid(playerCount: Int) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+        let columns = horizontalSizeClass == .regular
+            ? [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+            : [GridItem(.flexible()), GridItem(.flexible())]
+
+        return LazyVGrid(columns: columns, spacing: 10) {
             StatTile(title: "Squad Size", value: "\(playerCount)", icon: "person.3.fill")
             StatTile(title: "Squad Value", value: MarketValueFormatter.format(squadValue), icon: "eurosign.circle.fill")
             StatTile(title: "Average Value", value: MarketValueFormatter.format(averageValue), icon: "chart.bar.fill", tint: .green)
