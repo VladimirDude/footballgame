@@ -4,12 +4,42 @@ enum BrowseTheme {
     static let pitchTop = Color(red: 0.1, green: 0.55, blue: 0.2)
     static let pitchBottom = Color(red: 0.05, green: 0.4, blue: 0.15)
     static let accent = Color.orange
+    static let cardRadius: CGFloat = 16
+    static let sectionRadius: CGFloat = 18
 
     static var pitchGradient: LinearGradient {
         LinearGradient(
             colors: [pitchTop, pitchBottom],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
+        )
+    }
+}
+
+struct BrowseSearchField: View {
+    let placeholder: String
+    @Binding var text: String
+    var onSubmit: () -> Void = {}
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .onSubmit(onSubmit)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.tertiarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
         )
     }
 }
@@ -87,14 +117,7 @@ struct ClubRowCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(BrowseTheme.pitchGradient)
-                Text(club.name.prefix(1).uppercased())
-                    .font(.title2.bold())
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 48, height: 48)
+            ClubLogoImage(clubID: club.id, clubName: club.name, style: .card)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(club.name)

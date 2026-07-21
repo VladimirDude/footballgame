@@ -1,485 +1,670 @@
 import SwiftUI
 
-enum HLCardRole {
-    case anchor
-    case challenge
-}
+// MARK: - Models
 
-enum HLRevealState {
+enum HLRevealState: Equatable {
     case hidden
-    case revealed
     case correct
     case wrong
 }
 
-private enum HLTheme {
-    static let gold = Color(red: 1.0, green: 0.82, blue: 0.35)
-    static let amber = Color(red: 1.0, green: 0.62, blue: 0.18)
-    static let glassStroke = Color.white.opacity(0.14)
-    static let glassFill = Color.white.opacity(0.08)
+// MARK: - Tokens
+
+private enum HLStyle {
+    static let surface = Color.white.opacity(0.08)
+    static let surfaceStroke = Color.white.opacity(0.14)
+    static let surfaceGlow = Color(red: 0.45, green: 0.55, blue: 0.75).opacity(0.15)
+    static let divider = Color.white.opacity(0.12)
+    static let higher = Color(red: 0.95, green: 0.5, blue: 0.08)
+    static let lower = Color(red: 0.34, green: 0.54, blue: 0.9)
+    static let gold = Color(red: 1.0, green: 0.84, blue: 0.38)
+    static let muted = Color.white.opacity(0.45)
 }
 
-struct HLTopBar: View {
+private enum HLMotion {
+    static let enter = Animation.smooth(duration: 0.38)
+    static let reveal = Animation.smooth(duration: 0.32)
+    static let press = Animation.smooth(duration: 0.18)
+    static let swap = Animation.smooth(duration: 0.34)
+
+    static func adaptive(_ a: Animation, reduceMotion: Bool) -> Animation {
+        reduceMotion ? .easeOut(duration: 0.12) : a
+    }
+}
+
+// MARK: - Animatable modifiers
+
+private struct HLSlideModifier: ViewModifier, Animatable {
+    var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .offset(x: (1 - progress) * 28)
+            .opacity(Double(progress))
+            .scaleEffect(0.94 + 0.06 * progress)
+    }
+}
+
+private struct HLPopModifier: ViewModifier, Animatable {
+    var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(0.9 + 0.1 * progress)
+            .opacity(Double(progress))
+    }
+}
+
+private struct HLPulseModifier: ViewModifier, Animatable {
+    var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(1 + 0.035 * sin(progress * .pi))
+    }
+}
+
+private extension AnyTransition {
+    static var hlControlsSwap: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.combined(with: .scale(scale: 0.96)),
+            removal: .opacity
+        )
+    }
+
+    static var hlFeedback: AnyTransition {
+        .move(edge: .bottom).combined(with: .opacity)
+    }
+}
+
+// MARK: - Screen
+
+struct HigherOrLowerGameView: View {
     let streak: Int
     let bestStreak: Int
+    let timeRemaining: Int?
+    let left: HLPlayer?
+    let right: HLPlayer?
+    let revealState: HLRevealState
+    let shakeTrigger: Bool
+    let showRightValue: Bool
+    let isGameOver: Bool
+    let lastGuessCorrect: Bool?
+    let onHigher: () -> Void
+    let onLower: () -> Void
+    let onContinue: () -> Void
+
+    var body: some View {
+        GeometryReader { geo in
+            let arenaHeight = min(max(geo.size.height * 0.52, 260), 360)
+
+            VStack(spacing: 16) {
+                HLScoreBar(score: streak, best: bestStreak, timeRemaining: timeRemaining, total: 5)
+
+                if let left, let right {
+                    HLCompareBoard(
+                        anchor: left,
+                        challenger: right,
+                        revealState: revealState,
+                        shakeTrigger: shakeTrigger,
+                        portraitSize: min(104, arenaHeight * 0.34)
+                    )
+                    .equatable()
+                    .frame(height: arenaHeight)
+                    .frame(maxWidth: .infinity)
+
+                    HLControls(
+                        showResult: showRightValue,
+                        isCorrect: lastGuessCorrect,
+                        isGameOver: isGameOver,
+                        onHigher: onHigher,
+                        onLower: onLower,
+                        onContinue: onContinue
+                    )
+                } else {
+                    Spacer()
+                    ProgressView().tint(HLStyle.gold)
+                    Spacer()
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+        }
+    }
+}
+
+// MARK: - Score bar
+
+private struct HLScoreBar: View {
+    let score: Int
+    let best: Int
     let timeRemaining: Int?
     let total: Int
 
     var body: some View {
         HStack(spacing: 0) {
-            statBlock(icon: "flame.fill", value: "\(streak)", label: "Streak", tint: HLTheme.amber)
-
-            divider
-
-            statBlock(icon: "trophy.fill", value: "\(bestStreak)", label: "Best", tint: HLTheme.gold)
-
+            scoreCell(icon: "flame.fill", value: "\(score)", label: "Score", tint: HLStyle.higher)
+            scoreCell(icon: "trophy.fill", value: "\(best)", label: "Best", tint: HLStyle.gold)
             Spacer(minLength: 12)
-
             if let timeRemaining {
-                HLCircularTimer(timeRemaining: timeRemaining, total: total)
-            } else {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(.white.opacity(0.35))
-                    .frame(width: 48, height: 48)
+                HLTimerBadge(remaining: timeRemaining, total: total)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(glassPanel(cornerRadius: 18))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(HLStyle.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(HLStyle.surfaceStroke, lineWidth: 1)
+                )
+        )
     }
 
-    private var divider: some View {
-        Rectangle()
-            .fill(Color.white.opacity(0.12))
-            .frame(width: 1, height: 36)
-            .padding(.horizontal, 12)
-    }
-
-    private func statBlock(icon: String, value: String, label: String, tint: Color) -> some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(tint.opacity(0.18))
-                    .frame(width: 34, height: 34)
-                Image(systemName: icon)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(tint)
-            }
+    private func scoreCell(icon: String, value: String, label: String, tint: Color) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(tint)
+                .frame(width: 22)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
                     .font(.title3.weight(.bold))
                     .foregroundStyle(.white)
+                    .contentTransition(.numericText())
+                    .animation(HLMotion.reveal, value: value)
                 Text(label)
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(HLStyle.muted)
             }
         }
+        .padding(.trailing, 20)
     }
 }
 
-struct HLCircularTimer: View {
-    let timeRemaining: Int
+private struct HLTimerBadge: View, Equatable {
+    let remaining: Int
     let total: Int
 
-    private var progress: CGFloat {
-        CGFloat(timeRemaining) / CGFloat(total)
-    }
-
-    private var tint: Color {
-        timeRemaining <= 2 ? Color(red: 1, green: 0.35, blue: 0.35) : HLTheme.amber
-    }
+    private var urgent: Bool { remaining <= 2 }
+    private var progress: CGFloat { CGFloat(remaining) / CGFloat(total) }
 
     var body: some View {
         ZStack {
-            Circle()
-                .stroke(Color.white.opacity(0.1), lineWidth: 3.5)
-
+            Circle().stroke(Color.white.opacity(0.12), lineWidth: 3)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(
-                    tint,
-                    style: StrokeStyle(lineWidth: 3.5, lineCap: .round)
-                )
+                .stroke(urgent ? Color.red : HLStyle.higher, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-                .shadow(color: tint.opacity(0.55), radius: 4)
-                .animation(.easeInOut(duration: 0.25), value: timeRemaining)
-
-            Text("\(timeRemaining)")
-                .font(.headline.weight(.bold))
+                .animation(.smooth(duration: 0.28), value: remaining)
+            Text("\(remaining)")
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(.white)
                 .contentTransition(.numericText())
+                .animation(nil, value: remaining)
         }
-        .frame(width: 48, height: 48)
+        .frame(width: 44, height: 44)
     }
 }
 
-struct HLArena: View {
-    let left: HLPlayer
-    let right: HLPlayer
+// MARK: - Compare board
+
+struct HLDuelStage: View, Equatable {
+    let anchor: HLPlayer
+    let challenger: HLPlayer
     let revealState: HLRevealState
-    let slideIn: Bool
     let shakeTrigger: Bool
+
+    static func == (lhs: HLDuelStage, rhs: HLDuelStage) -> Bool {
+        lhs.anchor == rhs.anchor
+            && lhs.challenger == rhs.challenger
+            && lhs.revealState == rhs.revealState
+            && lhs.shakeTrigger == rhs.shakeTrigger
+    }
+
+    var body: some View {
+        HLCompareBoard(
+            anchor: anchor,
+            challenger: challenger,
+            revealState: revealState,
+            shakeTrigger: shakeTrigger,
+            portraitSize: 100
+        )
+        .frame(height: 300)
+    }
+}
+
+private struct HLCompareBoard: View, Equatable {
+    let anchor: HLPlayer
+    let challenger: HLPlayer
+    let revealState: HLRevealState
+    let shakeTrigger: Bool
+    let portraitSize: CGFloat
+
+    static func == (lhs: HLCompareBoard, rhs: HLCompareBoard) -> Bool {
+        lhs.anchor == rhs.anchor
+            && lhs.challenger == rhs.challenger
+            && lhs.revealState == rhs.revealState
+            && lhs.shakeTrigger == rhs.shakeTrigger
+            && lhs.portraitSize == rhs.portraitSize
+    }
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.28),
-                            Color.black.opacity(0.14),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
+                        colors: [HLStyle.surface, Color.white.opacity(0.04)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(HLTheme.glassStroke, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(HLStyle.surfaceStroke, lineWidth: 1)
                 )
+                .shadow(color: HLStyle.surfaceGlow, radius: 24, y: 8)
 
-            HStack(spacing: 10) {
-                HLPlayerCard(player: left, role: .anchor, revealState: .revealed)
+            // Ambient glow
+            RadialGradient(
+                colors: [HLStyle.gold.opacity(0.08), Color.clear],
+                center: .center,
+                startRadius: 10,
+                endRadius: 200
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
 
-                HLPlayerCard(
-                    player: right,
-                    role: .challenge,
-                    revealState: revealState
-                )
-                .offset(x: slideIn ? 0 : 90)
-                .opacity(slideIn ? 1 : 0)
-                .modifier(HLShakeEffect(animatableData: shakeTrigger ? 1 : 0))
+            HStack(spacing: 0) {
+                halfBackground(tint: HLStyle.higher.opacity(0.06))
+                    .clipShape(UnevenRoundedRectangle(
+                        topLeadingRadius: 22, bottomLeadingRadius: 22,
+                        bottomTrailingRadius: 0, topTrailingRadius: 0, style: .continuous
+                    ))
+
+                halfBackground(tint: HLStyle.lower.opacity(0.06))
+                    .clipShape(UnevenRoundedRectangle(
+                        topLeadingRadius: 0, bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 22, topTrailingRadius: 22, style: .continuous
+                    ))
             }
-            .padding(12)
 
-            HLVersusBadge()
+            HStack(spacing: 0) {
+                HLPlayerPane(
+                    player: anchor,
+                    value: .shown(anchor.marketValue),
+                    tag: "Known",
+                    portraitSize: portraitSize
+                )
+
+                Rectangle()
+                    .fill(HLStyle.divider)
+                    .frame(width: 1)
+                    .padding(.vertical, 24)
+
+                HLChallengerPane(
+                    player: challenger,
+                    revealState: revealState,
+                    shakeTrigger: shakeTrigger,
+                    portraitSize: portraitSize
+                )
+            }
+            .padding(.horizontal, 12)
+
+            // VS badge
+            HLVSBadge(challengerID: challenger.id)
         }
-        .shadow(color: .black.opacity(0.22), radius: 16, y: 8)
+        .animation(HLMotion.reveal, value: revealState)
+    }
+
+    private func halfBackground(tint: Color) -> some View {
+        Rectangle().fill(tint)
     }
 }
 
-struct HLPlayerCard: View {
-    let player: HLPlayer
-    let role: HLCardRole
-    let revealState: HLRevealState
+private struct HLVSBadge: View {
+    let challengerID: String
 
-    private var accentColor: Color {
-        switch revealState {
-        case .correct: .green
-        case .wrong: Color(red: 1, green: 0.38, blue: 0.38)
-        case .revealed: HLTheme.gold
-        case .hidden: role == .anchor ? HLTheme.gold : .white.opacity(0.5)
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var pop: CGFloat = 1
+
+    var body: some View {
+        Text("VS")
+            .font(.system(size: 10, weight: .black))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(HLStyle.higher)
+                    .shadow(color: HLStyle.higher.opacity(0.4), radius: 6, y: 2)
+            )
+            .overlay(Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1))
+            .modifier(HLPopModifier(progress: pop))
+            .onAppear { bounce() }
+            .onChange(of: challengerID) { _, _ in bounce() }
+    }
+
+    private func bounce() {
+        pop = 0
+        withAnimation(HLMotion.adaptive(HLMotion.enter, reduceMotion: reduceMotion)) {
+            pop = 1
         }
     }
+}
 
-    private var showsValue: Bool {
-        role == .anchor || revealState != .hidden
-    }
+// MARK: - Player panes
+
+private enum HLValueDisplay: Equatable {
+    case shown(Int)
+    case hidden
+    case revealed(Int, HLRevealState)
+}
+
+private struct HLPlayerPane: View {
+    let player: HLPlayer
+    let value: HLValueDisplay
+    var tag: String?
+    let portraitSize: CGFloat
 
     var body: some View {
         VStack(spacing: 0) {
-            ZStack(alignment: .topTrailing) {
-                VStack(spacing: 10) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.black.opacity(0.35),
-                                        Color.black.opacity(0.18),
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .frame(width: 88, height: 88)
-
-                        PlayerPortraitImage(playerID: player.id, style: .game)
-                    }
-
-                    VStack(spacing: 3) {
-                        Text(player.name)
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.82)
-
-                        Text(player.clubName)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.white.opacity(0.55))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
-                    }
-                    .frame(minHeight: 38)
-                }
-                .padding(.top, 12)
-                .padding(.horizontal, 8)
-
-                roleBadge
-                    .padding(8)
+            if let tag {
+                Text(tag.uppercased())
+                    .font(.system(size: 9, weight: .bold))
+                    .tracking(0.8)
+                    .foregroundStyle(HLStyle.muted)
+                    .padding(.bottom, 10)
             }
 
-            valueFooter
+            Spacer(minLength: 0)
+
+            PlayerPortraitImage(playerID: player.id, style: .hl)
+                .scaleEffect(portraitSize / 76)
+                .frame(width: portraitSize, height: portraitSize)
+
+            Spacer(minLength: 8)
+
+            HLValueLabel(display: value)
+
+            Spacer(minLength: 10)
+
+            VStack(spacing: 4) {
+                Text(player.name)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+
+                Text(player.clubName)
+                    .font(.caption)
+                    .foregroundStyle(HLStyle.muted)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(HLTheme.glassFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(accentColor.opacity(0.45), lineWidth: 1.5)
-                )
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 16)
+    }
+}
+
+private struct HLChallengerPane: View {
+    let player: HLPlayer
+    let revealState: HLRevealState
+    let shakeTrigger: Bool
+    let portraitSize: CGFloat
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var enter: CGFloat = 1
+    @State private var pulse: CGFloat = 0
+
+    private var value: HLValueDisplay {
+        switch revealState {
+        case .hidden: .hidden
+        case .correct: .revealed(player.marketValue, .correct)
+        case .wrong: .revealed(player.marketValue, .wrong)
+        }
     }
 
-    private var roleBadge: some View {
-        Text(role == .anchor ? "BASE" : "?")
-            .font(.system(size: 9, weight: .heavy))
-            .foregroundStyle(role == .anchor ? HLTheme.gold : .white.opacity(0.8))
-            .padding(.horizontal, 7)
-            .padding(.vertical, 4)
+    var body: some View {
+        HLPlayerPane(player: player, value: value, tag: "Guess", portraitSize: portraitSize)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(outcomeColor, lineWidth: revealState == .hidden ? 0 : 2.5)
+                    .padding(4)
+            )
+            .modifier(HLSlideModifier(progress: enter))
+            .modifier(HLPulseModifier(progress: pulse))
+            .gameShake(trigger: shakeTrigger)
+            .onAppear { animateIn() }
+            .onChange(of: player.id) { _, _ in animateIn() }
+            .onChange(of: revealState) { _, state in
+                guard state == .correct else { return }
+                pulse = 0
+                withAnimation(HLMotion.adaptive(HLMotion.reveal, reduceMotion: reduceMotion)) {
+                    pulse = 1
+                }
+            }
+    }
+
+    private var outcomeColor: Color {
+        switch revealState {
+        case .correct: GameDesign.success
+        case .wrong: GameDesign.danger
+        case .hidden: .clear
+        }
+    }
+
+    private func animateIn() {
+        enter = 0
+        withAnimation(HLMotion.adaptive(HLMotion.enter, reduceMotion: reduceMotion)) {
+            enter = 1
+        }
+    }
+}
+
+private struct HLValueLabel: View {
+    let display: HLValueDisplay
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var pop: CGFloat = 1
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 24, weight: .heavy, design: .rounded))
+            .foregroundStyle(color)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(Color.black.opacity(0.45))
-                    .overlay(
-                        Capsule()
-                            .stroke(accentColor.opacity(0.5), lineWidth: 1)
-                    )
+                    .fill(Color.black.opacity(0.35))
+                    .overlay(Capsule().stroke(color.opacity(0.35), lineWidth: 1))
             )
+            .modifier(HLPopModifier(progress: pop))
+            .onAppear { pop = 1 }
+            .onChange(of: key) { _, _ in
+                pop = 0
+                withAnimation(HLMotion.adaptive(HLMotion.reveal, reduceMotion: reduceMotion)) {
+                    pop = 1
+                }
+            }
     }
 
-    @ViewBuilder
-    private var valueFooter: some View {
-        Group {
-            if showsValue {
-                Text(formatCurrency(player.marketValue))
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [HLTheme.gold, HLTheme.amber],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+    private var text: String {
+        switch display {
+        case .shown(let v), .revealed(let v, _): MarketValueFormatter.format(v)
+        case .hidden: "???"
+        }
+    }
+
+    private var key: String {
+        switch display {
+        case .shown: "shown"
+        case .hidden: "hidden"
+        case .revealed(_, let o): "revealed-\(o)"
+        }
+    }
+
+    private var color: Color {
+        switch display {
+        case .shown: HLStyle.gold
+        case .hidden: Color.white.opacity(0.3)
+        case .revealed(_, .correct): GameDesign.success
+        case .revealed(_, .wrong): GameDesign.danger
+        case .revealed: HLStyle.gold
+        }
+    }
+}
+
+// MARK: - Controls
+
+private struct HLControls: View, Equatable {
+    let showResult: Bool
+    let isCorrect: Bool?
+    let isGameOver: Bool
+    let onHigher: () -> Void
+    let onLower: () -> Void
+    let onContinue: () -> Void
+
+    static func == (lhs: HLControls, rhs: HLControls) -> Bool {
+        lhs.showResult == rhs.showResult
+            && lhs.isCorrect == rhs.isCorrect
+            && lhs.isGameOver == rhs.isGameOver
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            if showResult, let isCorrect {
+                HLFeedbackChip(isCorrect: isCorrect)
+                    .transition(.hlFeedback)
+            }
+
+            if showResult {
+                HLContinueCTA(isGameOver: isGameOver, action: onContinue)
+                    .transition(.hlControlsSwap)
             } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "eye.slash.fill")
-                        .font(.caption2)
-                    Text("Hidden")
-                        .font(.caption.weight(.bold))
-                }
-                .foregroundStyle(.white.opacity(0.38))
+                HLSplitChoice(onHigher: onHigher, onLower: onLower)
+                    .transition(.hlControlsSwap)
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 9)
+        .padding(14)
         .background(
-            UnevenRoundedRectangle(
-                topLeadingRadius: 0,
-                bottomLeadingRadius: 18,
-                bottomTrailingRadius: 18,
-                topTrailingRadius: 0,
-                style: .continuous
-            )
-            .fill(Color.black.opacity(0.32))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(HLStyle.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(HLStyle.surfaceStroke, lineWidth: 1)
+                )
         )
-        .transition(.opacity.combined(with: .scale(scale: 0.95)))
-    }
-
-    private func formatCurrency(_ val: Int) -> String {
-        MarketValueFormatter.format(val)
+        .animation(HLMotion.swap, value: showResult)
     }
 }
 
-struct HLVersusBadge: View {
-    var body: some View {
-        Text("VS")
-            .font(.caption.weight(.black))
-            .tracking(1)
-            .foregroundStyle(.white)
-            .frame(width: 40, height: 40)
-            .background(
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [HLTheme.amber, Color(red: 0.95, green: 0.35, blue: 0.2)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.35), lineWidth: 2)
-                    )
-            )
-            .shadow(color: HLTheme.amber.opacity(0.5), radius: 10, y: 3)
-            .overlay(
-                Circle()
-                    .stroke(Color.black.opacity(0.25), lineWidth: 4)
-                    .blur(radius: 2)
-                    .offset(y: 1)
-                    .mask(Circle())
-            )
-    }
-}
-
-struct HLActionDock: View {
+private struct HLSplitChoice: View, Equatable {
     let onHigher: () -> Void
     let onLower: () -> Void
 
-    var body: some View {
-        VStack(spacing: 10) {
-            Button(action: onHigher) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title3)
-                    Text("Higher")
-                        .font(.headline.weight(.bold))
-                    Spacer()
-                    Text("Worth more")
-                        .font(.caption.weight(.medium))
-                        .opacity(0.75)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .foregroundStyle(.white)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 0.98, green: 0.55, blue: 0.12),
-                                    Color(red: 0.88, green: 0.28, blue: 0.1),
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                        )
-                )
-                .shadow(color: HLTheme.amber.opacity(0.35), radius: 10, y: 5)
-            }
+    static func == (_: HLSplitChoice, _: HLSplitChoice) -> Bool { true }
 
-            Button(action: onLower) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .font(.title3)
-                    Text("Lower")
-                        .font(.headline.weight(.bold))
-                    Spacer()
-                    Text("Worth less")
-                        .font(.caption.weight(.medium))
-                        .opacity(0.75)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .foregroundStyle(.white)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 0.22, green: 0.48, blue: 0.95),
-                                    Color(red: 0.14, green: 0.28, blue: 0.72),
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                        )
-                )
-                .shadow(color: Color.blue.opacity(0.28), radius: 10, y: 5)
-            }
+    var body: some View {
+        HStack(spacing: 10) {
+            choiceButton(title: "Higher", icon: "arrow.up", color: HLStyle.higher, action: onHigher)
+            choiceButton(title: "Lower", icon: "arrow.down", color: HLStyle.lower, action: onLower)
         }
-        .padding(12)
-        .background(glassPanel(cornerRadius: 20))
+    }
+
+    private func choiceButton(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: "\(icon).circle.fill")
+                    .font(.title2)
+                Text(title)
+                    .font(.headline.weight(.bold))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .foregroundStyle(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(color)
+            )
+        }
+        .buttonStyle(HLPressStyle())
     }
 }
 
-struct HLContinueButton: View {
+private struct HLContinueCTA: View {
     let isGameOver: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: isGameOver ? "arrow.counterclockwise.circle.fill" : "arrow.right.circle.fill")
-                    .font(.title3)
-                Text(isGameOver ? "Play Again" : "Next Round")
-                    .font(.headline.weight(.bold))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 15)
-            .foregroundStyle(isGameOver ? .white : Color(red: 0.05, green: 0.38, blue: 0.14))
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isGameOver
-                          ? LinearGradient(colors: [Color(red: 0.95, green: 0.3, blue: 0.28), Color(red: 0.75, green: 0.15, blue: 0.18)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                          : LinearGradient(colors: [.white, Color(white: 0.92)], startPoint: .top, endPoint: .bottom))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(Color.white.opacity(isGameOver ? 0.15 : 0.5), lineWidth: 1)
-                    )
-            )
-            .shadow(color: .black.opacity(0.18), radius: 8, y: 4)
+            Text(isGameOver ? "Play Again" : "Next Round")
+                .font(.headline.weight(.bold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .foregroundStyle(isGameOver ? .white : Color(red: 0.1, green: 0.12, blue: 0.16))
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(isGameOver ? GameDesign.danger : Color.white)
+                )
         }
-        .padding(12)
-        .background(glassPanel(cornerRadius: 20))
+        .buttonStyle(HLPressStyle())
     }
 }
 
-struct HLShakeEffect: GeometryEffect {
-    var animatableData: CGFloat
-
-    func effectValue(size: CGSize) -> ProjectionTransform {
-        ProjectionTransform(CGAffineTransform(translationX: 10 * sin(animatableData * .pi * 4), y: 0))
-    }
-}
-
-struct HLResultBanner: View {
+private struct HLFeedbackChip: View {
     let isCorrect: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var appear: CGFloat = 0
+
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.body.weight(.semibold))
-            Text(isCorrect ? "Correct — keep going!" : "Wrong — streak ended")
+            Text(isCorrect ? "Correct — keep going!" : "Wrong — game over")
                 .font(.subheadline.weight(.semibold))
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(
-                    isCorrect
-                    ? Color.green.opacity(0.82)
-                    : Color(red: 0.9, green: 0.25, blue: 0.25).opacity(0.85)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(isCorrect ? GameDesign.success : GameDesign.danger)
         )
-        .transition(.scale(scale: 0.95).combined(with: .opacity))
+        .modifier(HLPopModifier(progress: appear))
+        .onAppear {
+            appear = 0
+            withAnimation(HLMotion.adaptive(HLMotion.reveal, reduceMotion: reduceMotion)) {
+                appear = 1
+            }
+        }
     }
 }
 
-private func glassPanel(cornerRadius: CGFloat) -> some View {
-    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        .fill(.ultraThinMaterial)
-        .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .stroke(HLTheme.glassStroke, lineWidth: 1)
-        )
+private struct HLPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .brightness(configuration.isPressed ? -0.04 : 0)
+            .animation(HLMotion.press, value: configuration.isPressed)
+    }
 }

@@ -1,0 +1,4073 @@
+{
+  "updatedAt": "2026-07-15T13:08:19.230199+00:00",
+  "season": "2026/27",
+  "sourceURL": "https://raw.githubusercontent.com/openfootball/england/master/2026-27/1-premierleague.txt",
+  "gameweeks": [
+    {
+      "number": 1,
+      "startsAt": "2026-08-21T20:00:00",
+      "endsAt": "2026-08-24T20:00:00",
+      "matches": [
+        {
+          "id": "gw1-m1",
+          "gameweek": 1,
+          "kickoff": "2026-08-21T20:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Coventry",
+          "homeClubID": "11",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw1-m2",
+          "gameweek": 1,
+          "kickoff": "2026-08-22T12:30:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Man United",
+          "homeClubID": "3008",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw1-m3",
+          "gameweek": 1,
+          "kickoff": "2026-08-22T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Sunderland",
+          "homeClubID": "677",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw1-m4",
+          "gameweek": 1,
+          "kickoff": "2026-08-22T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Leeds",
+          "homeClubID": "703",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw1-m5",
+          "gameweek": 1,
+          "kickoff": "2026-08-22T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "29",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw1-m6",
+          "gameweek": 1,
+          "kickoff": "2026-08-22T17:30:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Tottenham",
+          "homeClubID": "1148",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw1-m7",
+          "gameweek": 1,
+          "kickoff": "2026-08-23T14:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "281",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw1-m8",
+          "gameweek": 1,
+          "kickoff": "2026-08-23T14:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "1237",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw1-m9",
+          "gameweek": 1,
+          "kickoff": "2026-08-23T16:30:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Liverpool",
+          "homeClubID": "762",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw1-m10",
+          "gameweek": 1,
+          "kickoff": "2026-08-24T20:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Chelsea",
+          "homeClubID": "931",
+          "awayClubID": "631",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "startsAt": "2026-08-29T15:00:00",
+      "endsAt": "2026-08-29T15:00:00",
+      "matches": [
+        {
+          "id": "gw2-m1",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "31",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw2-m2",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Ipswich",
+          "homeClubID": "985",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw2-m3",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Fulham",
+          "homeClubID": "289",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw2-m4",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Man City",
+          "homeClubID": "873",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw2-m5",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Brighton",
+          "homeClubID": "631",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw2-m6",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Arsenal",
+          "homeClubID": "405",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw2-m7",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Newcastle",
+          "homeClubID": "148",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw2-m8",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Brentford",
+          "homeClubID": "399",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw2-m9",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Everton",
+          "homeClubID": "989",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw2-m10",
+          "gameweek": 2,
+          "kickoff": "2026-08-29T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Hull",
+          "homeClubID": "990",
+          "awayClubID": "3008",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "startsAt": "2026-09-05T15:00:00",
+      "endsAt": "2026-09-05T15:00:00",
+      "matches": [
+        {
+          "id": "gw3-m1",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Tottenham",
+          "homeClubID": "703",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw3-m2",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Coventry",
+          "homeClubID": "281",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw3-m3",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Leeds",
+          "homeClubID": "1237",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw3-m4",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Sunderland",
+          "homeClubID": "1148",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw3-m5",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Liverpool",
+          "homeClubID": "677",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw3-m6",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Man United",
+          "homeClubID": "29",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw3-m7",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "931",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw3-m8",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "3008",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw3-m9",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Chelsea",
+          "homeClubID": "11",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw3-m10",
+          "gameweek": 3,
+          "kickoff": "2026-09-05T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "762",
+          "awayClubID": "989",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "startsAt": "2026-09-12T15:00:00",
+      "endsAt": "2026-09-12T15:00:00",
+      "matches": [
+        {
+          "id": "gw4-m1",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Ipswich",
+          "homeClubID": "873",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw4-m2",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Fulham",
+          "homeClubID": "31",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw4-m3",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "405",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw4-m4",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Everton",
+          "homeClubID": "148",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw4-m5",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Brentford",
+          "homeClubID": "989",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw4-m6",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Arsenal",
+          "homeClubID": "289",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw4-m7",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Brighton",
+          "homeClubID": "990",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw4-m8",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Newcastle",
+          "homeClubID": "399",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw4-m9",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Man City",
+          "homeClubID": "985",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw4-m10",
+          "gameweek": 4,
+          "kickoff": "2026-09-12T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Hull",
+          "homeClubID": "631",
+          "awayClubID": "3008",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "startsAt": "2026-09-19T15:00:00",
+      "endsAt": "2026-09-19T15:00:00",
+      "matches": [
+        {
+          "id": "gw5-m1",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Liverpool",
+          "homeClubID": "989",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw5-m2",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Man United",
+          "homeClubID": "931",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw5-m3",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Ipswich",
+          "homeClubID": "29",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw5-m4",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "399",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw5-m5",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Arsenal",
+          "homeClubID": "1237",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw5-m6",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "148",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw5-m7",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Hull",
+          "homeClubID": "762",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw5-m8",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Coventry",
+          "homeClubID": "703",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw5-m9",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Sunderland",
+          "homeClubID": "281",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw5-m10",
+          "gameweek": 5,
+          "kickoff": "2026-09-19T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Chelsea",
+          "homeClubID": "1148",
+          "awayClubID": "631",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "startsAt": "2026-10-10T15:00:00",
+      "endsAt": "2026-10-10T15:00:00",
+      "matches": [
+        {
+          "id": "gw6-m1",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Brighton",
+          "homeClubID": "289",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw6-m2",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Leeds",
+          "homeClubID": "11",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw6-m3",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Everton",
+          "homeClubID": "3008",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw6-m4",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "631",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw6-m5",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "873",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw6-m6",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Newcastle",
+          "homeClubID": "990",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw6-m7",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Man City",
+          "homeClubID": "31",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw6-m8",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Fulham",
+          "homeClubID": "677",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw6-m9",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Tottenham",
+          "homeClubID": "985",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw6-m10",
+          "gameweek": 6,
+          "kickoff": "2026-10-10T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Brentford",
+          "homeClubID": "405",
+          "awayClubID": "1148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "startsAt": "2026-10-17T15:00:00",
+      "endsAt": "2026-10-17T15:00:00",
+      "matches": [
+        {
+          "id": "gw7-m1",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Hull",
+          "homeClubID": "931",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw7-m2",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Chelsea",
+          "homeClubID": "29",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw7-m3",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Sunderland",
+          "homeClubID": "989",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw7-m4",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Man United",
+          "homeClubID": "399",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw7-m5",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Coventry",
+          "homeClubID": "148",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw7-m6",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "762",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw7-m7",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Arsenal",
+          "homeClubID": "703",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw7-m8",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "1237",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw7-m9",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Ipswich",
+          "homeClubID": "281",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw7-m10",
+          "gameweek": 7,
+          "kickoff": "2026-10-17T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Liverpool",
+          "homeClubID": "1148",
+          "awayClubID": "31",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "startsAt": "2026-10-24T15:00:00",
+      "endsAt": "2026-10-24T15:00:00",
+      "matches": [
+        {
+          "id": "gw8-m1",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Brighton",
+          "homeClubID": "31",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw8-m2",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Newcastle",
+          "homeClubID": "873",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw8-m3",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Man City",
+          "homeClubID": "405",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw8-m4",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "985",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw8-m5",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Everton",
+          "homeClubID": "11",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw8-m6",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Tottenham",
+          "homeClubID": "631",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw8-m7",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Fulham",
+          "homeClubID": "990",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw8-m8",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Brentford",
+          "homeClubID": "3008",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw8-m9",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "677",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw8-m10",
+          "gameweek": 8,
+          "kickoff": "2026-10-24T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Leeds",
+          "homeClubID": "289",
+          "awayClubID": "399",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "startsAt": "2026-10-31T15:00:00",
+      "endsAt": "2026-10-31T15:00:00",
+      "matches": [
+        {
+          "id": "gw9-m1",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Everton",
+          "homeClubID": "762",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw9-m2",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Brighton",
+          "homeClubID": "281",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw9-m3",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Leeds",
+          "homeClubID": "989",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw9-m4",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Sunderland",
+          "homeClubID": "990",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw9-m5",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Man United",
+          "homeClubID": "631",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw9-m6",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "148",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw9-m7",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Fulham",
+          "homeClubID": "405",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw9-m8",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Ipswich",
+          "homeClubID": "3008",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw9-m9",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "1148",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw9-m10",
+          "gameweek": 9,
+          "kickoff": "2026-10-31T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Arsenal",
+          "homeClubID": "31",
+          "awayClubID": "11",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "startsAt": "2026-11-07T15:00:00",
+      "endsAt": "2026-11-07T15:00:00",
+      "matches": [
+        {
+          "id": "gw10-m1",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Hull",
+          "homeClubID": "11",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw10-m2",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Man City",
+          "homeClubID": "703",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw10-m3",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Tottenham",
+          "homeClubID": "399",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw10-m4",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Newcastle",
+          "homeClubID": "931",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw10-m5",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Coventry",
+          "homeClubID": "29",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw10-m6",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Liverpool",
+          "homeClubID": "873",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw10-m7",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Chelsea",
+          "homeClubID": "289",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw10-m8",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "677",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw10-m9",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Brentford",
+          "homeClubID": "1237",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw10-m10",
+          "gameweek": 10,
+          "kickoff": "2026-11-07T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "985",
+          "awayClubID": "405",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "startsAt": "2026-11-21T15:00:00",
+      "endsAt": "2026-11-21T15:00:00",
+      "matches": [
+        {
+          "id": "gw11-m1",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Leeds",
+          "homeClubID": "631",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw11-m2",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Fulham",
+          "homeClubID": "281",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw11-m3",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Sunderland",
+          "homeClubID": "405",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw11-m4",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Man United",
+          "homeClubID": "31",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw11-m5",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Brighton",
+          "homeClubID": "3008",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw11-m6",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "989",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw11-m7",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Ipswich",
+          "homeClubID": "148",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw11-m8",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Everton",
+          "homeClubID": "1148",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw11-m9",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "990",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw11-m10",
+          "gameweek": 11,
+          "kickoff": "2026-11-21T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Arsenal",
+          "homeClubID": "762",
+          "awayClubID": "11",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "startsAt": "2026-11-28T15:00:00",
+      "endsAt": "2026-11-28T15:00:00",
+      "matches": [
+        {
+          "id": "gw12-m1",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Coventry",
+          "homeClubID": "399",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw12-m2",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "677",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw12-m3",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Man City",
+          "homeClubID": "11",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw12-m4",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Brentford",
+          "homeClubID": "985",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw12-m5",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Liverpool",
+          "homeClubID": "29",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw12-m6",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "931",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw12-m7",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Chelsea",
+          "homeClubID": "703",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw12-m8",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Newcastle",
+          "homeClubID": "1237",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw12-m9",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Tottenham",
+          "homeClubID": "289",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw12-m10",
+          "gameweek": 12,
+          "kickoff": "2026-11-28T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Hull",
+          "homeClubID": "873",
+          "awayClubID": "3008",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "startsAt": "2026-12-02T20:00:00",
+      "endsAt": "2026-12-02T20:00:00",
+      "matches": [
+        {
+          "id": "gw13-m1",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Fulham",
+          "homeClubID": "148",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw13-m2",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Sunderland",
+          "homeClubID": "31",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw13-m3",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "3008",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw13-m4",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "631",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw13-m5",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Everton",
+          "homeClubID": "405",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw13-m6",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Arsenal",
+          "homeClubID": "1148",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw13-m7",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Ipswich",
+          "homeClubID": "990",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw13-m8",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Leeds",
+          "homeClubID": "281",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw13-m9",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Man United",
+          "homeClubID": "762",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw13-m10",
+          "gameweek": 13,
+          "kickoff": "2026-12-02T20:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Brighton",
+          "homeClubID": "989",
+          "awayClubID": "1237",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "startsAt": "2026-12-05T15:00:00",
+      "endsAt": "2026-12-05T15:00:00",
+      "matches": [
+        {
+          "id": "gw14-m1",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Arsenal",
+          "homeClubID": "148",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw14-m2",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Coventry",
+          "homeClubID": "985",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw14-m3",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Ipswich",
+          "homeClubID": "399",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw14-m4",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Sunderland",
+          "homeClubID": "762",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw14-m5",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Liverpool",
+          "homeClubID": "631",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw14-m6",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Man City",
+          "homeClubID": "1148",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw14-m7",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Hull",
+          "homeClubID": "989",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw14-m8",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "405",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw14-m9",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Brighton",
+          "homeClubID": "703",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw14-m10",
+          "gameweek": 14,
+          "kickoff": "2026-12-05T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Fulham",
+          "homeClubID": "29",
+          "awayClubID": "931",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "startsAt": "2026-12-12T15:00:00",
+      "endsAt": "2026-12-12T15:00:00",
+      "matches": [
+        {
+          "id": "gw15-m1",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "289",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw15-m2",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Man United",
+          "homeClubID": "873",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw15-m3",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Tottenham",
+          "homeClubID": "3008",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw15-m4",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Everton",
+          "homeClubID": "1237",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw15-m5",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Newcastle",
+          "homeClubID": "677",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw15-m6",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "990",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw15-m7",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "11",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw15-m8",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Chelsea",
+          "homeClubID": "281",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw15-m9",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Leeds",
+          "homeClubID": "31",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw15-m10",
+          "gameweek": 15,
+          "kickoff": "2026-12-12T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Brentford",
+          "homeClubID": "931",
+          "awayClubID": "1148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "startsAt": "2026-12-19T15:00:00",
+      "endsAt": "2026-12-19T15:00:00",
+      "matches": [
+        {
+          "id": "gw16-m1",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Fulham",
+          "homeClubID": "399",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw16-m2",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Ipswich",
+          "homeClubID": "1237",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw16-m3",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Everton",
+          "homeClubID": "703",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw16-m4",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Newcastle",
+          "homeClubID": "1148",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw16-m5",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Hull",
+          "homeClubID": "281",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw16-m6",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "289",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw16-m7",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Coventry",
+          "homeClubID": "989",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw16-m8",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Man United",
+          "homeClubID": "11",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw16-m9",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Tottenham",
+          "homeClubID": "31",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw16-m10",
+          "gameweek": 16,
+          "kickoff": "2026-12-19T15:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "631",
+          "awayClubID": "405",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "startsAt": "2026-12-26T15:00:00",
+      "endsAt": "2026-12-26T15:00:00",
+      "matches": [
+        {
+          "id": "gw17-m1",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Leeds",
+          "homeClubID": "405",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw17-m2",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "985",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw17-m3",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Arsenal",
+          "homeClubID": "873",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw17-m4",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Sunderland",
+          "homeClubID": "29",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw17-m5",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Chelsea",
+          "homeClubID": "990",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw17-m6",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Man City",
+          "homeClubID": "762",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw17-m7",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Brighton",
+          "homeClubID": "931",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw17-m8",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "148",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw17-m9",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Liverpool",
+          "homeClubID": "3008",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw17-m10",
+          "gameweek": 17,
+          "kickoff": "2026-12-26T15:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Brentford",
+          "homeClubID": "677",
+          "awayClubID": "1148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "startsAt": "2026-12-30T20:00:00",
+      "endsAt": "2026-12-30T20:00:00",
+      "matches": [
+        {
+          "id": "gw18-m1",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Arsenal",
+          "homeClubID": "931",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw18-m2",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Brentford",
+          "homeClubID": "990",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw18-m3",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Liverpool",
+          "homeClubID": "405",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw18-m4",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "762",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw18-m5",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Leeds",
+          "homeClubID": "3008",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw18-m6",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Sunderland",
+          "homeClubID": "985",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw18-m7",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Chelsea",
+          "homeClubID": "677",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw18-m8",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Brighton",
+          "homeClubID": "148",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw18-m9",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Man City",
+          "homeClubID": "29",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw18-m10",
+          "gameweek": 18,
+          "kickoff": "2026-12-30T20:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "873",
+          "awayClubID": "989",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "startsAt": "2027-01-02T12:00:00",
+      "endsAt": "2027-01-02T12:00:00",
+      "matches": [
+        {
+          "id": "gw19-m1",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "989",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw19-m2",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "1148",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw19-m3",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Everton",
+          "homeClubID": "399",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw19-m4",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Ipswich",
+          "homeClubID": "11",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw19-m5",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Hull",
+          "homeClubID": "289",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw19-m6",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Coventry",
+          "homeClubID": "31",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw19-m7",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Newcastle",
+          "homeClubID": "631",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw19-m8",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Fulham",
+          "homeClubID": "703",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw19-m9",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Man United",
+          "homeClubID": "1237",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw19-m10",
+          "gameweek": 19,
+          "kickoff": "2027-01-02T12:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Tottenham",
+          "homeClubID": "281",
+          "awayClubID": "148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "startsAt": "2027-01-06T12:00:00",
+      "endsAt": "2027-01-06T12:00:00",
+      "matches": [
+        {
+          "id": "gw20-m1",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Brentford",
+          "homeClubID": "11",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw20-m2",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Man City",
+          "homeClubID": "399",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw20-m3",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Newcastle",
+          "homeClubID": "985",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw20-m4",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "1237",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw20-m5",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Hull",
+          "homeClubID": "703",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw20-m6",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Tottenham",
+          "homeClubID": "931",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw20-m7",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "29",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw20-m8",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Liverpool",
+          "homeClubID": "289",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw20-m9",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Chelsea",
+          "homeClubID": "873",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw20-m10",
+          "gameweek": 20,
+          "kickoff": "2027-01-06T12:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Coventry",
+          "homeClubID": "677",
+          "awayClubID": "990",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "startsAt": "2027-01-16T12:00:00",
+      "endsAt": "2027-01-16T12:00:00",
+      "matches": [
+        {
+          "id": "gw21-m1",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Ipswich",
+          "homeClubID": "989",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw21-m2",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "281",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw21-m3",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Sunderland",
+          "homeClubID": "631",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw21-m4",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Brighton",
+          "homeClubID": "1148",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw21-m5",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Man United",
+          "homeClubID": "405",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw21-m6",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Leeds",
+          "homeClubID": "148",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw21-m7",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Everton",
+          "homeClubID": "990",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw21-m8",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "31",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw21-m9",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Arsenal",
+          "homeClubID": "3008",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw21-m10",
+          "gameweek": 21,
+          "kickoff": "2027-01-16T12:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Fulham",
+          "homeClubID": "762",
+          "awayClubID": "931",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "startsAt": "2027-01-23T12:00:00",
+      "endsAt": "2027-01-23T12:00:00",
+      "matches": [
+        {
+          "id": "gw22-m1",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Hull",
+          "homeClubID": "677",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw22-m2",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Brentford",
+          "homeClubID": "29",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw22-m3",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Coventry",
+          "homeClubID": "289",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw22-m4",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "703",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw22-m5",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Newcastle",
+          "homeClubID": "11",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw22-m6",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Chelsea",
+          "homeClubID": "399",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw22-m7",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "931",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw22-m8",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Liverpool",
+          "homeClubID": "985",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw22-m9",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Man City",
+          "homeClubID": "1237",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw22-m10",
+          "gameweek": 22,
+          "kickoff": "2027-01-23T12:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Tottenham",
+          "homeClubID": "873",
+          "awayClubID": "148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "startsAt": "2027-01-30T12:00:00",
+      "endsAt": "2027-01-30T12:00:00",
+      "matches": [
+        {
+          "id": "gw23-m1",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Sunderland",
+          "homeClubID": "148",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw23-m2",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Man United",
+          "homeClubID": "1148",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw23-m3",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Brighton",
+          "homeClubID": "762",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw23-m4",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "3008",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw23-m5",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Leeds",
+          "homeClubID": "990",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw23-m6",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Fulham",
+          "homeClubID": "989",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw23-m7",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "631",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw23-m8",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Everton",
+          "homeClubID": "31",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw23-m9",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Arsenal",
+          "homeClubID": "281",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw23-m10",
+          "gameweek": 23,
+          "kickoff": "2027-01-30T12:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Ipswich",
+          "homeClubID": "405",
+          "awayClubID": "677",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "startsAt": "2027-02-06T12:00:00",
+      "endsAt": "2027-02-06T12:00:00",
+      "matches": [
+        {
+          "id": "gw24-m1",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Liverpool",
+          "homeClubID": "11",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw24-m2",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Hull",
+          "homeClubID": "1237",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw24-m3",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "289",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw24-m4",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Coventry",
+          "homeClubID": "873",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw24-m5",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Tottenham",
+          "homeClubID": "677",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw24-m6",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Newcastle",
+          "homeClubID": "29",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw24-m7",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Man City",
+          "homeClubID": "931",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw24-m8",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "399",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw24-m9",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Chelsea",
+          "homeClubID": "985",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw24-m10",
+          "gameweek": 24,
+          "kickoff": "2027-02-06T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Brentford",
+          "homeClubID": "703",
+          "awayClubID": "1148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "startsAt": "2027-02-10T12:00:00",
+      "endsAt": "2027-02-10T12:00:00",
+      "matches": [
+        {
+          "id": "gw25-m1",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Leeds",
+          "homeClubID": "29",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw25-m2",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Liverpool",
+          "homeClubID": "990",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw25-m3",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Sunderland",
+          "homeClubID": "3008",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw25-m4",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "405",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw25-m5",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Brentford",
+          "homeClubID": "873",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw25-m6",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Chelsea",
+          "homeClubID": "762",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw25-m7",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "931",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw25-m8",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Man City",
+          "homeClubID": "148",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw25-m9",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Brighton",
+          "homeClubID": "985",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw25-m10",
+          "gameweek": 25,
+          "kickoff": "2027-02-10T12:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Arsenal",
+          "homeClubID": "677",
+          "awayClubID": "11",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "startsAt": "2027-02-20T12:00:00",
+      "endsAt": "2027-02-20T12:00:00",
+      "matches": [
+        {
+          "id": "gw26-m1",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Newcastle",
+          "homeClubID": "281",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw26-m2",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "989",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw26-m3",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Coventry",
+          "homeClubID": "1148",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw26-m4",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Ipswich",
+          "homeClubID": "631",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw26-m5",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Hull",
+          "homeClubID": "31",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw26-m6",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Fulham",
+          "homeClubID": "11",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw26-m7",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Man United",
+          "homeClubID": "703",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw26-m8",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Tottenham",
+          "homeClubID": "1237",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw26-m9",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Everton",
+          "homeClubID": "289",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw26-m10",
+          "gameweek": 26,
+          "kickoff": "2027-02-20T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "399",
+          "awayClubID": "405",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 27,
+      "startsAt": "2027-02-27T12:00:00",
+      "endsAt": "2027-02-27T12:00:00",
+      "matches": [
+        {
+          "id": "gw27-m1",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Sunderland",
+          "homeClubID": "873",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw27-m2",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Arsenal",
+          "homeClubID": "985",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw27-m3",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Brighton",
+          "homeClubID": "677",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw27-m4",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "990",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw27-m5",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "29",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw27-m6",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Leeds",
+          "homeClubID": "931",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw27-m7",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Chelsea",
+          "homeClubID": "405",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw27-m8",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Liverpool",
+          "homeClubID": "148",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw27-m9",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Brentford",
+          "homeClubID": "762",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw27-m10",
+          "gameweek": 27,
+          "kickoff": "2027-02-27T12:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Man City",
+          "homeClubID": "3008",
+          "awayClubID": "281",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 28,
+      "startsAt": "2027-03-03T12:00:00",
+      "endsAt": "2027-03-03T12:00:00",
+      "matches": [
+        {
+          "id": "gw28-m1",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Newcastle",
+          "homeClubID": "703",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw28-m2",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Tottenham",
+          "homeClubID": "989",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw28-m3",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Everton",
+          "homeClubID": "281",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw28-m4",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "11",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw28-m5",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Hull",
+          "homeClubID": "399",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw28-m6",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Man United",
+          "homeClubID": "289",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw28-m7",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "31",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw28-m8",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Fulham",
+          "homeClubID": "1237",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw28-m9",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Ipswich",
+          "homeClubID": "1148",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw28-m10",
+          "gameweek": 28,
+          "kickoff": "2027-03-03T12:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Coventry",
+          "homeClubID": "631",
+          "awayClubID": "990",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "startsAt": "2027-03-13T12:00:00",
+      "endsAt": "2027-03-13T12:00:00",
+      "matches": [
+        {
+          "id": "gw29-m1",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Brighton",
+          "homeClubID": "399",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw29-m2",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "148",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw29-m3",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Fulham",
+          "homeClubID": "873",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw29-m4",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Ipswich",
+          "homeClubID": "31",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw29-m5",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Man City",
+          "homeClubID": "990",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw29-m6",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Newcastle",
+          "homeClubID": "989",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw29-m7",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Arsenal",
+          "homeClubID": "631",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw29-m8",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Hull",
+          "homeClubID": "405",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw29-m9",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Everton",
+          "homeClubID": "985",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw29-m10",
+          "gameweek": 29,
+          "kickoff": "2027-03-13T12:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Brentford",
+          "homeClubID": "289",
+          "awayClubID": "1148",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 30,
+      "startsAt": "2027-03-20T12:00:00",
+      "endsAt": "2027-03-20T12:00:00",
+      "matches": [
+        {
+          "id": "gw30-m1",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "1148",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw30-m2",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Coventry",
+          "homeClubID": "1237",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw30-m3",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Man United",
+          "homeClubID": "281",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw30-m4",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "677",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw30-m5",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Sunderland",
+          "homeClubID": "11",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw30-m6",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Liverpool",
+          "homeClubID": "931",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw30-m7",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Chelsea",
+          "homeClubID": "3008",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw30-m8",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "703",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw30-m9",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Tottenham",
+          "homeClubID": "29",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw30-m10",
+          "gameweek": 30,
+          "kickoff": "2027-03-20T12:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Leeds",
+          "homeClubID": "762",
+          "awayClubID": "399",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 31,
+      "startsAt": "2027-04-10T13:00:00",
+      "endsAt": "2027-04-10T13:00:00",
+      "matches": [
+        {
+          "id": "gw31-m1",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Ipswich",
+          "homeClubID": "289",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw31-m2",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "399",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw31-m3",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Hull",
+          "homeClubID": "985",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw31-m4",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Fulham",
+          "homeClubID": "631",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw31-m5",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Newcastle",
+          "homeClubID": "31",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw31-m6",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Arsenal",
+          "homeClubID": "990",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw31-m7",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Man City",
+          "homeClubID": "989",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw31-m8",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Everton",
+          "homeClubID": "873",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw31-m9",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Brentford",
+          "homeClubID": "148",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw31-m10",
+          "gameweek": 31,
+          "kickoff": "2027-04-10T13:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Brighton",
+          "homeClubID": "405",
+          "awayClubID": "1237",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "startsAt": "2027-04-17T13:00:00",
+      "endsAt": "2027-04-17T13:00:00",
+      "matches": [
+        {
+          "id": "gw32-m1",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Chelsea",
+          "homeClubID": "1237",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw32-m2",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Sunderland",
+          "homeClubID": "931",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw32-m3",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Leeds",
+          "homeClubID": "1148",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw32-m4",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Liverpool",
+          "homeClubID": "703",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw32-m5",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Coventry",
+          "homeClubID": "3008",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw32-m6",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "11",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw32-m7",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Man United",
+          "homeClubID": "677",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw32-m8",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "281",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw32-m9",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Tottenham",
+          "homeClubID": "762",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw32-m10",
+          "gameweek": 32,
+          "kickoff": "2027-04-17T13:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "29",
+          "awayClubID": "989",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "startsAt": "2027-04-24T13:00:00",
+      "endsAt": "2027-04-24T13:00:00",
+      "matches": [
+        {
+          "id": "gw33-m1",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Man City",
+          "homeClubID": "631",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw33-m2",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Arsenal",
+          "homeClubID": "989",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw33-m3",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Hull",
+          "homeClubID": "148",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw33-m4",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "985",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw33-m5",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Brighton",
+          "homeClubID": "29",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw33-m6",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Sunderland",
+          "homeClubID": "703",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw33-m7",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Ipswich",
+          "homeClubID": "762",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw33-m8",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Coventry",
+          "homeClubID": "405",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw33-m9",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Fulham",
+          "homeClubID": "1148",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw33-m10",
+          "gameweek": 33,
+          "kickoff": "2027-04-24T13:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Liverpool",
+          "homeClubID": "399",
+          "awayClubID": "31",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "startsAt": "2027-05-01T13:00:00",
+      "endsAt": "2027-05-01T13:00:00",
+      "matches": [
+        {
+          "id": "gw34-m1",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Newcastle",
+          "homeClubID": "289",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw34-m2",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "1237",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw34-m3",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Man United",
+          "homeClubID": "990",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw34-m4",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "3008",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw34-m5",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Brentford",
+          "homeClubID": "281",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw34-m6",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Everton",
+          "homeClubID": "931",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw34-m7",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Chelsea",
+          "homeClubID": "31",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw34-m8",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Tottenham",
+          "homeClubID": "11",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw34-m9",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "873",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw34-m10",
+          "gameweek": 34,
+          "kickoff": "2027-05-01T13:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Leeds",
+          "homeClubID": "677",
+          "awayClubID": "399",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 35,
+      "startsAt": "2027-05-08T13:00:00",
+      "endsAt": "2027-05-08T13:00:00",
+      "matches": [
+        {
+          "id": "gw35-m1",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Liverpool",
+          "homeClubID": "281",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw35-m2",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Arsenal",
+          "homeClubID": "399",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw35-m3",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Ipswich",
+          "homeClubID": "931",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw35-m4",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "703",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw35-m5",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "1148",
+          "awayClubID": "405",
+          "result": null
+        },
+        {
+          "id": "gw35-m6",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Coventry",
+          "homeClubID": "762",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw35-m7",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Sunderland",
+          "homeClubID": "1237",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw35-m8",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Chelsea",
+          "homeClubID": "148",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw35-m9",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Hull",
+          "homeClubID": "29",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw35-m10",
+          "gameweek": 35,
+          "kickoff": "2027-05-08T13:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Man United",
+          "homeClubID": "989",
+          "awayClubID": "985",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 36,
+      "startsAt": "2027-05-15T13:00:00",
+      "endsAt": "2027-05-15T13:00:00",
+      "matches": [
+        {
+          "id": "gw36-m1",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Fulham",
+          "homeClubID": "3008",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw36-m2",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Leeds",
+          "homeClubID": "985",
+          "awayClubID": "399",
+          "result": null
+        },
+        {
+          "id": "gw36-m3",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Brighton",
+          "homeClubID": "873",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw36-m4",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Newcastle",
+          "homeClubID": "405",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw36-m5",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Everton",
+          "homeClubID": "631",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw36-m6",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Tottenham",
+          "homeClubID": "990",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw36-m7",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "289",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw36-m8",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Brentford",
+          "homeClubID": "31",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw36-m9",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Man City",
+          "homeClubID": "677",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw36-m10",
+          "gameweek": 36,
+          "kickoff": "2027-05-15T13:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "11",
+          "awayClubID": "703",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 37,
+      "startsAt": "2027-05-23T13:00:00",
+      "endsAt": "2027-05-23T13:00:00",
+      "matches": [
+        {
+          "id": "gw37-m1",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Brentford",
+          "awayTeam": "Hull",
+          "homeClubID": "1148",
+          "awayClubID": "3008",
+          "result": null
+        },
+        {
+          "id": "gw37-m2",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Newcastle",
+          "awayTeam": "Crystal Palace",
+          "homeClubID": "762",
+          "awayClubID": "873",
+          "result": null
+        },
+        {
+          "id": "gw37-m3",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Tottenham",
+          "awayTeam": "Man United",
+          "homeClubID": "148",
+          "awayClubID": "985",
+          "result": null
+        },
+        {
+          "id": "gw37-m4",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Leeds",
+          "awayTeam": "Sunderland",
+          "homeClubID": "399",
+          "awayClubID": "289",
+          "result": null
+        },
+        {
+          "id": "gw37-m5",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Brighton",
+          "awayTeam": "Liverpool",
+          "homeClubID": "1237",
+          "awayClubID": "31",
+          "result": null
+        },
+        {
+          "id": "gw37-m6",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Nott'm Forest",
+          "awayTeam": "Ipswich",
+          "homeClubID": "703",
+          "awayClubID": "677",
+          "result": null
+        },
+        {
+          "id": "gw37-m7",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Bournemouth",
+          "awayTeam": "Chelsea",
+          "homeClubID": "989",
+          "awayClubID": "631",
+          "result": null
+        },
+        {
+          "id": "gw37-m8",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Fulham",
+          "awayTeam": "Coventry",
+          "homeClubID": "931",
+          "awayClubID": "990",
+          "result": null
+        },
+        {
+          "id": "gw37-m9",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Everton",
+          "awayTeam": "Arsenal",
+          "homeClubID": "29",
+          "awayClubID": "11",
+          "result": null
+        },
+        {
+          "id": "gw37-m10",
+          "gameweek": 37,
+          "kickoff": "2027-05-23T13:00:00",
+          "homeTeam": "Man City",
+          "awayTeam": "Aston Villa",
+          "homeClubID": "281",
+          "awayClubID": "405",
+          "result": null
+        }
+      ]
+    },
+    {
+      "number": 38,
+      "startsAt": "2027-05-30T13:00:00",
+      "endsAt": "2027-05-30T13:00:00",
+      "matches": [
+        {
+          "id": "gw38-m1",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Ipswich",
+          "awayTeam": "Everton",
+          "homeClubID": "677",
+          "awayClubID": "29",
+          "result": null
+        },
+        {
+          "id": "gw38-m2",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Arsenal",
+          "awayTeam": "Brighton",
+          "homeClubID": "11",
+          "awayClubID": "1237",
+          "result": null
+        },
+        {
+          "id": "gw38-m3",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Liverpool",
+          "awayTeam": "Bournemouth",
+          "homeClubID": "31",
+          "awayClubID": "989",
+          "result": null
+        },
+        {
+          "id": "gw38-m4",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Coventry",
+          "awayTeam": "Nott'm Forest",
+          "homeClubID": "990",
+          "awayClubID": "703",
+          "result": null
+        },
+        {
+          "id": "gw38-m5",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Aston Villa",
+          "awayTeam": "Tottenham",
+          "homeClubID": "405",
+          "awayClubID": "148",
+          "result": null
+        },
+        {
+          "id": "gw38-m6",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Hull",
+          "awayTeam": "Newcastle",
+          "homeClubID": "3008",
+          "awayClubID": "762",
+          "result": null
+        },
+        {
+          "id": "gw38-m7",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Man United",
+          "awayTeam": "Fulham",
+          "homeClubID": "985",
+          "awayClubID": "931",
+          "result": null
+        },
+        {
+          "id": "gw38-m8",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Sunderland",
+          "awayTeam": "Man City",
+          "homeClubID": "289",
+          "awayClubID": "281",
+          "result": null
+        },
+        {
+          "id": "gw38-m9",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Chelsea",
+          "awayTeam": "Brentford",
+          "homeClubID": "631",
+          "awayClubID": "1148",
+          "result": null
+        },
+        {
+          "id": "gw38-m10",
+          "gameweek": 38,
+          "kickoff": "2027-05-30T13:00:00",
+          "homeTeam": "Crystal Palace",
+          "awayTeam": "Leeds",
+          "homeClubID": "873",
+          "awayClubID": "399",
+          "result": null
+        }
+      ]
+    }
+  ]
+}

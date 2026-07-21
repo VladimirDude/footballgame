@@ -63,14 +63,7 @@ struct ClubDetailView: View {
     private func clubHeader(_ club: BundledClub) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.18))
-                        .frame(width: 56, height: 56)
-                    Text(club.name.prefix(1).uppercased())
-                        .font(.title.bold())
-                        .foregroundStyle(.white)
-                }
+                ClubLogoImage(clubID: club.id, clubName: club.name, style: .hero)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(club.name)

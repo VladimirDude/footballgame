@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct GuessPlayerGameView: View {
+    @Environment(\.gameTheme) private var theme
+
     let round: GuessPlayerRound
     @Binding var guess: String
     let gameResult: GameResult?
@@ -14,219 +16,184 @@ struct GuessPlayerGameView: View {
     let onSubmit: () -> Void
     let onNextRound: () -> Void
 
-    @State private var portraitScale: CGFloat = 0.88
-    @State private var portraitOpacity: Double = 0
-    @State private var cardOffset: CGFloat = 28
-    @State private var hintsRevealed = false
-    @State private var glowPulse = false
+    @State private var portraitProgress: CGFloat = 0
+    @State private var cardProgress: CGFloat = 0
+    @State private var hintsProgress: CGFloat = 0
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private let portraitSize: CGFloat = 120
+    private let portraitRadius: CGFloat = 14
 
     private var resultBorder: Color {
         switch gameResult {
-        case .won: .green
-        case .lost: Color(red: 1, green: 0.35, blue: 0.35)
-        case nil: Color.white.opacity(0.14)
+        case .won: GameDesign.success.opacity(0.85)
+        case .lost: GameDesign.danger.opacity(0.9)
+        case nil: theme.panelStroke
         }
     }
 
     var body: some View {
-        VStack(spacing: 12) {
-            GPPlayerTopBar(
-                streak: streak,
-                bestStreak: bestStreak,
-                timeRemaining: timeRemaining,
-                total: totalTime
-            )
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: GameDesign.spacingMD) {
+                GameStatsBar(
+                    streak: streak,
+                    bestStreak: bestStreak,
+                    timeRemaining: timeRemaining,
+                    total: totalTime
+                )
 
-            VStack(spacing: 14) {
-                Text("Who is this player?")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.9))
+                VStack(spacing: GameDesign.spacingMD) {
+                    GameInstructionPill(icon: "eye.fill", text: "Who is this player?")
+                    playerSpotlightCard
+                    guessPanel
 
-                playerCard
-                    .offset(y: cardOffset)
-                    .opacity(portraitOpacity)
-                    .modifier(GPShakeEffect(animatableData: shakeWrong ? 1 : 0))
-
-                guessSection
-
-                if let gameResult {
-                    resultBanner(for: gameResult)
-                        .transition(.scale(scale: 0.9).combined(with: .opacity))
+                    if let gameResult {
+                        GameAnimatedResultBanner(
+                            isSuccess: gameResult == .won,
+                            title: gameResult == .won
+                                ? "Correct! \(round.playerName)"
+                                : "It was \(round.playerName)"
+                        )
+                        .transition(.gamePresent)
+                    }
                 }
+                .silkyProgress(cardProgress, lift: 8)
             }
-
-            Spacer(minLength: 0)
+            .padding(.bottom, GameDesign.spacingXL)
         }
-        .frame(maxHeight: .infinity)
+        .scrollBounceBehavior(.basedOnSize)
         .onAppear { runEntranceAnimation() }
-        .onChange(of: round.id) { _, _ in
-            runEntranceAnimation()
-        }
+        .onChange(of: round.id) { _, _ in runEntranceAnimation() }
         .onChange(of: showClubHint) { _, revealed in
             guard revealed else { return }
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.72)) {
-                hintsRevealed = true
-            }
+            withAnimation(GameMotion.silky) { hintsProgress = 1 }
         }
     }
 
-    private var playerCard: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color.white.opacity(glowPulse ? 0.22 : 0.12),
-                                .clear,
-                            ],
-                            center: .center,
-                            startRadius: 20,
-                            endRadius: 90
-                        )
-                    )
-                    .frame(width: 160, height: 160)
-                    .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: glowPulse)
-
-                PlayerPortraitImage(playerID: round.id, style: .card)
-                    .scaleEffect(portraitScale)
-                    .shadow(color: .black.opacity(0.35), radius: 14, y: 8)
-            }
+    private var playerSpotlightCard: some View {
+        VStack(spacing: GameDesign.spacingMD) {
+            portraitSection
 
             HStack(spacing: 8) {
-                hintPill(icon: "figure.soccer", text: round.position, delay: 0)
-                hintPill(icon: "flag.fill", text: CountryFlags.primaryFlag(from: round.nationalities), delay: 0.06)
+                GameHintChip(
+                    title: "Position",
+                    displayValue: round.position,
+                    symbol: "figure.soccer",
+                    tint: .cyan,
+                    progress: hintsProgress
+                )
+                GameHintChip(
+                    title: "Nation",
+                    displayValue: round.nationalities.first ?? "—",
+                    emoji: CountryFlags.primaryFlag(from: round.nationalities),
+                    tint: .blue,
+                    progress: hintsProgress
+                )
 
                 if showClubHint {
-                    hintPill(icon: "shield.fill", text: round.clubName, delay: 0.12)
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.6).combined(with: .opacity),
-                            removal: .opacity
-                        ))
+                    GameHintChip(
+                        title: "Club",
+                        displayValue: round.clubName,
+                        symbol: "shield.fill",
+                        tint: theme.accent,
+                        progress: 1
+                    )
+                    .transition(.gamePresent)
                 }
             }
-            .animation(.spring(response: 0.42, dampingFraction: 0.75), value: showClubHint)
+            .animation(GameMotion.silky, value: showClubHint)
 
             if !showClubHint, gameResult == nil {
-                Button(action: onRevealClubHint) {
-                    Label("Reveal Club Hint", systemImage: "lightbulb.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            LinearGradient(
-                                colors: [.orange, Color(red: 0.95, green: 0.45, blue: 0.1)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: .orange.opacity(0.35), radius: 8, y: 4)
-                }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.black.opacity(0.22))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(resultBorder, lineWidth: gameResult == nil ? 1 : 2.5)
+                GameHintButton(
+                    title: "Reveal club hint",
+                    usedTitle: "Club revealed",
+                    isUsed: false,
+                    isEnabled: true,
+                    action: onRevealClubHint
                 )
-        )
-        .animation(.spring(response: 0.4, dampingFraction: 0.75), value: gameResult == nil)
-    }
-
-    private var guessSection: some View {
-        VStack(spacing: 10) {
-            TextField("Type player name...", text: $guess)
-                .textFieldStyle(.roundedBorder)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.words)
-                .onSubmit(onSubmit)
-                .disabled(gameResult != nil)
-
-            if gameResult == nil {
-                Button(action: onSubmit) {
-                    Text("Submit Guess")
-                        .font(.headline.weight(.bold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
-                        .background(Color.white)
-                        .foregroundStyle(Color(red: 0.05, green: 0.4, blue: 0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                        .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
-                }
-            } else {
-                Button(action: onNextRound) {
-                    Text(gameResult == .won ? "Next Player →" : "Try Again")
-                        .font(.headline.weight(.bold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
-                        .background(gameResult == .won ? Color.white : Color.red.opacity(0.9))
-                        .foregroundStyle(gameResult == .won ? Color(red: 0.05, green: 0.4, blue: 0.15) : .white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                }
-                .transition(.scale(scale: 0.95).combined(with: .opacity))
+                .transition(.gamePresent)
             }
         }
-        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: gameResult == nil)
-    }
-
-    private func hintPill(icon: String, text: String, delay: Double) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.caption.weight(.bold))
-            Text(text)
-                .font(.caption.weight(.semibold))
-                .lineLimit(1)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Capsule().fill(Color.black.opacity(0.32)))
-        .foregroundStyle(.white)
-        .opacity(hintsRevealed ? 1 : 0)
-        .offset(y: hintsRevealed ? 0 : 10)
-        .animation(.spring(response: 0.45, dampingFraction: 0.78).delay(delay), value: hintsRevealed)
-    }
-
-    private func resultBanner(for result: GameResult) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: result == .won ? "checkmark.seal.fill" : "xmark.seal.fill")
-            Text(result == .won ? "Correct! \(round.playerName)" : "It was \(round.playerName)")
-                .font(.subheadline.weight(.bold))
-        }
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(result == .won ? Color.green.opacity(0.82) : Color.red.opacity(0.82))
+        .padding(GameDesign.spacingLG)
+        .gameThemedPanel(cornerRadius: GameDesign.radiusXL)
+        .overlay(
+            RoundedRectangle(cornerRadius: GameDesign.radiusXL, style: .continuous)
+                .stroke(resultBorder, lineWidth: gameResult == nil ? 0 : 2)
         )
-        .shadow(color: (result == .won ? Color.green : Color.red).opacity(0.35), radius: 10, y: 4)
+        .animation(GameMotion.dissolve, value: gameResult == nil)
+    }
+
+    private var portraitSection: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: portraitRadius + 5, style: .continuous)
+                .fill(theme.surfaceFill)
+                .frame(width: portraitSize + 16, height: portraitSize + 16)
+
+            RoundedRectangle(cornerRadius: portraitRadius, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [theme.gold.opacity(0.75), Color.white.opacity(0.25)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2.5
+                )
+                .frame(width: portraitSize, height: portraitSize)
+
+            PlayerPortraitImage(playerID: round.id, style: .hero)
+                .shadow(color: .black.opacity(0.25), radius: 6, y: 3)
+                .silkyProgress(portraitProgress, lift: 5, scaleFrom: 0.985)
+                .overlay(alignment: .topLeading) {
+                    mysteryBadge.padding(5)
+                }
+        }
+        .frame(height: portraitSize + 12)
+        .gameShake(trigger: shakeWrong)
+    }
+
+    private var mysteryBadge: some View {
+        Text("?")
+            .font(.caption2.weight(.black))
+            .foregroundStyle(.white)
+            .frame(width: 24, height: 24)
+            .background(
+                Circle()
+                    .fill(LinearGradient(
+                        colors: [theme.gold, theme.amber],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+            )
+    }
+
+    private var guessPanel: some View {
+        GameGuessPanel(
+            guess: $guess,
+            placeholder: "Type player name...",
+            inputIcon: "person.text.rectangle",
+            gameResult: gameResult,
+            onSubmit: onSubmit,
+            onContinue: onNextRound,
+            winContinueTitle: "Next Player",
+            loseContinueTitle: "Try Again"
+        )
     }
 
     private func runEntranceAnimation() {
-        portraitScale = 0.88
-        portraitOpacity = 0
-        cardOffset = 28
-        hintsRevealed = false
-        glowPulse = false
+        portraitProgress = 0
+        cardProgress = 0
+        hintsProgress = 0
 
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
-            portraitScale = 1
-            portraitOpacity = 1
-            cardOffset = 0
+        let curve = GameMotion.adaptive(GameMotion.silky, reduceMotion: reduceMotion)
+
+        withAnimation(curve) {
+            portraitProgress = 1
+            cardProgress = 1
         }
 
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.8).delay(0.12)) {
-            hintsRevealed = true
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            glowPulse = true
+        withAnimation(curve.delay(0.1)) {
+            hintsProgress = 1
         }
     }
 }

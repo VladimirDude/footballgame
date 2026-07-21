@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
+    @AppStorage(PredictorStore.simulateOnlyKey) private var predictorSimulateOnly = false
 
     private let store = ClubDataStore.shared
 
@@ -34,6 +35,18 @@ struct SettingsView: View {
                             )
                         }
                         .tint(BrowseTheme.accent)
+
+                        Divider().padding(.leading, 52)
+
+                        Toggle(isOn: $predictorSimulateOnly) {
+                            SettingsRowLabel(
+                                title: "Simulate Only",
+                                subtitle: "Skip predictions and just run match simulations",
+                                icon: "sportscourt.fill",
+                                tint: .green
+                            )
+                        }
+                        .tint(BrowseTheme.accent)
                     }
 
                     settingsSection(title: "Database", icon: "externaldrive.fill") {
@@ -50,7 +63,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Football Quiz")
                                 .font(.headline)
-                            Text("Browse squads, search players, and test your knowledge with Guess the Club and Higher or Lower.")
+                            Text("Browse squads, search players, and play five quiz modes — Club, Nation, Player, Wordle, and Higher or Lower.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)

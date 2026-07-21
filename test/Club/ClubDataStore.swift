@@ -24,6 +24,7 @@ final class ClubDataStore {
     private let leagueByClubID: [String: String]
     private let knownNationalities: [String]
     private let guessPlayerPool: [GuessPlayerRound]
+    private let wordlePlayerPool: [WordlePlayer]
     private let nationalTeamSquads: [String: [NationalTeamSquadPlayer]]
 
     var clubCount: Int { database.clubs.count }
@@ -73,6 +74,12 @@ final class ClubDataStore {
         guessPlayerPool = Self.buildGuessPlayerPool(
             clubs: database.clubs,
             eliteClubNames: GameDifficulty.easy.associatedClubs
+        )
+
+        wordlePlayerPool = Self.buildWordlePlayerPool(
+            clubs: database.clubs,
+            eliteClubNames: GameDifficulty.easy.associatedClubs,
+            leagueByClubID: leagueByClubID
         )
 
         nationalTeamSquads = Self.buildNationalTeamSquads(from: allPlayers)
@@ -175,6 +182,69 @@ final class ClubDataStore {
     func randomGuessPlayerRound(excluding excludedIDs: Set<String> = []) -> GuessPlayerRound? {
         let available = guessPlayerPool.filter { !excludedIDs.contains($0.id) }
         return available.randomElement() ?? guessPlayerPool.randomElement()
+    }
+
+    func randomWordlePlayer(excluding excludedIDs: Set<String> = []) -> WordlePlayer? {
+        let available = wordlePlayerPool.filter { !excludedIDs.contains($0.id) }
+        return available.randomElement() ?? wordlePlayerPool.randomElement()
+    }
+
+    func searchWordlePlayers(_ query: String) -> [WordlePlayer] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else { return [] }
+
+        let needle = trimmed.folding(options: .diacriticInsensitive, locale: .current).lowercased()
+        return wordlePlayerPool.filter { player in
+            player.name
+                .folding(options: .diacriticInsensitive, locale: .current)
+                .lowercased()
+                .contains(needle)
+        }
+    }
+
+    private static func buildWordlePlayerPool(
+        clubs: [BundledClub],
+        eliteClubNames: Set<String>,
+        leagueByClubID: [String: String]
+    ) -> [WordlePlayer] {
+        let minimumMarketValue = 25_000_000
+        let portraitAvailable: (String) -> Bool = { id in
+            Bundle.main.url(forResource: id, withExtension: "png") != nil
+        }
+
+        var pool: [WordlePlayer] = []
+
+        for club in clubs where eliteClubNames.contains(club.name) {
+            let ranked = club.players.sorted { ($0.marketValue ?? 0) > ($1.marketValue ?? 0) }
+            for (index, player) in ranked.enumerated() {
+                let marketValue = player.marketValue ?? 0
+                let squadRank = index + 1
+                let isStar = marketValue >= minimumMarketValue
+                    || (squadRank <= 2 && marketValue >= 15_000_000)
+
+                guard isStar, portraitAvailable(player.id) else { continue }
+                guard let nation = player.nationality.first else { continue }
+
+                pool.append(
+                    WordlePlayer(
+                        id: player.id,
+                        name: player.name,
+                        clubName: club.name,
+                        league: leagueByClubID[club.id] ?? "Unknown",
+                        nation: nation,
+                        position: player.position,
+                        marketValue: marketValue
+                    )
+                )
+            }
+        }
+
+        return pool.sorted {
+            if $0.marketValue == $1.marketValue {
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+            return $0.marketValue > $1.marketValue
+        }
     }
 
     private static func loadLeagueIndex() -> [String: String] {

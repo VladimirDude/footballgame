@@ -2,59 +2,61 @@ import SwiftUI
 
 struct FlippableFormationSlot: View {
 
+    @Environment(\.gameTheme) private var theme
+
     let slot: FormationSlot
-    
-    // 1. Pass down the Set of currently revealed player IDs from your GameView
     @Binding var revealedPlayerIds: Set<String>
 
-    // 2. Computed property: true if this specific slot's stable ID has been revealed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var isFlipped: Bool {
         revealedPlayerIds.contains(slot.id)
     }
 
     var body: some View {
-        // 🛑 REMOVED Button layout wrapper to completely eliminate manual touch flips
         ZStack {
             frontFace
                 .opacity(isFlipped ? 0 : 1)
-                .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
 
             backFace
                 .opacity(isFlipped ? 1 : 0)
-                .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
         }
-        .frame(width: 62, height: 62)
-        .background(Color.white.opacity(0.18))
-        .clipShape(Circle())
+        .frame(width: 58, height: 58)
+        .background(
+            Circle()
+                .fill(Color.white.opacity(0.12))
+                .overlay(Circle().stroke(theme.panelStroke, lineWidth: 1))
+        )
+        .animation(GameMotion.adaptive(GameMotion.silkyQuick, reduceMotion: reduceMotion), value: isFlipped)
         .accessibilityLabel(isFlipped ? slot.playerName : "\(slot.role), \(slot.flag)")
     }
 
     private var frontFace: some View {
-        VStack(spacing: slot.showsClub ? 2 : 4) {
+        VStack(spacing: slot.showsClub ? 2 : 3) {
             if slot.showsClub {
                 Text(slot.flag)
                     .font(.system(size: 8, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(theme.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.65)
-                    .frame(height: 22)
+                    .frame(height: 20)
             } else {
                 Text(slot.flag)
-                    .font(.system(size: 28))
+                    .font(.system(size: 24))
             }
 
             Text(slot.role)
-                .font(.caption2.bold())
-                .foregroundColor(.white.opacity(0.85))
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(theme.textSecondary)
         }
         .padding(.horizontal, slot.showsClub ? 2 : 0)
     }
 
     private var backFace: some View {
         Text(slot.playerName)
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundColor(.white)
+            .font(.system(size: 8, weight: .semibold))
+            .foregroundStyle(theme.textPrimary)
             .multilineTextAlignment(.center)
             .lineLimit(3)
             .minimumScaleFactor(0.65)

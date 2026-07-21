@@ -48,20 +48,28 @@ struct GameView: View {
     @State private var hlPlayerRight: HLPlayer?
     @State private var hlShowRightValue = false
     @State private var hlIsGameOver = false
-    @State private var hlSlideIn = false
     @State private var hlShakeTrigger = false
     @State private var hlRevealState: HLRevealState = .hidden
     @State private var hlLastGuessCorrect: Bool?
     @State private var hlTimeRemaining = 5
     @State private var hlTimerActive = false
 
+    // Wordle
+    @State private var wordleTarget: WordlePlayer?
+    @State private var wordleGuesses: [WordleGuess] = []
+    @State private var wordleResult: GameResult?
+    @State private var wordleSearchQuery = ""
+    @State private var wordleSelectedPlayer: WordlePlayer?
+    @State private var wordleDuplicateGuess = false
+
     private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
-            GamePitchBackground()
+            GameModeBackdrop(tab: selectedTab)
+                .animation(GameMotion.dissolve, value: selectedTab)
 
-            VStack(spacing: 12) {
+            VStack(spacing: GameDesign.spacingMD) {
                 GameModeSwitcher(selection: $selectedTab, onSelect: handleTabSelection)
 
                 Group {
@@ -72,18 +80,19 @@ struct GameView: View {
                         guessNationContent
                     case .guessPlayer:
                         guessPlayerContent
+                    case .wordle:
+                        wordleContent
                     case .higherLower:
                         higherLowerContent
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)
-                ))
+                .transition(.opacity)
                 .id(selectedTab)
             }
-            .animation(.spring(response: 0.38, dampingFraction: 0.86), value: selectedTab)
+            .environment(\.gameTheme, GameModeTheme.theme(for: selectedTab))
+            .animation(GameMotion.dissolve, value: selectedTab)
+            .safeAreaPadding(.top, 8)
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.horizontal)
             .adaptiveContentWidth(AdaptiveLayout.gameMaxWidth)
@@ -119,7 +128,7 @@ struct GameView: View {
             hlLastGuessCorrect = false
             hlRevealState = .wrong
             HapticFeedback.error()
-            withAnimation(.easeOut(duration: 0.25)) { hlShowRightValue = true }
+            withAnimation(GameMotion.fade) { hlShowRightValue = true }
             withAnimation(.default) { hlShakeTrigger = true }
         }
     }
@@ -147,6 +156,39 @@ struct GameView: View {
     }
 
     // MARK: - Tab Content
+
+    @ViewBuilder
+    private var wordleContent: some View {
+        if let target = wordleTarget {
+            WordleGameView(
+                target: target,
+                guesses: wordleGuesses,
+                gameResult: wordleResult,
+                searchQuery: $wordleSearchQuery,
+                suggestions: wordleSuggestions,
+                selectedPlayer: wordleSelectedPlayer,
+                duplicateGuess: wordleDuplicateGuess,
+                onSelectPlayer: selectWordlePlayer,
+                onClearSelection: clearWordleSelection,
+                onSubmit: submitWordleGuess,
+                onPlayAgain: startNewWordleRound
+            )
+        } else {
+            VStack(spacing: 12) {
+                Spacer()
+                ProgressView().tint(.white)
+                Text("Loading players...")
+                    .foregroundStyle(.white.opacity(0.8))
+                Spacer()
+            }
+            .onAppear { startNewWordleRound() }
+        }
+    }
+
+    private var wordleSuggestions: [WordlePlayer] {
+        guard wordleSelectedPlayer == nil else { return [] }
+        return store.searchWordlePlayers(wordleSearchQuery)
+    }
 
     @ViewBuilder
     private var guessClubContent: some View {
@@ -253,7 +295,6 @@ struct GameView: View {
             left: hlPlayerLeft,
             right: hlPlayerRight,
             revealState: hlRevealState,
-            slideIn: hlSlideIn,
             shakeTrigger: hlShakeTrigger,
             showRightValue: hlShowRightValue,
             isGameOver: hlIsGameOver,
@@ -272,10 +313,78 @@ struct GameView: View {
             setupInitialHLRound()
         case .guessPlayer where gpRound == nil:
             startNewPlayerRound()
+        case .wordle where wordleTarget == nil:
+            startNewWordleRound()
         case .guessNation where gnRound == nil:
             startNewNationRound()
         default:
             break
+        }
+    }
+
+    // MARK: - Wordle Logic
+
+    private func selectWordlePlayer(_ player: WordlePlayer) {
+        wordleSelectedPlayer = player
+        wordleSearchQuery = player.name
+        wordleDuplicateGuess = false
+        HapticFeedback.selection()
+    }
+
+    private func clearWordleSelection() {
+        wordleSelectedPlayer = nil
+        wordleSearchQuery = ""
+        wordleDuplicateGuess = false
+    }
+
+    private func submitWordleGuess() {
+        guard wordleResult == nil,
+              let target = wordleTarget,
+              let player = wordleSelectedPlayer
+        else { return }
+
+        if wordleGuesses.contains(where: { $0.player.id == player.id }) {
+            wordleDuplicateGuess = true
+            HapticFeedback.warning()
+            return
+        }
+
+        wordleDuplicateGuess = false
+        let feedback = WordleEvaluator.evaluate(guess: player, target: target)
+        let guess = WordleGuess(id: UUID().uuidString, player: player, feedback: feedback)
+
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.78)) {
+            wordleGuesses.append(guess)
+        }
+
+        if WordleEvaluator.isWinningGuess(player, target: target) {
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
+                wordleResult = .won
+            }
+            HapticFeedback.success()
+        } else if wordleGuesses.count >= WordleEvaluator.maxGuesses {
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
+                wordleResult = .lost
+            }
+            HapticFeedback.error()
+        }
+
+        wordleSelectedPlayer = nil
+        wordleSearchQuery = ""
+    }
+
+    private func startNewWordleRound() {
+        let previousID = wordleTarget?.id
+        wordleGuesses = []
+        wordleResult = nil
+        wordleSearchQuery = ""
+        wordleSelectedPlayer = nil
+        wordleDuplicateGuess = false
+
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
+            wordleTarget = store.randomWordlePlayer(
+                excluding: Set([previousID].compactMap { $0 })
+            )
         }
     }
 
@@ -331,7 +440,8 @@ struct GameView: View {
         guard let round = gnRound,
               let random = round.formation.flatMap({ $0 }).filter({ !gnRevealedSlots.contains($0.id) }).randomElement()
         else { return }
-        withAnimation { gnRevealedSlots.insert(random.id) }
+        withAnimation(GameMotion.fade) { gnRevealedSlots.insert(random.id) }
+        HapticFeedback.light()
         gnHasUsedHint = true
     }
 
@@ -398,7 +508,8 @@ struct GameView: View {
         guard let round,
               let random = round.formation.flatMap({ $0 }).filter({ !revealedSlots.contains($0.id) }).randomElement()
         else { return }
-        withAnimation { revealedSlots.insert(random.id) }
+        withAnimation(GameMotion.fade) { revealedSlots.insert(random.id) }
+        HapticFeedback.light()
         hasUsedHint = true
     }
 
@@ -480,17 +591,12 @@ struct GameView: View {
         resetHLRoundState()
         hlTimeRemaining = 5
         hlTimerActive = true
-
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            hlSlideIn = true
-        }
     }
 
     private func processHLGuess(guessedHigher: Bool) {
         guard let left = hlPlayerLeft, let right = hlPlayerRight else { return }
 
         hlTimerActive = false
-        withAnimation(.easeOut(duration: 0.25)) { hlShowRightValue = true }
 
         let isCorrect: Bool
         if right.marketValue == left.marketValue {
@@ -501,19 +607,26 @@ struct GameView: View {
             isCorrect = right.marketValue < left.marketValue
         }
 
+        withAnimation(GameMotion.silky) {
+            hlShowRightValue = true
+            if isCorrect {
+                hlIsGameOver = false
+                hlRevealState = .correct
+                hlLastGuessCorrect = true
+            } else {
+                hlIsGameOver = true
+                hlRevealState = .wrong
+                hlLastGuessCorrect = false
+            }
+        }
+
         if isCorrect {
             hlScore += 1
             if hlScore > hlHighScore { hlHighScore = hlScore }
-            hlIsGameOver = false
-            hlRevealState = .correct
-            hlLastGuessCorrect = true
             HapticFeedback.success()
         } else {
-            hlIsGameOver = true
-            hlRevealState = .wrong
-            hlLastGuessCorrect = false
             HapticFeedback.error()
-            withAnimation(.default) { hlShakeTrigger = true }
+            withAnimation(GameMotion.silkyQuick) { hlShakeTrigger = true }
         }
     }
 
@@ -525,14 +638,9 @@ struct GameView: View {
             hlPlayerLeft = hlPlayerRight
             let pool = store.fetchHigherOrLowerPool().filter { $0.name != hlPlayerLeft?.name }
             hlPlayerRight = pool.randomElement()
-            hlSlideIn = false
             resetHLRoundState()
             hlTimeRemaining = 5
             hlTimerActive = true
-
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                hlSlideIn = true
-            }
         }
     }
 
@@ -549,22 +657,11 @@ struct DifficultyPicker: View {
     @Binding var selectedDifficulty: GameDifficulty
 
     var body: some View {
-        HStack {
-            ForEach(GameDifficulty.allCases, id: \.self) { diff in
-                Button(diff.rawValue) {
-                    withAnimation { selectedDifficulty = diff }
-                }
-                .font(.subheadline.bold())
-                .frame(maxWidth: .infinity)
-                .padding(10)
-                .background(selectedDifficulty == diff ? Color.orange : Color.white.opacity(0.08))
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-        }
-        .padding(6)
-        .background(Color.black.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        GameSegmentedControl(
+            items: GameDifficulty.allCases,
+            selection: $selectedDifficulty,
+            title: \.rawValue
+        )
     }
 }
 

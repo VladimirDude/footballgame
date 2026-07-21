@@ -60,12 +60,8 @@ struct SearchView: View {
 
     private var playerBrowseContent: some View {
         VStack(spacing: 12) {
-            TextField("Search player", text: $playerQuery)
-                .textFieldStyle(.roundedBorder)
+            BrowseSearchField(placeholder: "Search player", text: $playerQuery, onSubmit: searchPlayers)
                 .padding(.horizontal)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .onSubmit { searchPlayers() }
                 .onChange(of: playerQuery) { _, _ in
                     searchPlayers()
                 }
@@ -150,7 +146,17 @@ struct SearchView: View {
                 )
 
                 TextField("Search club", text: $clubQuery)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 11)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color(.tertiarySystemGroupedBackground))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                    )
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
 

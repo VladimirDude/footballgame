@@ -4,6 +4,7 @@ import UIKit
 enum PlayerPortraitStyle {
     case compact
     case game
+    case hl
     case card
     case hero
 
@@ -11,6 +12,7 @@ enum PlayerPortraitStyle {
         switch self {
         case .compact: 56
         case .game: 80
+        case .hl: 76
         case .card: 128
         case .hero: 128
         }
@@ -19,7 +21,7 @@ enum PlayerPortraitStyle {
     var cornerRadius: CGFloat {
         switch self {
         case .compact: 10
-        case .game: 14
+        case .game, .hl: 14
         case .card: 14
         case .hero: 14
         }
@@ -29,6 +31,7 @@ enum PlayerPortraitStyle {
         switch self {
         case .compact: 24
         case .game: 30
+        case .hl: 36
         case .card: 44
         case .hero: 44
         }
@@ -80,13 +83,17 @@ struct PlayerPortraitImage: View {
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous))
         .overlay(portraitBorder)
-        .shadow(color: .black.opacity(style == .compact ? 0.2 : 0.28), radius: style == .compact ? 3 : 8, y: style == .compact ? 2 : 4)
+        .shadow(
+            color: .black.opacity(style == .compact ? 0.15 : (style == .game || style == .hl ? 0 : 0.22)),
+            radius: style == .game || style == .hl ? 0 : (style == .compact ? 2 : 5),
+            y: style == .game || style == .hl ? 0 : (style == .compact ? 1 : 2)
+        )
     }
 
     @ViewBuilder
     private var portraitBorder: some View {
         switch style {
-        case .game:
+        case .game, .hl:
             RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         default:

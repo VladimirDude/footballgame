@@ -11,10 +11,19 @@ struct MainTabView: View {
 
             NavigationStack {
                 GameView()
+                    .toolbar(.hidden, for: .navigationBar)
             }
             .tabItem {
                 Image(systemName: "gamecontroller.fill")
                 Text("Game")
+            }
+
+            NavigationStack {
+                PredictorView()
+            }
+            .tabItem {
+                Image(systemName: "play.circle.fill")
+                Text("Simulate")
             }
 
             SettingsView()

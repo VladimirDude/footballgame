@@ -122,14 +122,7 @@ struct PlayerProfileView: View {
                     ClubDetailView(clubID: detail.clubID)
                 } label: {
                     HStack(spacing: 12) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(BrowseTheme.pitchGradient)
-                            Text(detail.clubName.prefix(1).uppercased())
-                                .font(.headline.bold())
-                                .foregroundStyle(.white)
-                        }
-                        .frame(width: 44, height: 44)
+                        ClubLogoImage(clubID: detail.clubID, clubName: detail.clubName, style: .card)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(detail.clubName)
