@@ -38,6 +38,7 @@ enum GameResult {
 struct GameModeSwitcher: View {
     @Binding var selection: GameTab
     var onSelect: (GameTab) -> Void
+    @Environment(\.appPalette) private var palette
 
     @Namespace private var indicator
 
@@ -58,11 +59,11 @@ struct GameModeSwitcher: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 9)
-                    .foregroundStyle(selection == tab ? .white : .white.opacity(0.5))
+                    .foregroundStyle(selection == tab ? palette.textPrimary : palette.textMuted)
                     .background {
                         if selection == tab {
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.white.opacity(0.2))
+                                .fill(palette.selectedTabFill)
                                 .matchedGeometryEffect(id: "tab", in: indicator)
                         }
                     }
@@ -73,10 +74,10 @@ struct GameModeSwitcher: View {
         .padding(4)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.black.opacity(0.45))
+                .fill(palette.chromeFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(palette.chromeStroke, lineWidth: 1)
                 )
         )
         .animation(GameMotion.silkyQuick, value: selection)
@@ -87,6 +88,13 @@ struct GameCountdownRing: View, Equatable {
     let timeRemaining: Int
     let total: Int
     var tint: Color = Color(red: 1.0, green: 0.62, blue: 0.18)
+    @Environment(\.gameTheme) private var theme
+
+    static func == (lhs: GameCountdownRing, rhs: GameCountdownRing) -> Bool {
+        lhs.timeRemaining == rhs.timeRemaining
+            && lhs.total == rhs.total
+            && lhs.tint == rhs.tint
+    }
 
     private var progress: CGFloat {
         CGFloat(timeRemaining) / CGFloat(total)
@@ -95,7 +103,7 @@ struct GameCountdownRing: View, Equatable {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.12), lineWidth: 3)
+                .stroke(theme.panelStroke, lineWidth: 3)
 
             Circle()
                 .trim(from: 0, to: progress)
@@ -104,7 +112,7 @@ struct GameCountdownRing: View, Equatable {
 
             Text("\(timeRemaining)")
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(theme.textPrimary)
                 .contentTransition(.numericText())
                 .animation(nil, value: timeRemaining)
         }

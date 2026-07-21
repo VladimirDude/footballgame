@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct testApp: App {
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
+    @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
 
     private var appearanceMode: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRaw) ?? .system
@@ -10,9 +11,18 @@ struct testApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .preferredColorScheme(appearanceMode.colorScheme)
-                .onAppear(perform: migrateLegacyAppearanceSetting)
+            Group {
+                if hasCompletedOnboarding {
+                    MainTabView()
+                } else {
+                    OnboardingView {
+                        hasCompletedOnboarding = true
+                    }
+                }
+            }
+            .preferredColorScheme(appearanceMode.colorScheme)
+            .withAppPalette()
+            .onAppear(perform: migrateLegacyAppearanceSetting)
         }
     }
 

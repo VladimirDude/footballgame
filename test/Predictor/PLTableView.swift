@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PLStandingsSection: View {
     @ObservedObject var store: PredictorStore
+    @Environment(\.appPalette) private var palette
 
     var body: some View {
         VStack(spacing: 16) {
@@ -21,13 +22,14 @@ struct PLStandingsSection: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Season Table")
                         .font(.headline.weight(.bold))
+                        .foregroundStyle(palette.textPrimary)
                     Text(progressText)
                         .font(.caption)
-                        .foregroundStyle(SimulateStyle.muted)
+                        .foregroundStyle(SimulateStyle.muted(palette))
                 }
                 Spacer()
                 if store.isSimulatingSeason {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(palette.toolbarTint)
                 }
             }
 
@@ -51,10 +53,10 @@ struct PLStandingsSection: View {
                         .font(.headline.weight(.bold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .foregroundStyle(store.isSimulatingSeason ? .white.opacity(0.5) : Color(red: 0.08, green: 0.1, blue: 0.14))
+                        .foregroundStyle(store.isSimulatingSeason ? palette.textMuted : palette.buttonOnAccent)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(store.isSimulatingSeason ? Color.white.opacity(0.08) : .white)
+                                .fill(store.isSimulatingSeason ? palette.surfaceFill : palette.selectedTabFill)
                         )
                 }
                 .disabled(store.isSimulatingSeason)
@@ -62,7 +64,7 @@ struct PLStandingsSection: View {
             }
         }
         .padding(16)
-        .background(SimulateStyle.panel())
+        .background(SimulateStyle.panel(palette))
     }
 
     private var progressText: String {
@@ -84,11 +86,11 @@ struct PLStandingsSection: View {
             ForEach(Array(store.standings().enumerated()), id: \.element.id) { index, row in
                 tableRow(row, position: index + 1)
                 if index + 1 < 20 {
-                    Divider().overlay(Color.white.opacity(0.06))
+                    Divider().overlay(palette.panelStroke.opacity(0.6))
                 }
             }
         }
-        .background(SimulateStyle.panel())
+        .background(SimulateStyle.panel(palette))
     }
 
     private var tableHeader: some View {
@@ -103,10 +105,10 @@ struct PLStandingsSection: View {
             headerStat("Pts")
         }
         .font(.caption2.weight(.bold))
-        .foregroundStyle(SimulateStyle.muted)
+        .foregroundStyle(SimulateStyle.muted(palette))
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color.white.opacity(0.04))
+        .background(palette.surfaceFill)
     }
 
     private func headerStat(_ label: String) -> some View {
@@ -122,7 +124,7 @@ struct PLStandingsSection: View {
                     .frame(width: 3, height: 28)
                 Text("\(position)")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(SimulateStyle.muted)
+                    .foregroundStyle(SimulateStyle.muted(palette))
                     .frame(width: 16, alignment: .leading)
             }
             .frame(width: 22, alignment: .leading)
@@ -132,6 +134,7 @@ struct PLStandingsSection: View {
                     .layoutPriority(1)
                 Text(row.team)
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.textPrimary)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -144,7 +147,7 @@ struct PLStandingsSection: View {
             Text("\(row.points)")
                 .font(.subheadline.weight(.bold))
                 .frame(width: 26)
-                .foregroundStyle(position == 1 ? SimulateStyle.gold : .white)
+                .foregroundStyle(position == 1 ? SimulateStyle.gold : palette.textPrimary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
@@ -153,7 +156,7 @@ struct PLStandingsSection: View {
     private func rowStat(_ value: String) -> some View {
         Text(value)
             .font(.caption.weight(.medium))
-            .foregroundStyle(.white.opacity(0.85))
+            .foregroundStyle(palette.textSecondary)
             .frame(width: 26)
             .monospacedDigit()
     }
@@ -172,7 +175,7 @@ struct PLStandingsSection: View {
             legendItem(color: SimulateStyle.relegation, label: "Relegation")
         }
         .font(.caption2)
-        .foregroundStyle(SimulateStyle.muted)
+        .foregroundStyle(SimulateStyle.muted(palette))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -187,17 +190,18 @@ struct PLStandingsSection: View {
         VStack(spacing: 10) {
             Image(systemName: "tablecells")
                 .font(.title)
-                .foregroundStyle(SimulateStyle.muted)
+                .foregroundStyle(SimulateStyle.muted(palette))
             Text("No standings yet")
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(palette.textPrimary)
             Text("Simulate the full season or individual gameweeks to populate the table.")
                 .font(.caption)
-                .foregroundStyle(SimulateStyle.muted)
+                .foregroundStyle(SimulateStyle.muted(palette))
                 .multilineTextAlignment(.center)
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .background(SimulateStyle.panel())
+        .background(SimulateStyle.panel(palette))
     }
 
     private func simulateButton(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
@@ -206,10 +210,10 @@ struct PLStandingsSection: View {
                 .font(.caption.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(palette.textSecondary)
                 .background(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.white.opacity(0.1))
+                        .fill(palette.surfaceFill)
                 )
         }
         .buttonStyle(.plain)
@@ -226,14 +230,10 @@ enum SimulateStyle {
     static let gold = Color(red: 1.0, green: 0.84, blue: 0.38)
     static let ucl = Color(red: 0.22, green: 0.55, blue: 0.95)
     static let relegation = Color(red: 0.92, green: 0.28, blue: 0.32)
-    static let muted = Color.white.opacity(0.45)
 
-    static func panel() -> some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color.white.opacity(0.08))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
+    static func muted(_ palette: AppPalette) -> Color { palette.textMuted }
+
+    static func panel(_ palette: AppPalette) -> some View {
+        palette.panel()
     }
 }

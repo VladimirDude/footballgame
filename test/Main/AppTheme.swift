@@ -40,6 +40,12 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     }
 }
 
+enum AppBranding {
+    static let name = "FTMP"
+    static let tagline = "Football quiz & simulator"
+    static let about = "Browse squads, search players, play quiz modes, and simulate Premier League seasons."
+}
+
 enum AdaptiveLayout {
     static let browseMaxWidth: CGFloat = 900
     static let gameMaxWidth: CGFloat = 720

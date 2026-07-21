@@ -5,6 +5,7 @@ struct PLMatchDetailView: View {
     let simulation: PLMatchSimulation
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appPalette) private var palette
 
     var body: some View {
         NavigationStack {
@@ -17,7 +18,7 @@ struct PLMatchDetailView: View {
                 }
                 .padding()
             }
-            .background(DetailStyle.background.ignoresSafeArea())
+            .background(matchDetailBackground.ignoresSafeArea())
             .navigationTitle("Match Report")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -27,7 +28,14 @@ struct PLMatchDetailView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+    }
+
+    private var matchDetailBackground: some View {
+        LinearGradient(
+            colors: [palette.backdropTop, palette.backdropBottom],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     // MARK: - Scoreboard
@@ -36,7 +44,7 @@ struct PLMatchDetailView: View {
         VStack(spacing: 16) {
             Text(match.displayKickoff)
                 .font(.caption)
-                .foregroundStyle(DetailStyle.muted)
+                .foregroundStyle(palette.textMuted)
 
             HStack(alignment: .top, spacing: 12) {
                 teamScoreColumn(
@@ -51,13 +59,14 @@ struct PLMatchDetailView: View {
                 VStack(spacing: 4) {
                     Text("\(simulation.homeGoals) – \(simulation.awayGoals)")
                         .font(.system(size: 36, weight: .heavy, design: .rounded))
+                        .foregroundStyle(palette.textPrimary)
                     Text("Full Time")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(DetailStyle.muted)
+                        .foregroundStyle(palette.textMuted)
                     if let halftimeLabel = simulation.halftimeLabel {
                         Text("HT \(halftimeLabel)")
                             .font(.caption2.weight(.medium))
-                            .foregroundStyle(DetailStyle.muted)
+                            .foregroundStyle(palette.textMuted)
                     }
                 }
                 .frame(minWidth: 88)
@@ -73,7 +82,7 @@ struct PLMatchDetailView: View {
             }
         }
         .padding(18)
-        .background(DetailStyle.panel())
+        .background(palette.panel())
     }
 
     private func teamScoreColumn(
@@ -88,17 +97,18 @@ struct PLMatchDetailView: View {
             ClubLogoImage(clubID: clubID, clubName: name, style: .row)
             Text(name)
                 .font(.subheadline.weight(.bold))
+                .foregroundStyle(palette.textPrimary)
                 .multilineTextAlignment(alignment == .trailing ? .trailing : .leading)
                 .lineLimit(2)
             Text("\(goals) goal\(goals == 1 ? "" : "s")")
                 .font(.caption)
-                .foregroundStyle(DetailStyle.muted)
+                .foregroundStyle(palette.textMuted)
             Text("\(xG) xG")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(DetailStyle.accent)
             Text("\(possession)% poss")
                 .font(.caption2)
-                .foregroundStyle(DetailStyle.muted)
+                .foregroundStyle(palette.textMuted)
         }
         .frame(maxWidth: .infinity, alignment: alignment == .trailing ? .trailing : .leading)
     }
@@ -149,7 +159,7 @@ struct PLMatchDetailView: View {
             }
         }
         .padding(16)
-        .background(DetailStyle.panel())
+        .background(palette.panel())
     }
 
     private func statCompareRow(
@@ -166,13 +176,15 @@ struct PLMatchDetailView: View {
             HStack {
                 Text(home)
                     .font(.subheadline.weight(.bold))
+                    .foregroundStyle(palette.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(label)
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(DetailStyle.muted)
+                    .foregroundStyle(palette.textMuted)
                     .frame(minWidth: 100)
                 Text(away)
                     .font(.subheadline.weight(.bold))
+                    .foregroundStyle(palette.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
 
@@ -202,10 +214,10 @@ struct PLMatchDetailView: View {
                     VStack(spacing: 6) {
                         Image(systemName: "shield.fill")
                             .font(.title2)
-                            .foregroundStyle(DetailStyle.muted)
+                            .foregroundStyle(palette.textMuted)
                         Text("Goalless draw")
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(DetailStyle.muted)
+                            .foregroundStyle(palette.textMuted)
                     }
                     .padding(.vertical, 12)
                     Spacer()
@@ -215,21 +227,21 @@ struct PLMatchDetailView: View {
                     ForEach(Array(simulation.goals.enumerated()), id: \.element.id) { index, goal in
                         goalRow(goal)
                         if index < simulation.goals.count - 1 {
-                            Divider().overlay(Color.white.opacity(0.08))
+                            Divider().overlay(palette.panelStroke.opacity(0.6))
                         }
                     }
                 }
             }
         }
         .padding(16)
-        .background(DetailStyle.panel())
+        .background(palette.panel())
     }
 
     private func goalRow(_ goal: PLGoalEvent) -> some View {
         HStack(spacing: 12) {
             Text(goal.minuteLabel)
                 .font(.caption.weight(.bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(palette.textPrimary)
                 .frame(width: 36, height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -243,9 +255,10 @@ struct PLMatchDetailView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(goal.scorerName)
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.textPrimary)
                 Text(goal.isHome ? match.homeTeam : match.awayTeam)
                     .font(.caption)
-                    .foregroundStyle(DetailStyle.muted)
+                    .foregroundStyle(palette.textMuted)
             }
 
             Spacer()
@@ -284,28 +297,30 @@ struct PLMatchDetailView: View {
             }
         }
         .padding(16)
-        .background(DetailStyle.panel())
+        .background(palette.panel())
     }
 
     private func miniStatTile(_ label: String, home: Int, away: Int) -> some View {
         VStack(spacing: 6) {
             Text(label)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(DetailStyle.muted)
+                .foregroundStyle(palette.textMuted)
             HStack(spacing: 8) {
                 Text("\(home)")
                     .font(.subheadline.weight(.bold))
+                    .foregroundStyle(palette.textPrimary)
                 Text("–")
-                    .foregroundStyle(DetailStyle.muted)
+                    .foregroundStyle(palette.textMuted)
                 Text("\(away)")
                     .font(.subheadline.weight(.bold))
+                    .foregroundStyle(palette.textPrimary)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.white.opacity(0.05))
+                .fill(palette.surfaceFill)
         )
     }
 
@@ -313,7 +328,7 @@ struct PLMatchDetailView: View {
         Text(text.uppercased())
             .font(.system(size: 10, weight: .bold))
             .tracking(0.8)
-            .foregroundStyle(DetailStyle.muted)
+            .foregroundStyle(palette.textMuted)
     }
 }
 
@@ -339,15 +354,4 @@ private enum DetailStyle {
     static let accent = Color(red: 0.72, green: 0.84, blue: 1.0)
     static let goal = Color(red: 0.55, green: 0.9, blue: 0.62)
     static let penalty = Color(red: 1.0, green: 0.72, blue: 0.28)
-    static let muted = Color.white.opacity(0.45)
-    static let background = Color(red: 0.06, green: 0.07, blue: 0.12)
-
-    static func panel() -> some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color.white.opacity(0.08))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
 }

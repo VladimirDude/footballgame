@@ -4,6 +4,7 @@ struct SettingsView: View {
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     @AppStorage(PredictorStore.simulateOnlyKey) private var predictorSimulateOnly = false
+    @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
 
     private let store = ClubDataStore.shared
 
@@ -59,11 +60,46 @@ struct SettingsView: View {
                         }
                     }
 
+                    settingsSection(title: "Help", icon: "questionmark.circle.fill") {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                hasCompletedOnboarding = false
+                            }
+                        } label: {
+                            HStack(spacing: 14) {
+                                ZStack {
+                                    Circle()
+                                        .fill(BrowseTheme.accent.opacity(0.15))
+                                        .frame(width: 40, height: 40)
+                                    Image(systemName: "book.pages.fill")
+                                        .foregroundStyle(BrowseTheme.accent)
+                                }
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Show Tutorial Again")
+                                        .font(.body.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                    Text("Replay the app walkthrough")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     settingsSection(title: "About", icon: "info.circle.fill") {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Football Quiz")
+                            Text(AppBranding.name)
                                 .font(.headline)
-                            Text("Browse squads, search players, and play five quiz modes — Club, Nation, Player, Wordle, and Higher or Lower.")
+                            Text(AppBranding.about)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -86,15 +122,15 @@ struct SettingsView: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(BrowseTheme.pitchGradient)
                     .frame(width: 64, height: 64)
-                Image(systemName: "soccerball")
-                    .font(.title)
+                Text(AppBranding.name)
+                    .font(.headline.bold())
                     .foregroundStyle(.white)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Football Quiz")
+                Text(AppBranding.name)
                     .font(.title2.bold())
-                Text("Customize your experience")
+                Text(AppBranding.tagline)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

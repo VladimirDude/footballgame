@@ -155,6 +155,8 @@ private struct HLScoreBar: View {
     let timeRemaining: Int?
     let total: Int
 
+    @Environment(\.gameTheme) private var theme
+
     var body: some View {
         HStack(spacing: 0) {
             scoreCell(icon: "flame.fill", value: "\(score)", label: "Score", tint: HLStyle.higher)
@@ -168,10 +170,10 @@ private struct HLScoreBar: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(HLStyle.surface)
+                .fill(theme.surfaceFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(HLStyle.surfaceStroke, lineWidth: 1)
+                        .stroke(theme.panelStroke, lineWidth: 1)
                 )
         )
     }
@@ -186,12 +188,12 @@ private struct HLScoreBar: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(theme.textPrimary)
                     .contentTransition(.numericText())
                     .animation(HLMotion.reveal, value: value)
                 Text(label)
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(HLStyle.muted)
+                    .foregroundStyle(theme.textMuted)
             }
         }
         .padding(.trailing, 20)
@@ -202,12 +204,18 @@ private struct HLTimerBadge: View, Equatable {
     let remaining: Int
     let total: Int
 
+    @Environment(\.gameTheme) private var theme
+
+    static func == (lhs: HLTimerBadge, rhs: HLTimerBadge) -> Bool {
+        lhs.remaining == rhs.remaining && lhs.total == rhs.total
+    }
+
     private var urgent: Bool { remaining <= 2 }
     private var progress: CGFloat { CGFloat(remaining) / CGFloat(total) }
 
     var body: some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.12), lineWidth: 3)
+            Circle().stroke(theme.panelStroke, lineWidth: 3)
             Circle()
                 .trim(from: 0, to: progress)
                 .stroke(urgent ? Color.red : HLStyle.higher, style: StrokeStyle(lineWidth: 3, lineCap: .round))
@@ -215,7 +223,7 @@ private struct HLTimerBadge: View, Equatable {
                 .animation(.smooth(duration: 0.28), value: remaining)
             Text("\(remaining)")
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(theme.textPrimary)
                 .contentTransition(.numericText())
                 .animation(nil, value: remaining)
         }
@@ -257,6 +265,8 @@ private struct HLCompareBoard: View, Equatable {
     let shakeTrigger: Bool
     let portraitSize: CGFloat
 
+    @Environment(\.gameTheme) private var theme
+
     static func == (lhs: HLCompareBoard, rhs: HLCompareBoard) -> Bool {
         lhs.anchor == rhs.anchor
             && lhs.challenger == rhs.challenger
@@ -270,14 +280,14 @@ private struct HLCompareBoard: View, Equatable {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [HLStyle.surface, Color.white.opacity(0.04)],
+                        colors: [theme.surfaceFill, theme.panelFill.opacity(0.5)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(HLStyle.surfaceStroke, lineWidth: 1)
+                        .stroke(theme.panelStroke, lineWidth: 1)
                 )
                 .shadow(color: HLStyle.surfaceGlow, radius: 24, y: 8)
 
@@ -313,7 +323,7 @@ private struct HLCompareBoard: View, Equatable {
                 )
 
                 Rectangle()
-                    .fill(HLStyle.divider)
+                    .fill(theme.panelStroke.opacity(0.6))
                     .frame(width: 1)
                     .padding(.vertical, 24)
 
@@ -382,13 +392,15 @@ private struct HLPlayerPane: View {
     var tag: String?
     let portraitSize: CGFloat
 
+    @Environment(\.gameTheme) private var theme
+
     var body: some View {
         VStack(spacing: 0) {
             if let tag {
                 Text(tag.uppercased())
                     .font(.system(size: 9, weight: .bold))
                     .tracking(0.8)
-                    .foregroundStyle(HLStyle.muted)
+                    .foregroundStyle(theme.textMuted)
                     .padding(.bottom, 10)
             }
 
@@ -407,14 +419,14 @@ private struct HLPlayerPane: View {
             VStack(spacing: 4) {
                 Text(player.name)
                     .font(.subheadline.weight(.bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(theme.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
 
                 Text(player.clubName)
                     .font(.caption)
-                    .foregroundStyle(HLStyle.muted)
+                    .foregroundStyle(theme.textMuted)
                     .lineLimit(1)
             }
 
@@ -483,6 +495,7 @@ private struct HLChallengerPane: View {
 private struct HLValueLabel: View {
     let display: HLValueDisplay
 
+    @Environment(\.gameTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var pop: CGFloat = 1
 
@@ -525,7 +538,7 @@ private struct HLValueLabel: View {
     private var color: Color {
         switch display {
         case .shown: HLStyle.gold
-        case .hidden: Color.white.opacity(0.3)
+        case .hidden: theme.textMuted
         case .revealed(_, .correct): GameDesign.success
         case .revealed(_, .wrong): GameDesign.danger
         case .revealed: HLStyle.gold
@@ -542,6 +555,8 @@ private struct HLControls: View, Equatable {
     let onHigher: () -> Void
     let onLower: () -> Void
     let onContinue: () -> Void
+
+    @Environment(\.gameTheme) private var theme
 
     static func == (lhs: HLControls, rhs: HLControls) -> Bool {
         lhs.showResult == rhs.showResult
@@ -567,10 +582,10 @@ private struct HLControls: View, Equatable {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(HLStyle.surface)
+                .fill(theme.surfaceFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(HLStyle.surfaceStroke, lineWidth: 1)
+                        .stroke(theme.panelStroke, lineWidth: 1)
                 )
         )
         .animation(HLMotion.swap, value: showResult)
@@ -614,16 +629,18 @@ private struct HLContinueCTA: View {
     let isGameOver: Bool
     let action: () -> Void
 
+    @Environment(\.gameTheme) private var theme
+
     var body: some View {
         Button(action: action) {
             Text(isGameOver ? "Play Again" : "Next Round")
                 .font(.headline.weight(.bold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .foregroundStyle(isGameOver ? .white : Color(red: 0.1, green: 0.12, blue: 0.16))
+                .foregroundStyle(isGameOver ? .white : theme.buttonLabelOnLight)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(isGameOver ? GameDesign.danger : Color.white)
+                        .fill(isGameOver ? GameDesign.danger : theme.panelFill)
                 )
         }
         .buttonStyle(HLPressStyle())

@@ -64,7 +64,7 @@ struct WordleGameView: View {
         if index < guesses.count {
             return guesses[index].player.id == target.id ? WordlePalette.correct : WordlePalette.wrong
         }
-        return Color.white.opacity(0.15)
+        return theme.panelStroke.opacity(0.8)
     }
 
     private var boardCard: some View {
@@ -257,6 +257,7 @@ struct WordleGuessRow: View {
 
     @State private var progress: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.gameTheme) private var theme
 
     var body: some View {
         HStack(spacing: 4) {
@@ -293,9 +294,9 @@ struct WordleGuessRow: View {
         .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color.black.opacity(0.3))
+                .fill(theme.surfaceFill)
         )
-        .foregroundStyle(Color.white)
+        .foregroundStyle(theme.textPrimary)
     }
 
     private func shortName(_ name: String) -> String {
@@ -331,15 +332,17 @@ struct WordleGuessRow: View {
 }
 
 struct WordleEmptyRow: View {
+    @Environment(\.gameTheme) private var theme
+
     var body: some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                .stroke(theme.panelStroke, lineWidth: 1)
                 .frame(width: WordleLayout.playerColumnWidth, height: 34)
 
             ForEach(0..<5, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(theme.panelStroke, lineWidth: 1)
                     .frame(width: WordleLayout.attributeColumnWidth, height: 34)
             }
         }

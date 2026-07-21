@@ -3,6 +3,11 @@ import Combine
 
 struct GameView: View {
     private let store = ClubDataStore.shared
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var theme: GameModeTheme {
+        GameModeTheme.theme(for: selectedTab, colorScheme: colorScheme)
+    }
 
     @State private var selectedTab: GameTab = .guessClub
 
@@ -90,8 +95,9 @@ struct GameView: View {
                 .transition(.opacity)
                 .id(selectedTab)
             }
-            .environment(\.gameTheme, GameModeTheme.theme(for: selectedTab))
+            .environment(\.gameTheme, GameModeTheme.theme(for: selectedTab, colorScheme: colorScheme))
             .animation(GameMotion.dissolve, value: selectedTab)
+            .animation(.easeInOut(duration: 0.25), value: colorScheme)
             .safeAreaPadding(.top, 8)
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.horizontal)
@@ -176,9 +182,9 @@ struct GameView: View {
         } else {
             VStack(spacing: 12) {
                 Spacer()
-                ProgressView().tint(.white)
+                ProgressView().tint(theme.accent)
                 Text("Loading players...")
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(theme.textSecondary)
                 Spacer()
             }
             .onAppear { startNewWordleRound() }
@@ -195,7 +201,7 @@ struct GameView: View {
         if let errorMessage {
             VStack(spacing: 12) {
                 Spacer()
-                Text(errorMessage).foregroundStyle(.white)
+                Text(errorMessage).foregroundStyle(theme.textPrimary)
                 Button("Try Again", action: startNewRound)
                     .buttonStyle(.borderedProminent)
                 Spacer()
@@ -249,9 +255,9 @@ struct GameView: View {
         } else {
             VStack(spacing: 12) {
                 Spacer()
-                ProgressView().tint(.white)
+                ProgressView().tint(theme.accent)
                 Text("Loading star players...")
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(theme.textSecondary)
                 Spacer()
             }
             .onAppear { startNewPlayerRound() }
@@ -263,7 +269,7 @@ struct GameView: View {
         if let gnErrorMessage {
             VStack(spacing: 12) {
                 Spacer()
-                Text(gnErrorMessage).foregroundStyle(.white)
+                Text(gnErrorMessage).foregroundStyle(theme.textPrimary)
                 Button("Try Again", action: startNewNationRound)
                     .buttonStyle(.borderedProminent)
                 Spacer()

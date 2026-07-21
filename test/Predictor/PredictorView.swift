@@ -27,6 +27,7 @@ private enum SimulateSection: String, CaseIterable, Identifiable {
 struct PredictorView: View {
     @StateObject private var store = PredictorStore.shared
     @AppStorage(PredictorStore.simulateOnlyKey) private var simulateOnly = false
+    @Environment(\.appPalette) private var palette
     @State private var section: SimulateSection = .gameweek
     @State private var detailMatch: PLMatch?
     @State private var detailSimulation: PLMatchSimulation?
@@ -66,7 +67,7 @@ struct PredictorView: View {
                     systemImage: "sportscourt",
                     description: Text("Pull to refresh or check your connection.")
                 )
-                .foregroundStyle(.white)
+                .foregroundStyle(palette.textPrimary)
             }
         }
         .navigationTitle("Simulate")
@@ -78,7 +79,7 @@ struct PredictorView: View {
                     Task { await store.refreshFromWeb(resetProgress: true) }
                 } label: {
                     if store.isRefreshing {
-                        ProgressView().tint(.white)
+                        ProgressView().tint(palette.toolbarTint)
                     } else {
                         Image(systemName: "arrow.clockwise")
                     }
@@ -94,6 +95,7 @@ struct PredictorView: View {
         .sheet(item: $detailMatch) { match in
             if let simulation = detailSimulation ?? store.simulation(for: match.id) {
                 PLMatchDetailView(match: match, simulation: simulation)
+                    .withAppPalette()
             }
         }
     }
@@ -114,10 +116,10 @@ struct PredictorView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .foregroundStyle(section == item ? .white : .white.opacity(0.5))
+                    .foregroundStyle(section == item ? palette.textPrimary : palette.textMuted)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(section == item ? Color.white.opacity(0.18) : Color.clear)
+                            .fill(section == item ? palette.selectedTabFill : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)
@@ -126,10 +128,10 @@ struct PredictorView: View {
         .padding(4)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.black.opacity(0.35))
+                .fill(palette.chromeFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(palette.chromeStroke, lineWidth: 1)
                 )
         )
         .adaptiveContentWidth(AdaptiveLayout.gameMaxWidth)
@@ -153,7 +155,7 @@ struct PredictorView: View {
             if simulateOnly {
                 Text("Simulation mode — no predictions required")
                     .font(.caption)
-                    .foregroundStyle(PredictorStyle.muted)
+                    .foregroundStyle(palette.textMuted)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -196,16 +198,16 @@ struct PredictorView: View {
             )
         }
         .padding(16)
-        .background(PredictorStyle.panelBackground())
+        .background(palette.panel())
     }
 
     private var seasonBadge: some View {
         Text(store.season)
             .font(.caption.weight(.bold))
-            .foregroundStyle(.white.opacity(0.8))
+            .foregroundStyle(palette.textSecondary)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Capsule().fill(Color.white.opacity(0.12)))
+            .background(Capsule().fill(palette.surfaceFill))
     }
 
     private func gameweekStepper(for gameweek: PLGameweek) -> some View {
@@ -216,17 +218,18 @@ struct PredictorView: View {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
                     .frame(width: 36, height: 36)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
+                    .background(Circle().fill(palette.surfaceFill))
             }
             .disabled(gameweek.number <= 1)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Gameweek \(gameweek.number)")
                     .font(.title3.weight(.bold))
+                    .foregroundStyle(palette.textPrimary)
                 if let date = gameweek.kickoffDate {
                     Text(PLPredictorFormat.dayFormatter.string(from: date))
                         .font(.caption)
-                        .foregroundStyle(PredictorStyle.muted)
+                        .foregroundStyle(palette.textMuted)
                 }
             }
 
@@ -236,11 +239,11 @@ struct PredictorView: View {
                 Image(systemName: "chevron.right")
                     .font(.body.weight(.semibold))
                     .frame(width: 36, height: 36)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
+                    .background(Circle().fill(palette.surfaceFill))
             }
             .disabled(gameweek.number >= store.gameweeks.count)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(palette.textPrimary)
         .buttonStyle(.plain)
     }
 
@@ -248,9 +251,10 @@ struct PredictorView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title.uppercased())
                 .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(PredictorStyle.muted)
+                .foregroundStyle(palette.textMuted)
             Text(value)
                 .font(.title2.weight(.bold))
+                .foregroundStyle(palette.textPrimary)
             Text(subtitle)
                 .font(.caption)
                 .foregroundStyle(tint)
@@ -260,7 +264,7 @@ struct PredictorView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.white.opacity(0.06))
+                .fill(palette.surfaceFill)
         )
     }
 
@@ -296,8 +300,6 @@ struct PredictorView: View {
 
                 if simulated {
                     secondaryActionButton(title: "Clear Results", icon: "arrow.counterclockwise") {
-                        // Users expect this to reset the table too, so clear all season
-                        // simulations rather than only the currently selected gameweek.
                         store.resetSeasonSimulations()
                         store.resetGameweek(gameweek.number)
                         HapticFeedback.light()
@@ -352,10 +354,10 @@ struct PredictorView: View {
                 .font(.headline.weight(.bold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .foregroundStyle(enabled ? Color(red: 0.08, green: 0.1, blue: 0.14) : .white.opacity(0.5))
+                .foregroundStyle(enabled ? palette.buttonOnAccent : palette.textMuted)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(enabled ? .white : Color.white.opacity(0.08))
+                        .fill(enabled ? palette.selectedTabFill : palette.surfaceFill)
                 )
         }
         .disabled(!enabled)
@@ -368,10 +370,10 @@ struct PredictorView: View {
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(palette.textSecondary)
                 .background(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.white.opacity(0.1))
+                        .fill(palette.surfaceFill)
                 )
         }
         .buttonStyle(.plain)
@@ -387,10 +389,10 @@ struct PredictorView: View {
                 .font(.headline.weight(.bold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .foregroundStyle(complete ? Color(red: 0.08, green: 0.1, blue: 0.14) : .white.opacity(0.5))
+                .foregroundStyle(complete ? palette.buttonOnAccent : palette.textMuted)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(complete ? .white : Color.white.opacity(0.08))
+                        .fill(complete ? palette.selectedTabFill : palette.surfaceFill)
                 )
         }
         .disabled(!complete)
@@ -409,7 +411,7 @@ struct PredictorView: View {
                 }
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(palette.textPrimary)
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -466,6 +468,8 @@ private struct PLMatchCard: View {
     let onPick: (PLPick) -> Void
     let onShowDetail: () -> Void
 
+    @Environment(\.appPalette) private var palette
+
     private var isPlayed: Bool { result != nil }
 
     var body: some View {
@@ -477,7 +481,7 @@ private struct PLMatchCard: View {
                 if let halftimeLabel = simulation.halftimeLabel {
                     Text("HT \(halftimeLabel)")
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(PredictorStyle.muted)
+                        .foregroundStyle(palette.textMuted)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
                 playedStatsRow(simulation)
@@ -494,7 +498,7 @@ private struct PLMatchCard: View {
             }
         }
         .padding(14)
-        .background(PredictorStyle.panelBackground())
+        .background(palette.panel())
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(borderColor, lineWidth: 1.5)
@@ -505,15 +509,15 @@ private struct PLMatchCard: View {
         HStack {
             Text(match.displayKickoff)
                 .font(.caption.weight(.medium))
-                .foregroundStyle(PredictorStyle.muted)
+                .foregroundStyle(palette.textMuted)
             Spacer()
             if isPlayed {
                 Text("FT")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(PredictorStyle.muted)
+                    .foregroundStyle(palette.textMuted)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Capsule().fill(Color.white.opacity(0.08)))
+                    .background(Capsule().fill(palette.surfaceFill))
             }
         }
     }
@@ -523,7 +527,7 @@ private struct PLMatchCard: View {
             teamColumn(name: match.homeTeam, clubID: match.homeClubID, alignment: .leading)
             Text("vs")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(PredictorStyle.muted)
+                .foregroundStyle(palette.textMuted)
                 .padding(.top, 10)
             teamColumn(name: match.awayTeam, clubID: match.awayClubID, alignment: .trailing)
         }
@@ -542,10 +546,11 @@ private struct PLMatchCard: View {
             VStack(spacing: 4) {
                 Text("\(simulation.homeGoals) – \(simulation.awayGoals)")
                     .font(.title2.weight(.heavy))
+                    .foregroundStyle(palette.textPrimary)
                     .monospacedDigit()
                 Text("FT")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(PredictorStyle.muted)
+                    .foregroundStyle(palette.textMuted)
             }
             .padding(.top, 6)
 
@@ -570,6 +575,7 @@ private struct PLMatchCard: View {
             ClubLogoImage(clubID: clubID, clubName: name, style: .row)
             Text(name)
                 .font(.subheadline.weight(.bold))
+                .foregroundStyle(palette.textPrimary)
                 .multilineTextAlignment(alignment == .leading ? .leading : .trailing)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: alignment == .leading ? .leading : .trailing)
@@ -602,16 +608,17 @@ private struct PLMatchCard: View {
         VStack(spacing: 3) {
             Text(value)
                 .font(.caption.weight(.bold))
+                .foregroundStyle(palette.textPrimary)
                 .monospacedDigit()
             Text(label)
                 .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(PredictorStyle.muted)
+                .foregroundStyle(palette.textMuted)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.05))
+                .fill(palette.surfaceFill)
         )
     }
 
@@ -620,7 +627,7 @@ private struct PLMatchCard: View {
             if simulation.goals.isEmpty {
                 Text("No goals")
                     .font(.caption)
-                    .foregroundStyle(PredictorStyle.muted)
+                    .foregroundStyle(palette.textMuted)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 VStack(spacing: 6) {
@@ -628,7 +635,7 @@ private struct PLMatchCard: View {
                         HStack(spacing: 8) {
                             Text(goal.minuteLabel)
                                 .font(.caption2.weight(.bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(palette.textPrimary)
                                 .frame(width: 30)
                                 .padding(.vertical, 3)
                                 .background(
@@ -638,6 +645,7 @@ private struct PLMatchCard: View {
 
                             Text(goal.scorerName)
                                 .font(.caption.weight(.semibold))
+                                .foregroundStyle(palette.textPrimary)
                                 .lineLimit(1)
 
                             Spacer(minLength: 0)
@@ -664,10 +672,10 @@ private struct PLMatchCard: View {
                 .font(.caption.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(palette.textSecondary)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(palette.surfaceFill)
                 )
         }
         .buttonStyle(.plain)
@@ -675,7 +683,7 @@ private struct PLMatchCard: View {
 
     private var borderColor: Color {
         guard let pick, let result else {
-            return Color.white.opacity(0.08)
+            return palette.panelStroke
         }
         return pick.matches(result: result) ? PredictorStyle.green.opacity(0.6) : PredictorStyle.danger.opacity(0.5)
     }
@@ -685,6 +693,7 @@ private struct PLMatchCard: View {
             ClubLogoImage(clubID: clubID, clubName: name, style: .row)
             Text(name)
                 .font(.subheadline.weight(.bold))
+                .foregroundStyle(palette.textPrimary)
                 .multilineTextAlignment(alignment == .leading ? .leading : .trailing)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: alignment == .leading ? .leading : .trailing)
@@ -703,7 +712,7 @@ private struct PLMatchCard: View {
             modelChip("D", value: odds.draw, pick: .draw, odds: odds)
             modelChip("A", value: odds.away, pick: .away, odds: odds)
         }
-        .foregroundStyle(PredictorStyle.muted)
+        .foregroundStyle(palette.textMuted)
     }
 
     private func modelChip(_ label: String, value: Double, pick: PLPick, odds: PLModelOdds) -> some View {
@@ -712,7 +721,7 @@ private struct PLMatchCard: View {
             .padding(.horizontal, 6)
             .padding(.vertical, 4)
             .background(
-                Capsule().fill(odds.favorite == pick ? PredictorStyle.purple.opacity(0.35) : Color.white.opacity(0.06))
+                Capsule().fill(odds.favorite == pick ? PredictorStyle.purple.opacity(0.35) : palette.surfaceFill)
             )
     }
 
@@ -751,16 +760,16 @@ private struct PLMatchCard: View {
 
     private func foreground(for option: PLPick, selected: Bool, correct: Bool?) -> Color {
         if let correct, selected {
-            return correct ? .white : .white.opacity(0.9)
+            return palette.textPrimary
         }
-        return selected ? Color(red: 0.08, green: 0.1, blue: 0.14) : .white.opacity(0.85)
+        return selected ? palette.buttonOnAccent : palette.textSecondary
     }
 
     private func background(for option: PLPick, selected: Bool, correct: Bool?) -> Color {
         if let correct, selected {
             return correct ? PredictorStyle.green : PredictorStyle.danger
         }
-        return selected ? .white : Color.white.opacity(0.08)
+        return selected ? palette.selectedTabFill : palette.surfaceFill
     }
 }
 
@@ -773,31 +782,20 @@ private enum PredictorStyle {
     static let accent = Color(red: 0.72, green: 0.84, blue: 1.0)
     static let goal = Color(red: 0.55, green: 0.9, blue: 0.62)
     static let penalty = Color(red: 1.0, green: 0.72, blue: 0.28)
-    static let muted = Color.white.opacity(0.45)
-
-    static func panelBackground() -> some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color.white.opacity(0.08))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
 }
 
 private struct PredictorBackdrop: View {
+    @Environment(\.appPalette) private var palette
+
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [
-                    Color(red: 0.1, green: 0.06, blue: 0.22),
-                    Color(red: 0.05, green: 0.08, blue: 0.16),
-                ],
+                colors: [palette.backdropTop, palette.backdropBottom],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             RadialGradient(
-                colors: [PredictorStyle.purple.opacity(0.22), .clear],
+                colors: [palette.accentGlow, .clear],
                 center: .topTrailing,
                 startRadius: 20,
                 endRadius: 320
@@ -810,5 +808,6 @@ private struct PredictorBackdrop: View {
 #Preview {
     NavigationStack {
         PredictorView()
+            .withAppPalette()
     }
 }
