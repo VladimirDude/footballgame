@@ -455,7 +455,11 @@ struct GameGuessPanel: View {
             )
 
             if gameResult == nil {
-                GamePrimaryButton(title: "Submit Guess", action: onSubmit)
+                GamePrimaryButton(
+                    title: "Submit Guess",
+                    action: onSubmit,
+                    isEnabled: guess.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2
+                )
                     .transition(.gamePresent)
             } else {
                 GameContinueButton(

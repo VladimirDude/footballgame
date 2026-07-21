@@ -96,6 +96,9 @@ struct PredictorView: View {
             if let simulation = detailSimulation ?? store.simulation(for: match.id) {
                 PLMatchDetailView(match: match, simulation: simulation)
                     .withAppPalette()
+            } else {
+                ContentUnavailableView("No Report", systemImage: "chart.bar.doc.horizontal")
+                    .withAppPalette()
             }
         }
     }
@@ -300,7 +303,6 @@ struct PredictorView: View {
 
                 if simulated {
                     secondaryActionButton(title: "Clear Results", icon: "arrow.counterclockwise") {
-                        store.resetSeasonSimulations()
                         store.resetGameweek(gameweek.number)
                         HapticFeedback.light()
                     }

@@ -575,7 +575,11 @@ private struct HLControls: View, Equatable {
                 HLContinueCTA(isGameOver: isGameOver, action: onContinue)
                     .transition(.hlControlsSwap)
             } else {
-                HLSplitChoice(onHigher: onHigher, onLower: onLower)
+                HLSplitChoice(
+                    isEnabled: !showResult,
+                    onHigher: onHigher,
+                    onLower: onLower
+                )
                     .transition(.hlControlsSwap)
             }
         }
@@ -593,16 +597,21 @@ private struct HLControls: View, Equatable {
 }
 
 private struct HLSplitChoice: View, Equatable {
+    var isEnabled: Bool = true
     let onHigher: () -> Void
     let onLower: () -> Void
 
-    static func == (_: HLSplitChoice, _: HLSplitChoice) -> Bool { true }
+    static func == (lhs: HLSplitChoice, rhs: HLSplitChoice) -> Bool {
+        lhs.isEnabled == rhs.isEnabled
+    }
 
     var body: some View {
         HStack(spacing: 10) {
             choiceButton(title: "Higher", icon: "arrow.up", color: HLStyle.higher, action: onHigher)
             choiceButton(title: "Lower", icon: "arrow.down", color: HLStyle.lower, action: onLower)
         }
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1 : 0.55)
     }
 
     private func choiceButton(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
@@ -633,15 +642,20 @@ private struct HLContinueCTA: View {
 
     var body: some View {
         Button(action: action) {
-            Text(isGameOver ? "Play Again" : "Next Round")
-                .font(.headline.weight(.bold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .foregroundStyle(isGameOver ? .white : theme.buttonLabelOnLight)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(isGameOver ? GameDesign.danger : theme.panelFill)
-                )
+            HStack(spacing: 8) {
+                Image(systemName: isGameOver ? "arrow.counterclockwise.circle.fill" : "arrow.right.circle.fill")
+                Text(isGameOver ? "Play Again" : "Next Round")
+                    .font(.headline.weight(.bold))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .foregroundStyle(isGameOver ? .white : theme.buttonLabelOnLight)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isGameOver
+                          ? AnyShapeStyle(GameDesign.danger)
+                          : AnyShapeStyle(Color.white))
+            )
         }
         .buttonStyle(HLPressStyle())
     }

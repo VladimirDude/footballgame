@@ -412,14 +412,16 @@ enum MatchSimulator {
 
         let weights = xi.map { scorerWeight(for: $0, in: squad) }
         let total = weights.reduce(0, +)
-        guard total > 0 else { return xi[0] }
+        guard total > 0, let fallback = xi.first else {
+            return PLSimPlayer(id: "unknown", name: "Unknown", position: "Forward", role: "ST")
+        }
 
         var roll = rng.double(0 ..< total)
         for (player, weight) in zip(xi, weights) {
             roll -= weight
             if roll <= 0 { return player }
         }
-        return xi[0]
+        return fallback
     }
 
     private static func pickBenchScorer(

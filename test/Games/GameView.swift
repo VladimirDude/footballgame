@@ -4,6 +4,7 @@ import Combine
 struct GameView: View {
     private let store = ClubDataStore.shared
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
 
     private var theme: GameModeTheme {
         GameModeTheme.theme(for: selectedTab, colorScheme: colorScheme)
@@ -116,6 +117,23 @@ struct GameView: View {
         }
         .onChange(of: selectedTab) { _, tab in
             gpTimerActive = tab == .guessPlayer && gpResult == nil
+            hlTimerActive = tab == .higherLower && !hlShowRightValue && !hlIsGameOver
+        }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .active:
+                if selectedTab == .guessPlayer, gpResult == nil {
+                    gpTimerActive = true
+                }
+                if selectedTab == .higherLower, !hlShowRightValue, !hlIsGameOver {
+                    hlTimerActive = true
+                }
+            case .inactive, .background:
+                gpTimerActive = false
+                hlTimerActive = false
+            @unknown default:
+                break
+            }
         }
         .onReceive(countdownTimer) { _ in
             tickHigherLowerTimer()
@@ -402,7 +420,7 @@ struct GameView: View {
     }
 
     private func submitNationGuess() {
-        guard gnResult == nil, let round = gnRound else { return }
+        guard gnResult == nil, let round = gnRound, isSubmittableGuess(gnGuess) else { return }
         let won = NationalTeamGuessValidator.isCorrect(guess: gnGuess, round: round)
 
         withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
@@ -472,7 +490,7 @@ struct GameView: View {
     }
 
     private func submitClubGuess() {
-        guard gameResult == nil, let round else { return }
+        guard gameResult == nil, let round, isSubmittableGuess(guess) else { return }
         let won = ClubGuessValidator.isCorrect(guess: guess, round: round)
         withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
             gameResult = won ? .won : .lost
@@ -535,7 +553,7 @@ struct GameView: View {
     // MARK: - Guess Player Logic
 
     private func submitPlayerGuess() {
-        guard gpResult == nil, let round = gpRound else { return }
+        guard gpResult == nil, let round = gpRound, isSubmittableGuess(gpGuess) else { return }
         gpTimerActive = false
 
         let won = PlayerGuessValidator.isCorrect(guess: gpGuess, round: round)
@@ -566,8 +584,12 @@ struct GameView: View {
         gpResult = nil
         gpShowClubHint = false
         gpShakeWrong = false
-        gpRound = store.randomGuessPlayerRound()
-        resetGuessPlayerTimer()
+        if let newRound = store.randomGuessPlayerRound() {
+            gpRound = newRound
+            resetGuessPlayerTimer()
+        } else {
+            gpRound = nil
+        }
     }
 
     private func advancePlayerRound() {
@@ -593,21 +615,30 @@ struct GameView: View {
 
         let randomized = pool.shuffled()
         hlPlayerLeft = randomized[0]
-        hlPlayerRight = randomized[1]
+        hlPlayerRight = pickHLChallenger(excluding: hlPlayerLeft, from: pool) ?? randomized[1]
         resetHLRoundState()
         hlTimeRemaining = 5
         hlTimerActive = true
     }
 
+    private func pickHLChallenger(excluding anchor: HLPlayer?, from pool: [HLPlayer]) -> HLPlayer? {
+        guard let anchor else { return pool.randomElement() }
+
+        var candidates = pool.filter { $0.id != anchor.id && $0.marketValue != anchor.marketValue }
+        if candidates.isEmpty {
+            candidates = pool.filter { $0.id != anchor.id }
+        }
+        return candidates.randomElement()
+    }
+
     private func processHLGuess(guessedHigher: Bool) {
         guard let left = hlPlayerLeft, let right = hlPlayerRight else { return }
+        guard !hlShowRightValue, !hlIsGameOver else { return }
 
         hlTimerActive = false
 
         let isCorrect: Bool
-        if right.marketValue == left.marketValue {
-            isCorrect = true
-        } else if guessedHigher {
+        if guessedHigher {
             isCorrect = right.marketValue > left.marketValue
         } else {
             isCorrect = right.marketValue < left.marketValue
@@ -640,14 +671,24 @@ struct GameView: View {
         if hlIsGameOver {
             hlScore = 0
             setupInitialHLRound()
-        } else {
-            hlPlayerLeft = hlPlayerRight
-            let pool = store.fetchHigherOrLowerPool().filter { $0.name != hlPlayerLeft?.name }
-            hlPlayerRight = pool.randomElement()
-            resetHLRoundState()
-            hlTimeRemaining = 5
-            hlTimerActive = true
+            return
         }
+
+        hlPlayerLeft = hlPlayerRight
+        let pool = store.fetchHigherOrLowerPool()
+        guard let next = pickHLChallenger(excluding: hlPlayerLeft, from: pool) else {
+            setupInitialHLRound()
+            return
+        }
+
+        hlPlayerRight = next
+        resetHLRoundState()
+        hlTimeRemaining = 5
+        hlTimerActive = true
+    }
+
+    private func isSubmittableGuess(_ text: String) -> Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2
     }
 
     private func resetHLRoundState() {
