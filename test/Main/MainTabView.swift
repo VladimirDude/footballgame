@@ -26,6 +26,14 @@ struct MainTabView: View {
                 Text("Simulate")
             }
 
+            NavigationStack {
+                MyTeamView()
+            }
+            .tabItem {
+                Image(systemName: "person.3.fill")
+                Text("My Team")
+            }
+
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")
