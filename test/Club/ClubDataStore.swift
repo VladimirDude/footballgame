@@ -138,9 +138,7 @@ final class ClubDataStore {
         eliteClubNames: Set<String>
     ) -> [GuessPlayerRound] {
         let minimumMarketValue = 25_000_000
-        let portraitAvailable: (String) -> Bool = { id in
-            Bundle.main.url(forResource: id, withExtension: "png") != nil
-        }
+        let portraitAvailable: (String) -> Bool = { PortraitAsset.exists(forID: $0) }
 
         var pool: [GuessPlayerRound] = []
 
@@ -208,9 +206,7 @@ final class ClubDataStore {
         leagueByClubID: [String: String]
     ) -> [WordlePlayer] {
         let minimumMarketValue = 25_000_000
-        let portraitAvailable: (String) -> Bool = { id in
-            Bundle.main.url(forResource: id, withExtension: "png") != nil
-        }
+        let portraitAvailable: (String) -> Bool = { PortraitAsset.exists(forID: $0) }
 
         var pool: [WordlePlayer] = []
 
@@ -323,7 +319,7 @@ final class ClubDataStore {
 
         let rankedSquad = club.players.sorted { ($0.marketValue ?? 0) > ($1.marketValue ?? 0) }
         let squadRank = (rankedSquad.firstIndex { $0.id == id } ?? 0) + 1
-        let hasPortrait = Bundle.main.url(forResource: id, withExtension: "png") != nil
+        let hasPortrait = PortraitAsset.exists(forID: id)
 
         return PlayerDetail(
             id: indexed.player.id,

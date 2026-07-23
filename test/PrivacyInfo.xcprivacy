@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy Manifest (required by App Store review).
+
+  Current state of the app: fully offline, no accounts, no third-party SDKs,
+  and it does NOT collect or transmit any user or device data. The only
+  "required reason" API in use is UserDefaults (via SwiftUI @AppStorage) for
+  local settings and game scores.
+
+  IMPORTANT — keep this file in sync with reality:
+    • When Firebase Analytics / Crashlytics is added, declare the collected
+      data types under NSPrivacyCollectedDataTypes and add Firebase's own
+      manifest requirements.
+    • When StoreKit purchases are added, add the "Purchase History" data type
+      if any purchase data is linked to the user off-device.
+    • If ad attribution (AppsFlyer/ATT) is ever added, set NSPrivacyTracking to
+      true and list NSPrivacyTrackingDomains.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

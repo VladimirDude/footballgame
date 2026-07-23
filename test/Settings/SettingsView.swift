@@ -18,6 +18,10 @@ struct SettingsView: View {
                 VStack(spacing: 20) {
                     headerCard
 
+                    settingsSection(title: "FTMP Pro", icon: "crown.fill") {
+                        SubscriptionSettingsSection()
+                    }
+
                     settingsSection(title: "Appearance", icon: "paintbrush.fill") {
                         VStack(spacing: 10) {
                             ForEach(AppearanceMode.allCases) { mode in

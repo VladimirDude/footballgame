@@ -5,6 +5,8 @@ struct testApp: App {
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
     @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
 
+    @StateObject private var monetization = MonetizationContainer()
+
     private var appearanceMode: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRaw) ?? .system
     }
@@ -22,7 +24,12 @@ struct testApp: App {
             }
             .preferredColorScheme(appearanceMode.colorScheme)
             .withAppPalette()
-            .onAppear(perform: migrateLegacyAppearanceSetting)
+            .withMonetization(monetization)
+            .onAppear {
+                migrateLegacyAppearanceSetting()
+                monetization.start()
+                AnalyticsService.shared.log(.appOpened)
+            }
         }
     }
 

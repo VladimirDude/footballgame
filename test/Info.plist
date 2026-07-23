@@ -4,5 +4,10 @@
 <dict>
 	<key>CFBundleDisplayName</key>
 	<string>FTMP</string>
+	<!-- Export compliance: the app uses only standard/exempt encryption (HTTPS).
+	     Declaring this here avoids the manual export-compliance prompt on every
+	     TestFlight/App Store upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

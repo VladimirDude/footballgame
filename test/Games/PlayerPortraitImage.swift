@@ -38,41 +38,17 @@ enum PlayerPortraitStyle {
     }
 }
 
-enum PlayerPortraitLoader {
-    private static var imageCache: [String: UIImage] = [:]
-    private static let lock = NSLock()
-
-    static func bundledImage(forPlayerID playerID: String) -> UIImage? {
-        if let cached = imageCache[playerID] {
-            return cached
-        }
-
-        lock.lock()
-        defer { lock.unlock() }
-
-        if let cached = imageCache[playerID] {
-            return cached
-        }
-
-        guard let fileURL = Bundle.main.url(forResource: playerID, withExtension: "png"),
-              let image = UIImage(contentsOfFile: fileURL.path) else {
-            return nil
-        }
-
-        imageCache[playerID] = image
-        return image
-    }
-}
-
 struct PlayerPortraitImage: View {
     let playerID: String
     var style: PlayerPortraitStyle = .compact
+
+    @State private var image: UIImage?
 
     private var size: CGFloat { style.size }
 
     var body: some View {
         Group {
-            if let image = PlayerPortraitLoader.bundledImage(forPlayerID: playerID) {
+            if let image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -88,6 +64,25 @@ struct PlayerPortraitImage: View {
             radius: style == .game || style == .hl ? 0 : (style == .compact ? 2 : 5),
             y: style == .game || style == .hl ? 0 : (style == .compact ? 1 : 2)
         )
+        .task(id: playerID) { await loadImage() }
+    }
+
+    /// Loads the portrait off the main thread (decode + downsample) so scrolling
+    /// never blocks on disk I/O. Cache hits resolve synchronously; misses decode
+    /// on a background task and publish back on the main actor.
+    private func loadImage() async {
+        if let cached = PortraitStore.cachedImage(forID: playerID) {
+            image = cached
+            return
+        }
+        image = nil
+        let id = playerID
+        let maxPixel = size * 3
+        let loaded = await Task.detached(priority: .userInitiated) {
+            PortraitStore.loadImage(forID: id, maxPixel: maxPixel)
+        }.value
+        guard !Task.isCancelled else { return }
+        image = loaded
     }
 
     @ViewBuilder
