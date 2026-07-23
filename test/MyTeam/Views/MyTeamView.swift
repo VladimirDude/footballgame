@@ -3,6 +3,9 @@ import SwiftUI
 struct MyTeamView: View {
     @StateObject private var vm = TeamStore()
     @StateObject private var sync = TeamSyncService()
+    @EnvironmentObject private var entitlements: EntitlementService
+    @State private var showAdminPassphrase = false
+    @State private var showAdminPaywall = false
     @State private var showCoachDetail = false
     @State private var showGames = false
     @State private var editingPlayerId: UUID?
@@ -31,7 +34,7 @@ struct MyTeamView: View {
         .background(TeamTheme.bg.ignoresSafeArea())
         .searchable(text: $vm.searchText, prompt: "Search player...")
         .navigationTitle("My Team")
-        .navigationDestination(isPresented: $showProfile) { TeamProfileView(vm: vm) }
+        .navigationDestination(isPresented: $showProfile) { TeamProfileView(vm: vm, sync: sync) }
         .navigationDestination(isPresented: $showCoachDetail) { CoachDetailView(coaches: vm.coaches) }
         .navigationDestination(isPresented: $showGames) { TeamGamesView(vm: vm) }
         .sheet(item: $editingPlayerId) { pid in
@@ -51,18 +54,41 @@ struct MyTeamView: View {
             }
             ToolbarItem(placement: .navigationBarTrailing) { adminBadge }
         }
+        .sheet(isPresented: $showAdminPassphrase) {
+            AdminPassphraseSheet { vm.isAdmin = true }
+        }
+        .paywallSheet(isPresented: $showAdminPaywall, source: "team_admin")
+        .onChange(of: entitlements.isPro) { _, isPro in
+            // Losing Pro revokes admin access immediately.
+            if !isPro { vm.isAdmin = false }
+        }
     }
 
     // MARK: - Admin Badge
 
+    /// Admin is a Pro feature: free users get the paywall, Pro users must still
+    /// enter the secret passphrase. "User" is always available.
+    private func requestAdminAccess() {
+        guard !vm.isAdmin else { return }
+        if entitlements.canAccess(.adminMode) {
+            showAdminPassphrase = true
+        } else {
+            AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.adminMode.rawValue))
+            showAdminPaywall = true
+        }
+    }
+
     private var adminBadge: some View {
         Menu {
-            ForEach(AppRole.allCases, id: \.rawValue) { role in
-                Button {
-                    vm.isAdmin = (role == .admin)
-                } label: {
-                    Label(role.rawValue, systemImage: role == .admin ? "lock.open.fill" : "lock.fill")
-                }
+            Button {
+                vm.isAdmin = false
+            } label: {
+                Label(AppRole.user.rawValue, systemImage: "lock.fill")
+            }
+            Button {
+                requestAdminAccess()
+            } label: {
+                Label(AppRole.admin.rawValue, systemImage: entitlements.canAccess(.adminMode) ? "lock.open.fill" : "crown.fill")
             }
         } label: {
             HStack(spacing: 4) {

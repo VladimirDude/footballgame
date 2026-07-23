@@ -1,8 +1,10 @@
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 struct TeamProfileView: View {
     @ObservedObject var vm: TeamStore
+    @ObservedObject var sync: TeamSyncService
     @Environment(\.dismiss) private var dismiss
     @State private var showImportPicker = false
     @State private var showExportShare = false
@@ -10,6 +12,7 @@ struct TeamProfileView: View {
     @State private var alertMessage = ""
     @State private var showAlert = false
     @State private var exportURL: URL?
+    @State private var codeCopied = false
 
     var body: some View {
         List {
@@ -44,6 +47,43 @@ struct TeamProfileView: View {
             .listRowBackground(TeamTheme.cardBg)
 
             if vm.isAdmin {
+                Section("Shared Team") {
+                    if let code = sync.membership?.teamID, sync.canEdit {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Your team code")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(TeamTheme.textSecondary)
+                            Text(code)
+                                .font(.system(.title3, design: .monospaced).weight(.bold))
+                                .foregroundStyle(TeamTheme.textPrimary)
+                                .textSelection(.enabled)
+                            Text("Share it so teammates can view your team. Only this device can edit.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(TeamTheme.textTertiary)
+                            HStack(spacing: 12) {
+                                Button {
+                                    UIPasteboard.general.string = code
+                                    withAnimation { codeCopied = true }
+                                } label: {
+                                    Label(codeCopied ? "Copied!" : "Copy", systemImage: codeCopied ? "checkmark" : "doc.on.doc")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                ShareLink(item: shareText(code)) {
+                                    Label("Share", systemImage: "square.and.arrow.up")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                            }
+                            .foregroundStyle(TeamTheme.blue)
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        Text("No shared team yet. Create one from the cloud menu on the team screen.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(TeamTheme.textSecondary)
+                    }
+                }
+                .listRowBackground(TeamTheme.cardBg)
+
                 Section("Quick Add Game") {
                     Button { showQuickAdd = true } label: {
                         Label("Paste Game Text", systemImage: "doc.text.fill")
@@ -112,6 +152,10 @@ struct TeamProfileView: View {
                 ShareSheet(items: [url])
             }
         }
+    }
+
+    private func shareText(_ code: String) -> String {
+        "Join my team on FTMP! Open the app → My Team → the cloud menu → Join with Code, and enter:\n\n\(code)"
     }
 
     private func summaryRow(_ label: String, _ value: String, _ icon: String) -> some View {

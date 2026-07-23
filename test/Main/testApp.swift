@@ -21,6 +21,9 @@ struct testApp: App {
         #if canImport(FirebaseAnalytics)
         AnalyticsService.shared.register(FirebaseAnalyticsBackend())
         #endif
+        #if canImport(FirebaseRemoteConfig)
+        RemoteConfigService.shared.start()
+        #endif
     }
 
     var body: some Scene {

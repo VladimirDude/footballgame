@@ -10,6 +10,7 @@
 		FB0000000000000000000020 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000010 /* FirebaseAnalytics */; };
 		FB0000000000000000000023 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000013 /* FirebaseStorage */; };
 		FB0000000000000000000024 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000014 /* FirebaseAuth */; };
+		FB0000000000000000000025 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000015 /* FirebaseRemoteConfig */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 				FB0000000000000000000020 /* FirebaseAnalytics in Frameworks */,
 				FB0000000000000000000023 /* FirebaseStorage in Frameworks */,
 				FB0000000000000000000024 /* FirebaseAuth in Frameworks */,
+				FB0000000000000000000025 /* FirebaseRemoteConfig in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +92,7 @@
 				FB0000000000000000000010 /* FirebaseAnalytics */,
 				FB0000000000000000000013 /* FirebaseStorage */,
 				FB0000000000000000000014 /* FirebaseAuth */,
+				FB0000000000000000000015 /* FirebaseRemoteConfig */,
 			);
 			productName = test;
 			productReference = E75931FE2FF3C6FC00BCFE69 /* test.app */;
@@ -391,6 +394,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB0000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		FB0000000000000000000015 /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB0000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

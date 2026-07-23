@@ -56,6 +56,7 @@ enum PremiumFeature: String, CaseIterable, Codable, Sendable {
     case unlimitedSearchResults  // Removes the free-tier result cap
     case extraLeagues            // Leagues beyond the free Premier League
     case themePacks              // Cosmetic theme skins
+    case adminMode               // My Team admin: create/edit/publish shared teams
 
     /// Short, user-facing name for paywall / lock copy.
     var displayName: String {
@@ -69,6 +70,7 @@ enum PremiumFeature: String, CaseIterable, Codable, Sendable {
         case .unlimitedSearchResults: "Unlimited Results"
         case .extraLeagues: "All Leagues"
         case .themePacks: "Theme Packs"
+        case .adminMode: "Team Admin"
         }
     }
 }

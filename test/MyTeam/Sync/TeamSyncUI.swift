@@ -31,10 +31,13 @@ struct TeamSyncMenu: View {
                                 sync.leaveTeam(vm)
                             } label: { Label("Leave Team", systemImage: "rectangle.portrait.and.arrow.right") }
                         }
-                    } else {
+                    } else if vm.isAdmin {
+                        // Admins create & share a team; they don't join someone else's.
                         Button {
                             createAndShare()
                         } label: { Label("Create Shared Team", systemImage: "plus.circle.fill") }
+                    } else {
+                        // Regular users join with a code; they don't create teams.
                         Button {
                             showRedeem = true
                         } label: { Label("Join with Code", systemImage: "key.fill") }
@@ -124,6 +127,52 @@ struct RedeemCodeSheet: View {
                 if joined { dismiss() }
             }
         }
+    }
+}
+
+/// Sheet where a Pro user enters the secret passphrase to unlock Admin mode.
+/// Presented only after the Pro check passes, so this is the second gate.
+struct AdminPassphraseSheet: View {
+    let onUnlock: () -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var passphrase = ""
+    @State private var wrong = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    SecureField("Passphrase", text: $passphrase)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("Admin Passphrase")
+                } footer: {
+                    Text(wrong ? "That passphrase isn't correct." : "Enter the admin passphrase to manage and publish the shared team.")
+                        .foregroundStyle(wrong ? .red : .secondary)
+                }
+
+                Section {
+                    Button {
+                        if AdminAccess.isValid(passphrase) {
+                            onUnlock()
+                            dismiss()
+                        } else {
+                            withAnimation { wrong = true }
+                        }
+                    } label: {
+                        Text("Unlock Admin").frame(maxWidth: .infinity)
+                    }
+                    .disabled(passphrase.isEmpty)
+                }
+            }
+            .navigationTitle("Admin Access")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 

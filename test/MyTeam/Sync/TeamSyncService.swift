@@ -179,6 +179,18 @@ final class TeamSyncService: ObservableObject {
         lastError = nil
         defer { isBusy = false }
         do { try await work() }
-        catch { lastError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription }
+        catch {
+            let ns = error as NSError
+            #if DEBUG
+            print("⚠️ TeamSync error [\(ns.domain) code=\(ns.code)]: \(ns.localizedDescription)\n\(ns.userInfo)")
+            #endif
+            // Prefer our own descriptive errors; otherwise surface the real
+            // domain + code so storage/auth failures are diagnosable, not generic.
+            if let localized = (error as? TeamSyncError)?.errorDescription {
+                lastError = localized
+            } else {
+                lastError = "\(ns.localizedDescription) [\(ns.domain) \(ns.code)]"
+            }
+        }
     }
 }
