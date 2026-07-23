@@ -32,14 +32,18 @@ final class TeamSyncService: ObservableObject {
     /// no Firebase. Release stays local-only until `FirestoreTeamRemoteStore` /
     /// `FirebaseTeamPhotoStore` are wired in (once the SDK + config are present).
     nonisolated static var defaultRemote: TeamRemoteStore {
-        #if DEBUG
+        #if canImport(FirebaseFirestore) && canImport(FirebaseFunctions) && canImport(FirebaseAuth)
+        return FirestoreTeamRemoteStore()
+        #elseif DEBUG
         return MockTeamRemoteStore()
         #else
         return LocalTeamRemoteStore()
         #endif
     }
     nonisolated static var defaultPhotos: TeamPhotoStore {
-        #if DEBUG
+        #if canImport(FirebaseStorage)
+        return FirebaseTeamPhotoStore()
+        #elseif DEBUG
         return MockTeamPhotoStore()
         #else
         return LocalTeamPhotoStore()

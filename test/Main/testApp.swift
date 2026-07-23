@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(FirebaseCore)
+import FirebaseCore
+#endif
 
 @main
 struct testApp: App {
@@ -9,6 +12,15 @@ struct testApp: App {
 
     private var appearanceMode: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRaw) ?? .system
+    }
+
+    init() {
+        #if canImport(FirebaseCore)
+        FirebaseApp.configure()
+        #endif
+        #if canImport(FirebaseAnalytics)
+        AnalyticsService.shared.register(FirebaseAnalyticsBackend())
+        #endif
     }
 
     var body: some Scene {
