@@ -23,6 +23,7 @@ enum DataExporter {
         var coachTactics: String?
         var coachExperience: String?
         var coachPhilosophy: String?
+        var photoPath: String?
     }
 
     struct GameDTO: Codable {
@@ -61,7 +62,8 @@ enum DataExporter {
                 coachSpecialty: p.coachInfo?.specialty,
                 coachTactics: p.coachInfo?.tactics,
                 coachExperience: p.coachInfo?.experience,
-                coachPhilosophy: p.coachInfo?.philosophy
+                coachPhilosophy: p.coachInfo?.philosophy,
+                photoPath: p.photoPath
             )
         }
 
@@ -91,7 +93,7 @@ enum DataExporter {
 
         let players = exported.players.map { dto -> TeamPlayer in
             let role = PlayerRole(rawValue: dto.role) ?? .player
-            var p = TeamPlayer(name: dto.name, role: role, goals: dto.goals, assists: dto.assists, bonusPoints: dto.bonusPoints)
+            var p = TeamPlayer(name: dto.name, role: role, goals: dto.goals, assists: dto.assists, bonusPoints: dto.bonusPoints, photoPath: dto.photoPath)
             if role == .goalkeeper, let att = dto.gkAttended, let con = dto.gkConceded, let cs = dto.gkCleanSheets {
                 p.goalkeeperStats = GoalkeeperStats(matchesAttended: att, goalsConceded: con, cleanSheets: cs)
             }

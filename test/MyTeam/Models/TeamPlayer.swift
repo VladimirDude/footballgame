@@ -62,6 +62,10 @@ struct TeamPlayer: Identifiable {
     var goalkeeperStats: GoalkeeperStats?
     var coachInfo: CoachInfo?
     var photo: UIImage?
+    /// Stable relative key of this player's photo in cloud storage (e.g.
+    /// "players/UUID.jpg"). Travels in the synced payload so team members can
+    /// download the same photo. `nil` until an admin uploads one.
+    var photoPath: String?
 
     var total: Int { goals + assists }
     var totalWithBonus: Double { Double(total) + bonusPoints }
@@ -75,7 +79,8 @@ struct TeamPlayer: Identifiable {
         bonusPoints: Double = 0,
         goalkeeperStats: GoalkeeperStats? = nil,
         coachInfo: CoachInfo? = nil,
-        photo: UIImage? = nil
+        photo: UIImage? = nil,
+        photoPath: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -86,6 +91,7 @@ struct TeamPlayer: Identifiable {
         self.goalkeeperStats = goalkeeperStats
         self.coachInfo = coachInfo
         self.photo = photo
+        self.photoPath = photoPath
     }
 }
 

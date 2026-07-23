@@ -67,6 +67,8 @@ final class TeamStore: ObservableObject {
     func updatePlayerPhoto(id: UUID, photo: UIImage?) {
         guard let i = players.firstIndex(where: { $0.id == id }) else { return }
         players[i].photo = photo
+        // Clear the cloud key so the next publish re-uploads the new image.
+        players[i].photoPath = nil
     }
 
     func updateGoalkeeperStats(id: UUID, attended: Int, conceded: Int, cleanSheets: Int) {

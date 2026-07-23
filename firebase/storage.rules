@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// FTMP — player photo storage.
+//
+// Photos live at:  teams/{teamId}/players/{playerId}.jpg
+//
+// Storage rules can't read Firestore, so team access is carried on the user's
+// auth token as a custom claim `teams` (a list of teamIds), which the
+// `redeemCode` / `createTeam` Cloud Functions set when a user joins a team.
+// After joining, the client must refresh its ID token for the claim to take
+// effect (Auth.auth().currentUser?.getIDTokenForcingRefresh(true)).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /teams/{teamId}/players/{fileName} {
+      // Any member of the team may view photos.
+      allow read: if request.auth != null
+        && (request.auth.token.teams != null)
+        && (teamId in request.auth.token.teams);
+
+      // Only admins/owner may upload or replace photos. `adminTeams` is a second
+      // claim listing teams where the user has write access.
+      allow write: if request.auth != null
+        && (request.auth.token.adminTeams != null)
+        && (teamId in request.auth.token.adminTeams)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

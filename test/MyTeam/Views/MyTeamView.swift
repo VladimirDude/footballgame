@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MyTeamView: View {
     @StateObject private var vm = TeamStore()
+    @StateObject private var sync = TeamSyncService()
     @State private var showCoachDetail = false
     @State private var showGames = false
     @State private var editingPlayerId: UUID?
@@ -44,6 +45,9 @@ struct MyTeamView: View {
                 Button { showProfile = true } label: {
                     Image(systemName: "person.crop.circle").foregroundStyle(TeamTheme.textSecondary)
                 }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                TeamSyncMenu(vm: vm, sync: sync)
             }
             ToolbarItem(placement: .navigationBarTrailing) { adminBadge }
         }

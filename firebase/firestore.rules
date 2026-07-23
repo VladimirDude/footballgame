@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// FTMP — My Team sharing rules.
+//
+// Model:
+//   teams/{teamId}                     the team data (edited by admins, read by members)
+//   teams/{teamId}/members/{uid}       who can see/edit a team, and their role
+//   redeemCodes/{code}                 secret codes that grant membership (functions only)
+//
+// Membership is granted ONLY by Cloud Functions (the Admin SDK bypasses these
+// rules), so a client can never write itself into a team or read the code list.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function membershipDoc(teamId) {
+      return get(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid));
+    }
+
+    function isMember(teamId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid));
+    }
+
+    function isTeamAdmin(teamId) {
+      return isMember(teamId) && membershipDoc(teamId).data.role in ['owner', 'admin'];
+    }
+
+    match /teams/{teamId} {
+      // Any member can read the team; only admins/owner can edit the data.
+      allow read:   if isMember(teamId);
+      allow update: if isTeamAdmin(teamId);
+      // Creating and deleting a team goes through Cloud Functions so the
+      // owner-membership doc is created atomically with the team.
+      allow create, delete: if false;
+
+      match /members/{uid} {
+        // A user can read their own membership; admins can read the roster.
+        allow read:  if isSignedIn() && (request.auth.uid == uid || isTeamAdmin(teamId));
+        // Membership is written exclusively by Cloud Functions.
+        allow write: if false;
+      }
+    }
+
+    // Redeem codes are secret. No client reads or writes them directly.
+    match /redeemCodes/{code} {
+      allow read, write: if false;
+    }
+  }
+}
