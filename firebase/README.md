@@ -1,99 +1,76 @@
 # My Team Sharing — Firebase Backend
 
-Lets a team **admin edit team data** and everyone else **join with a redeem code**
-to see (and, if granted, edit) that same team. This is what needs to be set up on
-the Firebase side.
+Lets a **team admin edit team data** and everyone else **join with a redeem code**
+to see it. Two backend options are implemented; the app defaults to the simpler
+**Storage-only** one.
 
-## Product choice (important)
+---
 
-Your request said "Firebase Storage," but editable, access-controlled team data is
-a **database** job, not blob storage. So:
+## Option A — Storage-only (default) ✅
 
-| Data | Firebase product | Why |
-|------|------------------|-----|
-| Team data (players, games, scores) | **Cloud Firestore** | Structured, editable, real-time, rule-enforced per team. |
-| Player photos | **Cloud Storage** | Binary files; gated by auth custom claims. |
-| Team membership + redeem codes | **Cloud Firestore + Cloud Functions** | Codes must be validated server-side. |
-| Who a user is | **Firebase Auth (Anonymous)** | Zero-friction identity so rules can gate access. |
+**No Firestore, no Cloud Functions, no Blaze plan.** Just Cloud Storage + Anonymous Auth.
 
-## Data model (Firestore)
-
+### How it works — "capability code"
+A team is a folder under an unguessable code:
 ```
-teams/{teamId}
-  name: string
-  ownerUid: string
-  data: { players: [...], games: [...] }     ← the app's exported-team JSON
-  updatedAt: timestamp
-  updatedBy: uid
-
-teams/{teamId}/members/{uid}
-  uid: string
-  role: "owner" | "admin" | "viewer"
-  joinedAt: timestamp
-
-redeemCodes/{CODE}                            ← e.g. redeemCodes/FTMP-8XK2Q-P4M9
-  teamId: string
-  role: "viewer" | "admin"
-  active: bool
-  maxUses: number        (0 = unlimited)
-  uses: number
-  expiresAt: timestamp?   (null = never)
+teams/{code}/team.json          the team data (the app's exported-team JSON)
+teams/{code}/players/{key}.jpg  player photos
 ```
+- The **redeem code IS the access key** — a long random string like `FTMP-8XK2Q-P4M9` (an unguessable share link). Knowing it grants access.
+- **Roles via owner-write:** the first publish stamps the publisher's Anonymous-Auth UID into `team.json`'s `ownerUid` metadata. `storage.rules` only lets that UID edit afterward, so everyone else who has the code is **read-only (viewer)**.
 
-## How the two flows work
-
-**Admin edits → everyone updates.** The admin's app writes `teams/{teamId}.data`
-directly (allowed by `firestore.rules` only for owner/admin members). Viewers'
-apps read that document (and can subscribe for real-time updates).
-
-**Redeem code → access.** The user's app calls the `redeemCode` Cloud Function with
-the code. The function (running with admin rights) validates the code, creates the
-caller's `members/{uid}` doc with the code's role, bumps `uses`, and sets Auth
-**custom claims** (`teams`, `adminTeams`) so Storage photo access works too. The
-app then pulls the team snapshot.
-
-## What you need to implement / deploy
-
-Everything is in this folder. Steps:
-
-1. **Create a Firebase project** and enable: **Authentication → Anonymous**,
-   **Firestore**, **Storage**, **Functions** (Functions requires the Blaze plan).
-2. **Install the CLI** and log in: `npm i -g firebase-tools && firebase login`.
-3. From `firebase/`, run `firebase init` (or reuse the files here) and set the
-   project: `firebase use --add`.
-4. **Deploy:**
+### What you set up
+1. Firebase project → enable **Authentication → Anonymous** and **Storage**.
+2. Deploy the rules:
    ```bash
-   cd firebase/functions && npm install && cd ..
-   firebase deploy --only functions,firestore:rules,storage
+   firebase deploy --only storage
    ```
-5. **In the iOS app** (Phase 2): add the Firebase SDK via SPM
-   (`FirebaseAuth`, `FirebaseFirestore`, `FirebaseFunctions`, `FirebaseStorage`),
-   drop in `GoogleService-Info.plist`, call `FirebaseApp.configure()` at launch,
-   then swap `LocalTeamRemoteStore` for `FirestoreTeamRemoteStore`
-   (already written, guarded behind `#if canImport(FirebaseFirestore)`).
+3. In the app: the Firebase SDK products **FirebaseStorage + FirebaseAuth** are
+   already added, `FirebaseApp.configure()` runs at launch, and
+   `StorageOnlyTeamRemoteStore` is the active remote. Nothing else to wire.
 
-## Creating the first team & codes
+### Client flow (already implemented)
+- **Admin**: creates a team (mints a code) → edits → **Publish Changes** writes `team.json` (+ uploads photos) and stamps ownership.
+- **Viewer**: enters the code → app reads `team.json` (+ downloads photos). They're read-only because their UID ≠ `ownerUid`.
 
-- The first admin's app calls `createTeam` (or create the `teams/{id}` doc +
-  owner `members/{uid}` doc by hand in the console).
-- Admins mint codes with the `createRedeemCode` callable
-  (`{ teamId, role: "viewer", maxUses: 50, expiresInDays: 30 }`) — or create a
-  `redeemCodes/{CODE}` doc manually in the console for a quick start.
-- Hand the code (e.g. `FTMP-8XK2Q-P4M9`) to users; they enter it in the app.
+### The one limitation
+"Admin" is the **creator's device/account** (its anonymous UID). One person managing
+the roster → perfect. If that account is lost (reinstall without restoring), they
+become a viewer of their own team. If you need **multiple admins, code expiry,
+usage caps, or true revocation → use Option B.**
 
-## Files
+### Files
+| File | Purpose |
+|------|---------|
+| `storage.rules` | Read = any code-holder; edit = the owner UID only. |
 
+---
+
+## Option B — Firestore + Cloud Functions (optional, richer)
+
+Use this only if you outgrow Option A. It adds server-validated codes (roles,
+expiry, max-uses), multiple admins, and real-time updates — at the cost of the
+Blaze plan and a bigger app (Firestore pulls in gRPC).
+
+To switch: add `FirebaseFirestore` + `FirebaseFunctions` back to the SPM package,
+set `TeamSyncService.defaultRemote` to `FirestoreTeamRemoteStore()`, and deploy:
+```bash
+cd firebase/functions && npm install && cd ..
+firebase deploy --only functions,firestore:rules,storage
+```
+
+### Files
 | File | Purpose |
 |------|---------|
 | `firestore.rules` | Read = members, write = admins; codes/members are function-only. |
-| `storage.rules` | Photo read/write gated by `teams`/`adminTeams` custom claims. |
 | `functions/index.js` | `createTeam`, `createRedeemCode`, `redeemCode` callables. |
 | `functions/package.json` | Functions dependencies (Node 20). |
 
-## Cost
+---
 
-Firestore + Auth stay in the free tier for small teams. **Functions requires the
-Blaze (pay-as-you-go) plan**, but redeem/create calls are rare, so real cost is
-effectively zero. If you want to avoid Blaze entirely, codes can be created in the
-console and redemption done via a Firestore transaction from a trusted admin
-device — but the Cloud Function is the correct, secure approach.
+## Analytics (both options)
+
+`FirebaseAnalytics` is added and `FirebaseAnalyticsBackend` is registered at
+launch, so every `AnalyticsService` event flows to Firebase automatically.
+**Remember to update `test/PrivacyInfo.xcprivacy`** to declare the analytics data
+you collect before shipping.

@@ -32,8 +32,11 @@ final class TeamSyncService: ObservableObject {
     /// no Firebase. Release stays local-only until `FirestoreTeamRemoteStore` /
     /// `FirebaseTeamPhotoStore` are wired in (once the SDK + config are present).
     nonisolated static var defaultRemote: TeamRemoteStore {
-        #if canImport(FirebaseFirestore) && canImport(FirebaseFunctions) && canImport(FirebaseAuth)
-        return FirestoreTeamRemoteStore()
+        // Storage-only backend (no Firestore/Functions). Swap for
+        // `FirestoreTeamRemoteStore()` if you later need multiple admins,
+        // server-validated codes, expiry, or real-time updates.
+        #if canImport(FirebaseStorage) && canImport(FirebaseAuth)
+        return StorageOnlyTeamRemoteStore()
         #elseif DEBUG
         return MockTeamRemoteStore()
         #else

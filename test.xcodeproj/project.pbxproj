@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		FB0000000000000000000020 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000010 /* FirebaseAnalytics */; };
-		FB0000000000000000000021 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000011 /* FirebaseFirestore */; };
-		FB0000000000000000000022 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000012 /* FirebaseFunctions */; };
 		FB0000000000000000000023 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000013 /* FirebaseStorage */; };
 		FB0000000000000000000024 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000014 /* FirebaseAuth */; };
 /* End PBXBuildFile section */
@@ -45,8 +43,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB0000000000000000000020 /* FirebaseAnalytics in Frameworks */,
-				FB0000000000000000000021 /* FirebaseFirestore in Frameworks */,
-				FB0000000000000000000022 /* FirebaseFunctions in Frameworks */,
 				FB0000000000000000000023 /* FirebaseStorage in Frameworks */,
 				FB0000000000000000000024 /* FirebaseAuth in Frameworks */,
 			);
@@ -92,8 +88,6 @@
 			name = test;
 			packageProductDependencies = (
 				FB0000000000000000000010 /* FirebaseAnalytics */,
-				FB0000000000000000000011 /* FirebaseFirestore */,
-				FB0000000000000000000012 /* FirebaseFunctions */,
 				FB0000000000000000000013 /* FirebaseStorage */,
 				FB0000000000000000000014 /* FirebaseAuth */,
 			);
@@ -387,16 +381,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB0000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
-		};
-		FB0000000000000000000011 /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB0000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
-		};
-		FB0000000000000000000012 /* FirebaseFunctions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB0000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFunctions;
 		};
 		FB0000000000000000000013 /* FirebaseStorage */ = {
 			isa = XCSwiftPackageProductDependency;

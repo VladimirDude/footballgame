@@ -1,27 +1,41 @@
 rules_version = '2';
 
-// FTMP — player photo storage.
+// FTMP — Storage-only team backend (no Firestore, no Cloud Functions).
 //
-// Photos live at:  teams/{teamId}/players/{playerId}.jpg
+// Model ("capability code"): a team lives under an unguessable code:
+//   teams/{code}/team.json          the team data
+//   teams/{code}/players/{file}     player photos
 //
-// Storage rules can't read Firestore, so team access is carried on the user's
-// auth token as a custom claim `teams` (a list of teamIds), which the
-// `redeemCode` / `createTeam` Cloud Functions set when a user joins a team.
-// After joining, the client must refresh its ID token for the claim to take
-// effect (Auth.auth().currentUser?.getIDTokenForcingRefresh(true)).
+// Knowing the code is the grant (like an unguessable share link). Anonymous Auth
+// is required so we get a stable per-device UID and basic abuse protection.
+//
+// Roles are enforced by *owner-write*: the first publish stamps the publisher's
+// UID into team.json's `ownerUid` metadata; only that UID may edit it afterward.
+// Everyone else who has the code can read → they are read-only "viewers".
 service firebase.storage {
   match /b/{bucket}/o {
-    match /teams/{teamId}/players/{fileName} {
-      // Any member of the team may view photos.
-      allow read: if request.auth != null
-        && (request.auth.token.teams != null)
-        && (teamId in request.auth.token.teams);
 
-      // Only admins/owner may upload or replace photos. `adminTeams` is a second
-      // claim listing teams where the user has write access.
+    match /teams/{teamId}/team.json {
+      // Any signed-in holder of the code can read the roster.
+      allow read: if request.auth != null;
+
+      // First publish claims ownership (file doesn't exist yet).
+      allow create: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.metadata.ownerUid == request.auth.uid;
+
+      // Only the stamped owner can edit or delete afterward.
+      allow update, delete: if request.auth != null
+        && resource.metadata.ownerUid == request.auth.uid
+        && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    match /teams/{teamId}/players/{fileName} {
+      // Photos are readable by any member and writable by any member (they're
+      // only surfaced if referenced from the owner-controlled team.json, so a
+      // stray upload is harmless). Tighten to owner-only if you prefer.
+      allow read: if request.auth != null;
       allow write: if request.auth != null
-        && (request.auth.token.adminTeams != null)
-        && (teamId in request.auth.token.adminTeams)
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
