@@ -78,9 +78,7 @@ struct PlayerPortraitImage: View {
         image = nil
         let id = playerID
         let maxPixel = size * 3
-        let loaded = await Task.detached(priority: .userInitiated) {
-            PortraitStore.loadImage(forID: id, maxPixel: maxPixel)
-        }.value
+        let loaded = await PortraitStore.loadImageAsync(forID: id, maxPixel: maxPixel)
         guard !Task.isCancelled else { return }
         image = loaded
     }

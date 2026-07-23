@@ -29,6 +29,9 @@ struct testApp: App {
                 migrateLegacyAppearanceSetting()
                 monetization.start()
                 AnalyticsService.shared.log(.appOpened)
+                Task.detached(priority: .utility) {
+                    await RemoteDataRepository.shared.refreshIfNeeded()
+                }
             }
         }
     }

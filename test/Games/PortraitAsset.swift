@@ -56,12 +56,32 @@ enum PortraitStore {
         cache.object(forKey: id as NSString)
     }
 
-    /// Decodes (downsampling to `maxPixel`) and caches the portrait for `id`.
-    /// Safe to call off the main thread — callers should, to avoid decode jank.
+    /// Decodes (downsampling to `maxPixel`) and caches the portrait for `id`
+    /// from the app bundle. Safe to call off the main thread.
     static func loadImage(forID id: String, maxPixel: CGFloat) -> UIImage? {
         if let cached = cache.object(forKey: id as NSString) { return cached }
         guard let url = PortraitAsset.bundleURL(forID: id),
               let image = downsampled(at: url, maxPixel: maxPixel) else {
+            return nil
+        }
+        cache.setObject(image, forKey: id as NSString)
+        return image
+    }
+
+    /// Full resolution order: memory cache → app bundle → remote CDN (disk-cached).
+    /// The remote step is skipped entirely when offline, so this is identical to
+    /// `loadImage` until `RemoteDataConfig` is pointed at a CDN.
+    static func loadImageAsync(forID id: String, maxPixel: CGFloat) async -> UIImage? {
+        if let cached = cache.object(forKey: id as NSString) { return cached }
+        if let bundled = loadImage(forID: id, maxPixel: maxPixel) { return bundled }
+
+        guard let remoteURL = RemoteDataConfig.portraitURL(
+                id: id, override: RemoteDataRepository.shared.portraitURLTemplate) else {
+            return nil
+        }
+        guard let fileURL = await RemoteDataRepository.shared.remoteImage(
+                url: remoteURL, cacheKey: "portrait-\(id).heic"),
+              let image = downsampled(at: fileURL, maxPixel: maxPixel) else {
             return nil
         }
         cache.setObject(image, forKey: id as NSString)

@@ -37,8 +37,11 @@ final class ClubDataStore {
     }
 
     private init() {
+        // Offline-first: read the over-the-air copy if one has been downloaded,
+        // otherwise the bundled seed. A newer copy fetched this session is picked
+        // up on the next launch (see RemoteDataRepository).
         if
-            let url = Bundle.main.url(forResource: "ClubDatabase", withExtension: "json"),
+            let url = RemoteDataRepository.shared.currentDatabaseURL,
             let data = try? Data(contentsOf: url),
             let decoded = try? JSONDecoder().decode(ClubDatabase.self, from: data)
         {
