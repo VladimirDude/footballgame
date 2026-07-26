@@ -53,11 +53,8 @@ enum NationalTeamGuessValidator {
         var candidates = [round.nationName, round.flag] + round.aliases
 
         let key = FuzzyMatcher.normalize(round.nationName)
-        for (canonical, abbrevs) in NationalTeamAbbreviations.map {
-            if key == canonical || key.contains(canonical) || canonical.contains(key) {
-                candidates.append(canonical)
-                candidates.append(contentsOf: abbrevs)
-            }
+        if let abbrevs = NationalTeamAbbreviations.map[key] {
+            candidates.append(contentsOf: abbrevs)
         }
 
         return FuzzyMatcher.matches(guess: guess, candidates: candidates)

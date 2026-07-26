@@ -1,15 +1,49 @@
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
+    @EnvironmentObject private var entitlements: EntitlementService
+    @Environment(\.requestReview) private var requestReview
+    @Environment(\.openURL) private var openURL
+    @State private var showResetConfirm = false
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     @AppStorage(PredictorStore.simulateOnlyKey) private var predictorSimulateOnly = false
+    @AppStorage("gameRelaxedMode") private var relaxedMode = false
+    @AppStorage(AppAccent.storageKey) private var accentRaw = AppAccent.classic.rawValue
     @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
+    @State private var showPaywall = false
 
     private let store = ClubDataStore.shared
 
     private var appearanceSelection: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRaw) ?? .system
+    }
+
+    /// Relaxed Mode is Pro — free users get the paywall instead of enabling it.
+    private var relaxedBinding: Binding<Bool> {
+        Binding(
+            get: { relaxedMode },
+            set: { newValue in
+                if !newValue {
+                    relaxedMode = false
+                } else if entitlements.canAccess(.relaxedMode) {
+                    relaxedMode = true
+                } else {
+                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.relaxedMode.rawValue))
+                    showPaywall = true
+                }
+            }
+        )
+    }
+
+    private func selectAccent(_ accent: AppAccent) {
+        if accent.isFree || entitlements.canAccess(.themePacks) {
+            accentRaw = accent.rawValue
+        } else {
+            AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.themePacks.rawValue))
+            showPaywall = true
+        }
     }
 
     var body: some View {
@@ -52,6 +86,29 @@ struct SettingsView: View {
                             )
                         }
                         .tint(BrowseTheme.accent)
+
+                        Divider().padding(.leading, 52)
+
+                        Toggle(isOn: relaxedBinding) {
+                            HStack(spacing: 8) {
+                                SettingsRowLabel(
+                                    title: "Relaxed Mode",
+                                    subtitle: "No timers on Guess Player & Higher or Lower",
+                                    icon: "timer",
+                                    tint: .blue
+                                )
+                                if !entitlements.canAccess(.relaxedMode) { PremiumBadge() }
+                            }
+                        }
+                        .tint(BrowseTheme.accent)
+                    }
+
+                    settingsSection(title: "Theme", icon: "paintpalette.fill") {
+                        VStack(spacing: 10) {
+                            ForEach(AppAccent.allCases) { accent in
+                                accentRow(accent)
+                            }
+                        }
                     }
 
                     settingsSection(title: "Database", icon: "externaldrive.fill") {
@@ -99,6 +156,30 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
                     }
 
+                    settingsSection(title: "Support & Legal", icon: "hand.raised.fill") {
+                        VStack(spacing: 0) {
+                            linkRow(title: "Rate FTMP", icon: "star.fill", tint: .yellow) {
+                                requestReview()
+                            }
+                            Divider().padding(.leading, 52)
+                            linkRow(title: "Contact Support", icon: "envelope.fill", tint: .blue) {
+                                openURL(URL(string: "mailto:support@ftmpapp.com")!)
+                            }
+                            Divider().padding(.leading, 52)
+                            linkRow(title: "Privacy Policy", icon: "lock.fill", tint: .gray) {
+                                openURL(URL(string: "https://ftmpapp.com/privacy")!)
+                            }
+                            Divider().padding(.leading, 52)
+                            linkRow(title: "Terms of Use", icon: "doc.text.fill", tint: .gray) {
+                                openURL(URL(string: "https://ftmpapp.com/terms")!)
+                            }
+                            Divider().padding(.leading, 52)
+                            linkRow(title: "Reset All Data", icon: "trash.fill", tint: .red) {
+                                showResetConfirm = true
+                            }
+                        }
+                    }
+
                     settingsSection(title: "About", icon: "info.circle.fill") {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(AppBranding.name)
@@ -107,6 +188,13 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
+                            Divider().padding(.vertical, 4)
+                            HStack {
+                                Text("Version").foregroundStyle(.secondary)
+                                Spacer()
+                                Text(appVersion).foregroundStyle(.tertiary)
+                            }
+                            .font(.subheadline)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -118,6 +206,83 @@ struct SettingsView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Settings")
         }
+        .paywallSheet(isPresented: $showPaywall, source: "settings_feature")
+        .alert("Reset All Data?", isPresented: $showResetConfirm) {
+            Button("Reset", role: .destructive) { resetAllData() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This clears your game scores, predictions, and saved team data. This can't be undone.")
+        }
+    }
+
+    private var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = info?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) (\(build))"
+    }
+
+    private func resetAllData() {
+        let defaults = UserDefaults.standard
+        // Game scores
+        for key in ["guessClubBestStreak", "guessNationBestStreak", "guessPlayerBestStreak",
+                    "higherOrLowerHighScore", "wordleBestStreak"] {
+            defaults.removeObject(forKey: key)
+        }
+        // Predictor progress
+        PredictorStore.shared.resetAllProgress()
+        // Saved team data
+        try? FileManager.default.removeItem(at: DataExporter.saveURL)
+        HapticFeedback.success()
+    }
+
+    private func linkRow(title: String, icon: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(tint.opacity(0.15)).frame(width: 40, height: 40)
+                    Image(systemName: icon).foregroundStyle(tint)
+                }
+                Text(title)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(tint == .red ? Color.red : .primary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func accentRow(_ accent: AppAccent) -> some View {
+        let isSelected = accentRaw == accent.rawValue
+        let locked = !accent.isFree && !entitlements.canAccess(.themePacks)
+        return Button {
+            selectAccent(accent)
+        } label: {
+            HStack(spacing: 14) {
+                Circle()
+                    .fill(accent.color)
+                    .frame(width: 28, height: 28)
+                    .overlay(Circle().stroke(Color.primary.opacity(0.1), lineWidth: 1))
+                Text(accent.displayName)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Spacer()
+                if locked {
+                    PremiumBadge()
+                } else if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(accent.color)
+                        .fontWeight(.bold)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var headerCard: some View {

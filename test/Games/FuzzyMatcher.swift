@@ -36,9 +36,10 @@ enum FuzzyMatcher {
     // MARK: - Private
 
     private static func directMatch(_ guess: String, _ candidate: String) -> Bool {
+        // Exact only. Partial/short matches must go through the alias list
+        // (exact-matched here) or `tokenMatch`/`levenshteinMatch`. Accepting any
+        // substring produced false positives (e.g. "sen" → "arsenal").
         guess == candidate
-            || (guess.count >= 3 && candidate.contains(guess))
-            || (candidate.count >= 4 && guess.contains(candidate))
     }
 
     private static func tokenMatch(_ guess: String, _ candidate: String) -> Bool {
@@ -46,12 +47,20 @@ enum FuzzyMatcher {
         let candidateTokens = tokens(from: candidate)
         guard !guessTokens.isEmpty, !candidateTokens.isEmpty else { return false }
 
-        if guessTokens.count == 1, let single = guessTokens.first, single.count >= 4 {
+        // A single-word guess must equal a full candidate word and be long
+        // enough to be unambiguous — no prefixes (blocks "man" → "manchester").
+        if guessTokens.count == 1 {
+            guard let single = guessTokens.first, single.count >= 4 else { return false }
             return candidateTokens.contains(single)
         }
 
+        // Multi-word: every guess token must match a candidate word; prefix
+        // matching is only allowed for tokens long enough to be safe.
         return guessTokens.allSatisfy { token in
-            candidateTokens.contains(where: { $0.hasPrefix(token) || token.hasPrefix($0) })
+            candidateTokens.contains { candidateToken in
+                candidateToken == token
+                    || (token.count >= 4 && (candidateToken.hasPrefix(token) || token.hasPrefix(candidateToken)))
+            }
         }
     }
 

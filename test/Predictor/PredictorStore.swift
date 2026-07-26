@@ -153,11 +153,16 @@ final class PredictorStore: ObservableObject {
             }
         }
 
+        // Accumulate every gameweek into one dictionary and persist + recompute
+        // ONCE, instead of encoding the whole growing blob and recomputing the
+        // full-season caches on each of the 38 gameweeks (previously O(N²)).
+        var simulations = loadSimulations()
         for gameweek in gameweeks {
-            if shouldReroll || !isGameweekSimulated(gameweek.number) {
-                simulateGameweek(gameweek.number)
+            if shouldReroll || !gameweek.matches.allSatisfy({ simulations[$0.id] != nil }) {
+                simulateGameweek(gameweek.number, into: &simulations)
             }
         }
+        saveSimulations(simulations)
         refreshDerivedCaches()
         objectWillChange.send()
     }
@@ -183,13 +188,23 @@ final class PredictorStore: ObservableObject {
     }
 
     func simulateGameweek(_ number: Int, reroll: Bool = false) {
-        guard let gameweek = gameweek(number) else { return }
+        guard gameweek(number) != nil else { return }
         _ = reroll
+        var simulations = loadSimulations()
+        simulateGameweek(number, into: &simulations)
+        saveSimulations(simulations)
+        refreshDerivedCaches()
+        objectWillChange.send()
+    }
+
+    /// Core simulation: writes a gameweek's results into `simulations` without
+    /// persisting or recomputing caches, so callers (e.g. full-season) can batch.
+    private func simulateGameweek(_ number: Int, into simulations: inout [String: PLMatchSimulation]) {
+        guard let gameweek = gameweek(number) else { return }
         // Bump the nonce on every run so re-simulating (or clearing then simulating
         // again) never replays the exact same seeded scorelines.
         incrementSimulationNonce(for: number)
         let store = ClubDataStore.shared
-        var simulations = loadSimulations()
         let nonce = combinedSimulationNonce(gameweek: number)
 
         for match in gameweek.matches {
@@ -208,10 +223,6 @@ final class PredictorStore: ObservableObject {
                 nonce: nonce
             )
         }
-
-        saveSimulations(simulations)
-        refreshDerivedCaches()
-        objectWillChange.send()
     }
 
     func score(for gameweek: PLGameweek) -> PLGameweekScore? {
@@ -386,7 +397,7 @@ final class PredictorStore: ObservableObject {
         defaults.removeObject(forKey: simulationsKey)
     }
 
-    private func resetAllProgress() {
+    func resetAllProgress() {
         defaults.removeObject(forKey: predictionsKey)
         clearAllSimulations()
         for gameweek in gameweeks {

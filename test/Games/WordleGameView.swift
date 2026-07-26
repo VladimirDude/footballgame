@@ -6,6 +6,8 @@ struct WordleGameView: View {
     let target: WordlePlayer
     let guesses: [WordleGuess]
     let gameResult: GameResult?
+    var streak: Int = 0
+    var bestStreak: Int = 0
     @Binding var searchQuery: String
     let suggestions: [WordlePlayer]
     let selectedPlayer: WordlePlayer?
@@ -47,6 +49,14 @@ struct WordleGameView: View {
                 icon: "person.fill.questionmark",
                 text: "Guess the mystery player in 6 tries"
             )
+
+            HStack(spacing: 18) {
+                Label("\(streak)", systemImage: "flame.fill")
+                    .foregroundStyle(streak > 0 ? WordlePalette.correct : theme.textMuted)
+                Label("Best \(bestStreak)", systemImage: "trophy.fill")
+                    .foregroundStyle(theme.textSecondary)
+            }
+            .font(.caption.weight(.bold))
 
             HStack(spacing: 5) {
                 ForEach(0..<WordleEvaluator.maxGuesses, id: \.self) { index in

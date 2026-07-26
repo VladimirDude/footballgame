@@ -9,14 +9,25 @@ private enum BrowseSection: String, CaseIterable, Identifiable {
 
 struct SearchView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @EnvironmentObject private var entitlements: EntitlementService
 
     @State private var section: BrowseSection = .players
     @State private var playerQuery = ""
     @State private var clubQuery = ""
     @State private var players: [Player] = []
     @State private var playerFilters = PlayerSearchFilters()
+    @State private var totalMatchCount = 0
+    @State private var showSearchPaywall = false
+    @State private var searchTask: Task<Void, Never>?
+
+    /// Free users see the first N matches; Pro removes the cap.
+    private let freeResultLimit = 20
 
     private let store = ClubDataStore.shared
+
+    private var resultsTruncated: Bool {
+        !entitlements.canAccess(.unlimitedSearchResults) && totalMatchCount > players.count
+    }
 
     private var clubs: [ClubSummary] {
         store.searchClubs(clubQuery)
@@ -56,6 +67,7 @@ struct SearchView: View {
             }
             .navigationTitle("Search")
         }
+        .paywallSheet(isPresented: $showSearchPaywall, source: "search")
     }
 
     private var playerBrowseContent: some View {
@@ -63,7 +75,7 @@ struct SearchView: View {
             BrowseSearchField(placeholder: "Search player", text: $playerQuery, onSubmit: searchPlayers)
                 .padding(.horizontal)
                 .onChange(of: playerQuery) { _, _ in
-                    searchPlayers()
+                    scheduleSearch()
                 }
 
             SearchFiltersBar(
@@ -75,10 +87,24 @@ struct SearchView: View {
             .onChange(of: playerFilters) { _, _ in
                 searchPlayers()
             }
+            .premiumGate(.advancedSearchFilters, source: "search_filters")
 
-            Text("\(store.playerCount) players · offline")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            if resultsTruncated {
+                Button {
+                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.unlimitedSearchResults.rawValue))
+                    showSearchPaywall = true
+                } label: {
+                    Label("Showing \(players.count) of \(totalMatchCount) — unlock all with Pro",
+                          systemImage: "lock.fill")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.orange)
+            } else {
+                Text("\(store.playerCount) players · offline")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
             if !canSearchPlayers {
                 ContentUnavailableView(
@@ -176,8 +202,24 @@ struct SearchView: View {
         }
     }
 
+    /// Debounces keystrokes so we don't run a full linear scan on every letter.
+    private func scheduleSearch() {
+        searchTask?.cancel()
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            if Task.isCancelled { return }
+            searchPlayers()
+        }
+    }
+
     private func searchPlayers() {
-        players = store.searchPlayers(playerQuery, filters: playerFilters)
+        let results = store.searchPlayers(playerQuery, filters: playerFilters)
+        totalMatchCount = results.count
+        if entitlements.canAccess(.unlimitedSearchResults) {
+            players = results
+        } else {
+            players = Array(results.prefix(freeResultLimit))
+        }
     }
 }
 

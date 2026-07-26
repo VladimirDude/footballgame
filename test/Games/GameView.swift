@@ -3,14 +3,52 @@ import Combine
 
 struct GameView: View {
     private let store = ClubDataStore.shared
+    @EnvironmentObject private var entitlements: EntitlementService
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
+
+    @State private var showGamePaywall = false
+
+    // MARK: - Premium gating
+
+    /// Difficulty binding that blocks Medium/Hard for free users (Easy stays free)
+    /// and opens the paywall instead of changing the selection.
+    private var gatedClubDifficulty: Binding<GameDifficulty> {
+        Binding(
+            get: { currentDifficulty },
+            set: { newValue in
+                if newValue == .easy || entitlements.canAccess(.hardDifficulty) {
+                    currentDifficulty = newValue
+                } else {
+                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.hardDifficulty.rawValue))
+                    showGamePaywall = true
+                }
+            }
+        )
+    }
+
+    private var gatedNationDifficulty: Binding<NationalTeamDifficulty> {
+        Binding(
+            get: { gnDifficulty },
+            set: { newValue in
+                if newValue == .easy || entitlements.canAccess(.hardDifficulty) {
+                    gnDifficulty = newValue
+                } else {
+                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.hardDifficulty.rawValue))
+                    showGamePaywall = true
+                }
+            }
+        )
+    }
 
     private var theme: GameModeTheme {
         GameModeTheme.theme(for: selectedTab, colorScheme: colorScheme)
     }
 
     @State private var selectedTab: GameTab = .guessClub
+
+    /// Pro "Relaxed Mode" removes the countdowns from the timed games (set in Settings).
+    @AppStorage("gameRelaxedMode") private var relaxedMode = false
 
     // Guess the Club
     @State private var round: GameRound?
@@ -44,8 +82,23 @@ struct GameView: View {
     @AppStorage("guessPlayerBestStreak") private var gpBestStreak = 0
     @State private var gpTimeRemaining = 10
     @State private var gpTimerActive = false
+    @State private var gpDifficulty: GameDifficulty = .easy
 
     private let gpTotalTime = 10
+
+    private var gatedPlayerDifficulty: Binding<GameDifficulty> {
+        Binding(
+            get: { gpDifficulty },
+            set: { newValue in
+                if newValue == .easy || entitlements.canAccess(.hardDifficulty) {
+                    gpDifficulty = newValue
+                } else {
+                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.hardDifficulty.rawValue))
+                    showGamePaywall = true
+                }
+            }
+        )
+    }
 
     // Higher or Lower
     @State private var hlScore = 0
@@ -67,6 +120,8 @@ struct GameView: View {
     @State private var wordleSearchQuery = ""
     @State private var wordleSelectedPlayer: WordlePlayer?
     @State private var wordleDuplicateGuess = false
+    @State private var wordleStreak = 0
+    @AppStorage("wordleBestStreak") private var wordleBestStreak = 0
 
     private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -115,15 +170,26 @@ struct GameView: View {
             gnStreak = 0
             startNewNationRound()
         }
+        .onChange(of: gpDifficulty) { _, _ in
+            gpStreak = 0
+            startNewPlayerRound()
+        }
         .onChange(of: selectedTab) { _, tab in
-            gpTimerActive = tab == .guessPlayer && gpResult == nil
+            // Returning to Guess Player restarts the countdown from full, instead
+            // of resuming a nearly-expired timer (which caused unfair instant losses).
+            if tab == .guessPlayer, gpResult == nil, gpRound != nil {
+                resetGuessPlayerTimer()
+            } else {
+                gpTimerActive = tab == .guessPlayer && gpResult == nil
+            }
             hlTimerActive = tab == .higherLower && !hlShowRightValue && !hlIsGameOver
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
-                if selectedTab == .guessPlayer, gpResult == nil {
-                    gpTimerActive = true
+                // Fresh countdown on resume rather than the leftover value.
+                if selectedTab == .guessPlayer, gpResult == nil, gpRound != nil {
+                    resetGuessPlayerTimer()
                 }
                 if selectedTab == .higherLower, !hlShowRightValue, !hlIsGameOver {
                     hlTimerActive = true
@@ -139,10 +205,11 @@ struct GameView: View {
             tickHigherLowerTimer()
             tickGuessPlayerTimer()
         }
+        .paywallSheet(isPresented: $showGamePaywall, source: "game")
     }
 
     private func tickHigherLowerTimer() {
-        guard selectedTab == .higherLower, hlTimerActive, !hlShowRightValue, !hlIsGameOver else { return }
+        guard selectedTab == .higherLower, hlTimerActive, !hlShowRightValue, !hlIsGameOver, !relaxedMode else { return }
 
         if hlTimeRemaining > 0 {
             hlTimeRemaining -= 1
@@ -158,7 +225,7 @@ struct GameView: View {
     }
 
     private func tickGuessPlayerTimer() {
-        guard selectedTab == .guessPlayer, gpTimerActive, gpResult == nil else { return }
+        guard selectedTab == .guessPlayer, gpTimerActive, gpResult == nil, !relaxedMode else { return }
 
         if gpTimeRemaining > 0 {
             gpTimeRemaining -= 1
@@ -181,6 +248,35 @@ struct GameView: View {
 
     // MARK: - Tab Content
 
+    /// Shared "couldn't load" state, mirroring the Guess Club / Nation modes.
+    @ViewBuilder
+    private func gamePoolError(retry: @escaping () -> Void) -> some View {
+        VStack(spacing: 12) {
+            Spacer()
+            Image(systemName: "exclamationmark.triangle")
+                .font(.title2)
+                .foregroundStyle(theme.textSecondary)
+            Text("Couldn't load players. Please try again.")
+                .foregroundStyle(theme.textPrimary)
+                .multilineTextAlignment(.center)
+            Button("Try Again", action: retry)
+                .buttonStyle(.borderedProminent)
+            Spacer()
+        }
+        .padding()
+    }
+
+    @ViewBuilder
+    private func gameLoading(_ message: String, onAppear: @escaping () -> Void) -> some View {
+        VStack(spacing: 12) {
+            Spacer()
+            ProgressView().tint(theme.accent)
+            Text(message).foregroundStyle(theme.textSecondary)
+            Spacer()
+        }
+        .onAppear(perform: onAppear)
+    }
+
     @ViewBuilder
     private var wordleContent: some View {
         if let target = wordleTarget {
@@ -188,6 +284,8 @@ struct GameView: View {
                 target: target,
                 guesses: wordleGuesses,
                 gameResult: wordleResult,
+                streak: wordleStreak,
+                bestStreak: wordleBestStreak,
                 searchQuery: $wordleSearchQuery,
                 suggestions: wordleSuggestions,
                 selectedPlayer: wordleSelectedPlayer,
@@ -197,15 +295,10 @@ struct GameView: View {
                 onSubmit: submitWordleGuess,
                 onPlayAgain: startNewWordleRound
             )
+        } else if store.wordlePoolCount == 0 {
+            gamePoolError(retry: startNewWordleRound)
         } else {
-            VStack(spacing: 12) {
-                Spacer()
-                ProgressView().tint(theme.accent)
-                Text("Loading players...")
-                    .foregroundStyle(theme.textSecondary)
-                Spacer()
-            }
-            .onAppear { startNewWordleRound() }
+            gameLoading("Loading players...", onAppear: startNewWordleRound)
         }
     }
 
@@ -234,7 +327,7 @@ struct GameView: View {
                 revealedSlots: $revealedSlots,
                 hasUsedHint: hasUsedHint,
                 canUseHint: canUseHint(for: round),
-                difficulty: $currentDifficulty,
+                difficulty: gatedClubDifficulty,
                 onNewGame: startNewRound,
                 onRevealHint: revealRandomPlayer,
                 onSubmit: submitClubGuess,
@@ -249,10 +342,11 @@ struct GameView: View {
             GuessPlayerGameView(
                 round: currentRound,
                 guess: $gpGuess,
+                difficulty: gatedPlayerDifficulty,
                 gameResult: gpResult,
                 streak: gpStreak,
                 bestStreak: gpBestStreak,
-                timeRemaining: gpResult == nil ? gpTimeRemaining : nil,
+                timeRemaining: (gpResult == nil && !relaxedMode) ? gpTimeRemaining : nil,
                 totalTime: gpTotalTime,
                 showClubHint: gpShowClubHint,
                 shakeWrong: gpShakeWrong,
@@ -270,15 +364,10 @@ struct GameView: View {
                     }
                 }
             )
+        } else if store.guessPlayerPoolCount(for: gpDifficulty) == 0 {
+            gamePoolError(retry: startNewPlayerRound)
         } else {
-            VStack(spacing: 12) {
-                Spacer()
-                ProgressView().tint(theme.accent)
-                Text("Loading star players...")
-                    .foregroundStyle(theme.textSecondary)
-                Spacer()
-            }
-            .onAppear { startNewPlayerRound() }
+            gameLoading("Loading star players...", onAppear: startNewPlayerRound)
         }
     }
 
@@ -302,7 +391,7 @@ struct GameView: View {
                 revealedSlots: $gnRevealedSlots,
                 hasUsedHint: gnHasUsedHint,
                 canUseHint: canUseNationHint(for: gnRound),
-                difficulty: $gnDifficulty,
+                difficulty: gatedNationDifficulty,
                 onNewGame: startNewNationRound,
                 onRevealHint: revealRandomNationPlayer,
                 onSubmit: submitNationGuess,
@@ -311,22 +400,45 @@ struct GameView: View {
         }
     }
 
+    @ViewBuilder
     private var higherLowerContent: some View {
-        HigherOrLowerGameView(
-            streak: hlScore,
-            bestStreak: hlHighScore,
-            timeRemaining: (!hlShowRightValue && !hlIsGameOver) ? hlTimeRemaining : nil,
-            left: hlPlayerLeft,
-            right: hlPlayerRight,
-            revealState: hlRevealState,
-            shakeTrigger: hlShakeTrigger,
-            showRightValue: hlShowRightValue,
-            isGameOver: hlIsGameOver,
-            lastGuessCorrect: hlLastGuessCorrect,
-            onHigher: { processHLGuess(guessedHigher: true) },
-            onLower: { processHLGuess(guessedHigher: false) },
-            onContinue: cycleToNextHLRound
-        )
+        if store.higherOrLowerPoolCount < 2 {
+            gamePoolError(retry: setupInitialHLRound)
+        } else {
+            HigherOrLowerGameView(
+                streak: hlScore,
+                bestStreak: hlHighScore,
+                timeRemaining: (!hlShowRightValue && !hlIsGameOver && !relaxedMode) ? hlTimeRemaining : nil,
+                left: hlPlayerLeft,
+                right: hlPlayerRight,
+                revealState: hlRevealState,
+                shakeTrigger: hlShakeTrigger,
+                showRightValue: hlShowRightValue,
+                isGameOver: hlIsGameOver,
+                lastGuessCorrect: hlLastGuessCorrect,
+                onHigher: { processHLGuess(guessedHigher: true) },
+                onLower: { processHLGuess(guessedHigher: false) },
+                onContinue: cycleToNextHLRound,
+                onRevive: reviveHL
+            )
+        }
+    }
+
+    /// Pro: after a game over, keep the streak and get a fresh duel instead of
+    /// resetting to zero. Free users get the paywall.
+    private func reviveHL() {
+        PremiumGate.run(.higherLowerRevive, entitlements: entitlements, showPaywall: $showGamePaywall) {
+            let pool = store.fetchHigherOrLowerPool()
+            hlPlayerLeft = hlPlayerRight
+            guard let next = pickHLChallenger(excluding: hlPlayerLeft, from: pool) else {
+                setupInitialHLRound()
+                return
+            }
+            hlPlayerRight = next
+            resetHLRoundState()
+            hlTimeRemaining = 5
+            hlTimerActive = true
+        }
     }
 
     // MARK: - Tab Selection
@@ -385,11 +497,14 @@ struct GameView: View {
             withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
                 wordleResult = .won
             }
+            wordleStreak += 1
+            if wordleStreak > wordleBestStreak { wordleBestStreak = wordleStreak }
             HapticFeedback.success()
         } else if wordleGuesses.count >= WordleEvaluator.maxGuesses {
             withAnimation(.spring(response: 0.38, dampingFraction: 0.82)) {
                 wordleResult = .lost
             }
+            wordleStreak = 0
             HapticFeedback.error()
         }
 
@@ -584,7 +699,7 @@ struct GameView: View {
         gpResult = nil
         gpShowClubHint = false
         gpShakeWrong = false
-        if let newRound = store.randomGuessPlayerRound() {
+        if let newRound = store.randomGuessPlayerRound(for: gpDifficulty) {
             gpRound = newRound
             resetGuessPlayerTimer()
         } else {
@@ -601,6 +716,7 @@ struct GameView: View {
 
         withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
             gpRound = store.randomGuessPlayerRound(
+                for: gpDifficulty,
                 excluding: Set([previousID].compactMap { $0 })
             )
         }
@@ -638,7 +754,10 @@ struct GameView: View {
         hlTimerActive = false
 
         let isCorrect: Bool
-        if guessedHigher {
+        if right.marketValue == left.marketValue {
+            // Equal values can't be guessed higher OR lower — never a loss.
+            isCorrect = true
+        } else if guessedHigher {
             isCorrect = right.marketValue > left.marketValue
         } else {
             isCorrect = right.marketValue < left.marketValue

@@ -5,6 +5,7 @@ struct GuessPlayerGameView: View {
 
     let round: GuessPlayerRound
     @Binding var guess: String
+    @Binding var difficulty: GameDifficulty
     let gameResult: GameResult?
     let streak: Int
     let bestStreak: Int
@@ -36,6 +37,12 @@ struct GuessPlayerGameView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: GameDesign.spacingMD) {
+                GameSegmentedControl(
+                    items: GameDifficulty.allCases,
+                    selection: $difficulty,
+                    title: \.rawValue
+                )
+
                 GameStatsBar(
                     streak: streak,
                     bestStreak: bestStreak,

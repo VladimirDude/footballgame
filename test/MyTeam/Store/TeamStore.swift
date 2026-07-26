@@ -40,11 +40,30 @@ final class TeamStore: ObservableObject {
     var totalGoals: Int        { players.reduce(0) { $0 + $1.goals } }
     var totalAssists: Int      { players.reduce(0) { $0 + $1.assists } }
 
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Init
 
     init(dataService: TeamDataServiceProtocol = TeamDataService()) {
-        self.players = dataService.fetchPlayers()
-        self.games = dataService.fetchGames()
+        // Load the last saved roster if present, otherwise the seeded data. This
+        // removes the previous behavior where edits were lost on relaunch unless
+        // the admin manually tapped Save/Load.
+        if let saved = DataExporter.loadFromDisk() {
+            self.players = saved.players
+            self.games = saved.games
+        } else {
+            self.players = dataService.fetchPlayers()
+            self.games = dataService.fetchGames()
+        }
+
+        // Autosave (debounced) whenever the roster or games change.
+        Publishers.CombineLatest($players, $games)
+            .dropFirst()
+            .debounce(for: .seconds(1), scheduler: RunLoop.main)
+            .sink { players, games in
+                _ = DataExporter.saveToDisk(players: players, games: games)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - TeamPlayer CRUD

@@ -46,22 +46,20 @@ enum ClubLogoStyle {
 }
 
 enum ClubLogoLoader {
-    private static var imageCache: [String: UIImage] = [:]
-    private static let lock = NSLock()
+    // Thread-safe and memory-bounded (evicts under pressure), replacing the
+    // previous unbounded dictionary whose fast-path read raced the lock.
+    private static let cache: NSCache<NSString, UIImage> = {
+        let cache = NSCache<NSString, UIImage>()
+        cache.countLimit = 300
+        return cache
+    }()
 
     static func resourceName(forClubID clubID: String) -> String {
         "club-\(clubID)"
     }
 
     static func bundledImage(forClubID clubID: String) -> UIImage? {
-        if let cached = imageCache[clubID] {
-            return cached
-        }
-
-        lock.lock()
-        defer { lock.unlock() }
-
-        if let cached = imageCache[clubID] {
+        if let cached = cache.object(forKey: clubID as NSString) {
             return cached
         }
 
@@ -78,7 +76,7 @@ enum ClubLogoLoader {
                 withExtension: "png",
                 subdirectory: subdirectory
             ), let image = UIImage(contentsOfFile: url.path) {
-                imageCache[clubID] = image
+                cache.setObject(image, forKey: clubID as NSString)
                 return image
             }
         }

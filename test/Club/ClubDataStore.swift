@@ -23,9 +23,10 @@ final class ClubDataStore {
     private let playersByID: [String: IndexedPlayer]
     private let leagueByClubID: [String: String]
     private let knownNationalities: [String]
-    private let guessPlayerPool: [GuessPlayerRound]
+    private let guessPlayerPools: [GameDifficulty: [GuessPlayerRound]]
     private let wordlePlayerPool: [WordlePlayer]
     private let nationalTeamSquads: [String: [NationalTeamSquadPlayer]]
+    private let higherOrLowerPool: [HLPlayer]
 
     var clubCount: Int { database.clubs.count }
     var playerCount: Int { allPlayers.count }
@@ -74,10 +75,25 @@ final class ClubDataStore {
             $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
         }
 
-        guessPlayerPool = Self.buildGuessPlayerPool(
-            clubs: database.clubs,
-            eliteClubNames: GameDifficulty.easy.associatedClubs
-        )
+        // Harder tiers draw from wider, more obscure club sets with lower value
+        // floors, so Medium/Hard surface less famous players.
+        guessPlayerPools = [
+            .easy: Self.buildGuessPlayerPool(
+                clubs: database.clubs,
+                eliteClubNames: GameDifficulty.easy.associatedClubs,
+                minimumMarketValue: 25_000_000
+            ),
+            .medium: Self.buildGuessPlayerPool(
+                clubs: database.clubs,
+                eliteClubNames: GameDifficulty.medium.associatedClubs,
+                minimumMarketValue: 8_000_000
+            ),
+            .hard: Self.buildGuessPlayerPool(
+                clubs: database.clubs,
+                eliteClubNames: GameDifficulty.hard.associatedClubs,
+                minimumMarketValue: 2_000_000
+            ),
+        ]
 
         wordlePlayerPool = Self.buildWordlePlayerPool(
             clubs: database.clubs,
@@ -86,6 +102,8 @@ final class ClubDataStore {
         )
 
         nationalTeamSquads = Self.buildNationalTeamSquads(from: allPlayers)
+
+        higherOrLowerPool = Self.buildHigherOrLowerPool(from: allPlayers)
     }
 
     private static func buildNationalTeamSquads(
@@ -94,7 +112,9 @@ final class ClubDataStore {
         var squads: [String: [NationalTeamSquadPlayer]] = [:]
 
         for indexed in players {
-            guard let nation = indexed.player.nationality.first else { continue }
+            // A dual-national is eligible for every nation they hold, so register
+            // them under each — not only their first-listed nationality.
+            guard !indexed.player.nationality.isEmpty else { continue }
             let entry = NationalTeamSquadPlayer(
                 id: indexed.player.id,
                 name: indexed.player.name,
@@ -103,10 +123,28 @@ final class ClubDataStore {
                 clubName: indexed.clubName,
                 nationalities: indexed.player.nationality
             )
-            squads[nation, default: []].append(entry)
+            for nation in indexed.player.nationality {
+                squads[nation, default: []].append(entry)
+            }
         }
 
         return squads
+    }
+
+    /// Higher-or-Lower duels compare market values, so the pool must exclude
+    /// €0 / unpriced players (which make "€0 vs €0" duels unwinnable) and
+    /// players without a portrait. Built once and cached, not per round.
+    private static func buildHigherOrLowerPool(from players: [IndexedPlayer]) -> [HLPlayer] {
+        players.compactMap { indexed in
+            let value = indexed.player.marketValue ?? 0
+            guard value > 0, PortraitAsset.exists(forID: indexed.player.id) else { return nil }
+            return HLPlayer(
+                id: indexed.player.id,
+                name: indexed.player.name,
+                clubName: indexed.clubName,
+                marketValue: value
+            )
+        }
     }
 
     func randomNationalTeamRound(for difficulty: NationalTeamDifficulty) -> NationalTeamRound? {
@@ -138,9 +176,9 @@ final class ClubDataStore {
 
     private static func buildGuessPlayerPool(
         clubs: [BundledClub],
-        eliteClubNames: Set<String>
+        eliteClubNames: Set<String>,
+        minimumMarketValue: Int
     ) -> [GuessPlayerRound] {
-        let minimumMarketValue = 25_000_000
         let portraitAvailable: (String) -> Bool = { PortraitAsset.exists(forID: $0) }
 
         var pool: [GuessPlayerRound] = []
@@ -176,13 +214,17 @@ final class ClubDataStore {
         }
     }
 
-    func guessPlayerPoolCount() -> Int {
-        guessPlayerPool.count
+    func guessPlayerPoolCount(for difficulty: GameDifficulty = .easy) -> Int {
+        guessPlayerPools[difficulty]?.count ?? 0
     }
 
-    func randomGuessPlayerRound(excluding excludedIDs: Set<String> = []) -> GuessPlayerRound? {
-        let available = guessPlayerPool.filter { !excludedIDs.contains($0.id) }
-        return available.randomElement() ?? guessPlayerPool.randomElement()
+    var wordlePoolCount: Int { wordlePlayerPool.count }
+    var higherOrLowerPoolCount: Int { higherOrLowerPool.count }
+
+    func randomGuessPlayerRound(for difficulty: GameDifficulty = .easy, excluding excludedIDs: Set<String> = []) -> GuessPlayerRound? {
+        let pool = guessPlayerPools[difficulty] ?? []
+        let available = pool.filter { !excludedIDs.contains($0.id) }
+        return available.randomElement() ?? pool.randomElement()
     }
 
     func randomWordlePlayer(excluding excludedIDs: Set<String> = []) -> WordlePlayer? {
@@ -414,13 +456,6 @@ final class ClubDataStore {
     }
 
     func fetchHigherOrLowerPool() -> [HLPlayer] {
-        allPlayers.map { indexed in
-            HLPlayer(
-                id: indexed.player.id,
-                name: indexed.player.name,
-                clubName: indexed.clubName,
-                marketValue: indexed.player.marketValue ?? 0
-            )
-        }
+        higherOrLowerPool
     }
 }

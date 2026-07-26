@@ -26,11 +26,21 @@ private enum SimulateSection: String, CaseIterable, Identifiable {
 
 struct PredictorView: View {
     @StateObject private var store = PredictorStore.shared
+    @EnvironmentObject private var entitlements: EntitlementService
     @AppStorage(PredictorStore.simulateOnlyKey) private var simulateOnly = false
     @Environment(\.appPalette) private var palette
     @State private var section: SimulateSection = .gameweek
     @State private var detailMatch: PLMatch?
     @State private var detailSimulation: PLMatchSimulation?
+    @State private var showPaywall = false
+
+    /// Full-season simulation is Pro; gameweek-by-gameweek stays free.
+    private func gatedFullSeason() {
+        PremiumGate.run(.unlimitedSimulations, entitlements: entitlements, showPaywall: $showPaywall) {
+            store.simulateFullSeason(reroll: false)
+            HapticFeedback.success()
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -53,6 +63,7 @@ struct PredictorView: View {
                                 PLStandingsSection(store: store)
                             case .stats:
                                 PLSeasonStatsSection(store: store)
+                                    .premiumGate(.advancedSeasonStats, source: "predictor_season_stats")
                             }
                         }
                         .padding(.horizontal)
@@ -101,6 +112,7 @@ struct PredictorView: View {
                     .withAppPalette()
             }
         }
+        .paywallSheet(isPresented: $showPaywall, source: "predictor")
     }
 
     private var sectionPicker: some View {
@@ -309,8 +321,7 @@ struct PredictorView: View {
                 }
 
                 secondaryActionButton(title: "Simulate Entire Season", icon: "forward.end.fill") {
-                    store.simulateFullSeason(reroll: false)
-                    HapticFeedback.success()
+                    gatedFullSeason()
                 }
             }
         } else if locked {
@@ -335,16 +346,14 @@ struct PredictorView: View {
                     }
                 }
                 secondaryActionButton(title: "Simulate Entire Season", icon: "forward.end.fill") {
-                    store.simulateFullSeason(reroll: false)
-                    HapticFeedback.success()
+                    gatedFullSeason()
                 }
             }
         } else {
             VStack(spacing: 8) {
                 submitBar(for: gameweek, prediction: prediction)
                 secondaryActionButton(title: "Simulate Entire Season", icon: "forward.end.fill") {
-                    store.simulateFullSeason(reroll: false)
-                    HapticFeedback.success()
+                    gatedFullSeason()
                 }
             }
         }
@@ -448,8 +457,10 @@ struct PredictorView: View {
                         HapticFeedback.light()
                     },
                     onShowDetail: {
-                        detailSimulation = simulation
-                        detailMatch = match
+                        PremiumGate.run(.advancedMatchReport, entitlements: entitlements, showPaywall: $showPaywall) {
+                            detailSimulation = simulation
+                            detailMatch = match
+                        }
                     }
                 )
             }

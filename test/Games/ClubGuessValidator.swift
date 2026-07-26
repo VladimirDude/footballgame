@@ -3,15 +3,16 @@ import Foundation
 enum ClubGuessValidator {
 
     static func isCorrect(guess: String, round: GameRound) -> Bool {
-        var candidates = [round.clubName, round.officialName ?? ""] + round.aliases
+        let baseNames = [round.clubName, round.officialName ?? ""] + round.aliases
+        var candidates = baseNames
 
-        for name in candidates {
+        // Exact, O(1) lookup per known name — the previous loose `contains` scan
+        // bled aliases across clubs (e.g. "milan" matched both AC and Inter).
+        for name in baseNames {
             let key = FuzzyMatcher.normalize(name)
-            for (canonical, abbrevs) in ClubAbbreviations.map {
-                if key == canonical || key.contains(canonical) || canonical.contains(key) {
-                    candidates.append(canonical)
-                    candidates.append(contentsOf: abbrevs)
-                }
+            if let abbrevs = ClubAbbreviations.map[key] {
+                candidates.append(key)
+                candidates.append(contentsOf: abbrevs)
             }
         }
 

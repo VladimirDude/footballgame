@@ -108,6 +108,7 @@ struct HigherOrLowerGameView: View {
     let onHigher: () -> Void
     let onLower: () -> Void
     let onContinue: () -> Void
+    var onRevive: (() -> Void)? = nil
 
     var body: some View {
         GeometryReader { geo in
@@ -134,7 +135,8 @@ struct HigherOrLowerGameView: View {
                         isGameOver: isGameOver,
                         onHigher: onHigher,
                         onLower: onLower,
-                        onContinue: onContinue
+                        onContinue: onContinue,
+                        onRevive: onRevive
                     )
                 } else {
                     Spacer()
@@ -555,6 +557,7 @@ private struct HLControls: View, Equatable {
     let onHigher: () -> Void
     let onLower: () -> Void
     let onContinue: () -> Void
+    var onRevive: (() -> Void)? = nil
 
     @Environment(\.gameTheme) private var theme
 
@@ -572,6 +575,10 @@ private struct HLControls: View, Equatable {
             }
 
             if showResult {
+                if isGameOver, let onRevive {
+                    HLReviveButton(action: onRevive)
+                        .transition(.hlControlsSwap)
+                }
                 HLContinueCTA(isGameOver: isGameOver, action: onContinue)
                     .transition(.hlControlsSwap)
             } else {
@@ -628,6 +635,29 @@ private struct HLSplitChoice: View, Equatable {
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(color)
+            )
+        }
+        .buttonStyle(HLPressStyle())
+    }
+}
+
+private struct HLReviveButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: "heart.fill")
+                Text("Revive & Keep Streak")
+                    .font(.headline.weight(.bold))
+                PremiumBadge()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .foregroundStyle(.black)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(HLStyle.gold)
             )
         }
         .buttonStyle(HLPressStyle())

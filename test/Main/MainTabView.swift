@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @AppStorage(AppAccent.storageKey) private var accentRaw = AppAccent.classic.rawValue
+
     var body: some View {
         TabView {
             SearchView()
@@ -41,6 +43,6 @@ struct MainTabView: View {
                 }
         }
         .tabViewStyle(.sidebarAdaptable)
-        .tint(BrowseTheme.accent)
+        .tint(AppAccent.from(accentRaw).color)
     }
 }
