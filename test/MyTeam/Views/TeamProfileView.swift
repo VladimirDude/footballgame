@@ -134,7 +134,6 @@ struct TeamProfileView: View {
         .background(TeamTheme.bg.ignoresSafeArea())
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.large)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .alert("Data", isPresented: $showAlert) { Button("OK") {} } message: { Text(alertMessage) }
         .sheet(isPresented: $showQuickAdd) { QuickAddGameSheet(vm: vm) }
         .sheet(isPresented: $showImportPicker) {
@@ -246,7 +245,6 @@ struct QuickAddGameSheet: View {
             .background(TeamTheme.bg.ignoresSafeArea())
             .navigationTitle("Quick Add Game")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

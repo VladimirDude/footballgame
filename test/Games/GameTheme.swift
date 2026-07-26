@@ -9,6 +9,10 @@ enum GameTab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Modes shown in the switcher. Wordle is currently hidden (its code is kept
+    /// intact — re-add `.wordle` here to bring it back).
+    static let selectable: [GameTab] = [.guessClub, .guessNation, .guessPlayer, .higherLower]
+
     var title: String {
         switch self {
         case .guessClub: "Club"
@@ -44,7 +48,7 @@ struct GameModeSwitcher: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(GameTab.allCases) { tab in
+            ForEach(GameTab.selectable) { tab in
                 Button {
                     guard selection != tab else { return }
                     selection = tab

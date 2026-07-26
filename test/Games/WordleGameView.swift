@@ -213,10 +213,13 @@ struct WordleGameView: View {
                 }
                 .background(WordlePalette.inputBackground)
                 .clipShape(RoundedRectangle(cornerRadius: GameDesign.radiusMD, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: GameDesign.radiusMD, style: .continuous)
+                        .stroke(DSColor.separator, lineWidth: 0.5)
+                )
                 .padding(.top, 4)
             }
         }
-        .colorScheme(.light)
     }
 
     private var revealCard: some View {
@@ -251,10 +254,11 @@ enum WordlePalette {
     static let correct = GameDesign.success
     static let wrong = Color(red: 0.47, green: 0.47, blue: 0.45)
     static let valueHint = Color(red: 0.35, green: 0.55, blue: 0.85)
-    static let inputBackground = Color.white
-    static let inputText = Color(red: 0.08, green: 0.1, blue: 0.12)
-    static let inputSecondary = Color(red: 0.38, green: 0.4, blue: 0.45)
-    static let inputAccent = Color(red: 0.33, green: 0.67, blue: 0.39)
+    // Adaptive (was a forced-white island that looked wrong in dark mode).
+    static var inputBackground: Color { DSColor.surface }
+    static var inputText: Color { DSColor.textPrimary }
+    static var inputSecondary: Color { DSColor.textSecondary }
+    static var inputAccent: Color { DSColor.accent }
 }
 
 enum WordleLayout {

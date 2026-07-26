@@ -22,7 +22,6 @@ struct TeamGamesView: View {
         .background(TeamTheme.bg.ignoresSafeArea())
         .navigationTitle("Match History")
         .navigationBarTitleDisplayMode(.large)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             if vm.isAdmin {
                 ToolbarItem(placement: .navigationBarTrailing) {

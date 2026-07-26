@@ -16,7 +16,6 @@ struct CoachDetailView: View {
         .background(TeamTheme.bg.ignoresSafeArea())
         .navigationTitle("Coaching Staff")
         .navigationBarTitleDisplayMode(.large)
-        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 
     private func coachCard(_ coach: TeamPlayer) -> some View {

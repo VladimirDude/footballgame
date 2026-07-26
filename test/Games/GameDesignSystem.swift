@@ -14,8 +14,8 @@ enum GameDesign {
     static let radiusLG: CGFloat = 18
     static let radiusXL: CGFloat = 22
 
-    static let success = Color(red: 0.33, green: 0.67, blue: 0.39)
-    static let danger = Color(red: 0.95, green: 0.3, blue: 0.28)
+    static var success: Color { DSColor.success }
+    static var danger: Color { DSColor.danger }
 }
 
 // MARK: - Screen Chrome

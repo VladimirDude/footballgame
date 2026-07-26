@@ -16,8 +16,8 @@ struct MyTeamView: View {
     @State private var showProfile = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
+        List {
+            Group {
                 headerSection
                 overviewCards
                 recentGamesSection
@@ -27,11 +27,14 @@ struct MyTeamView: View {
                 BonusExplanationView()
                 actionButtons
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 32)
-            .adaptiveContentWidth(AdaptiveLayout.detailMaxWidth)
+            .listRowInsets(EdgeInsets(top: DSSpacing.sm, leading: DSSpacing.md, bottom: DSSpacing.sm, trailing: DSSpacing.md))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .background(TeamTheme.bg.ignoresSafeArea())
+        .adaptiveContentWidth(AdaptiveLayout.detailMaxWidth)
         .searchable(text: $vm.searchText, prompt: "Search player...")
         .navigationTitle("My Team")
         .navigationDestination(isPresented: $showProfile) { TeamProfileView(vm: vm, sync: sync) }

@@ -3,9 +3,11 @@ import SwiftUI
 enum BrowseTheme {
     static let pitchTop = Color(red: 0.1, green: 0.55, blue: 0.2)
     static let pitchBottom = Color(red: 0.05, green: 0.4, blue: 0.15)
-    static let accent = Color.orange
-    static let cardRadius: CGFloat = 16
-    static let sectionRadius: CGFloat = 18
+    /// Unified: the de-facto brand accent now follows the user's chosen accent
+    /// (`DSColor.accent`), so Search/Settings/Onboarding match the tab bar.
+    static var accent: Color { DSColor.accent }
+    static let cardRadius: CGFloat = DSRadius.lg
+    static let sectionRadius: CGFloat = DSRadius.lg
 
     static var pitchGradient: LinearGradient {
         LinearGradient(

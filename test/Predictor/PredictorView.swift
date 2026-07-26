@@ -33,12 +33,20 @@ struct PredictorView: View {
     @State private var detailMatch: PLMatch?
     @State private var detailSimulation: PLMatchSimulation?
     @State private var showPaywall = false
+    @State private var isSimulatingSeason = false
 
     /// Full-season simulation is Pro; gameweek-by-gameweek stays free.
+    /// Runs inside a Task with a yield so the "Simulating…" state renders before
+    /// the (main-actor) simulation runs — previously it fired with no feedback.
     private func gatedFullSeason() {
         PremiumGate.run(.unlimitedSimulations, entitlements: entitlements, showPaywall: $showPaywall) {
-            store.simulateFullSeason(reroll: false)
-            HapticFeedback.success()
+            Task {
+                isSimulatingSeason = true
+                await Task.yield()
+                store.simulateFullSeason(reroll: false)
+                isSimulatingSeason = false
+                HapticFeedback.success()
+            }
         }
     }
 
@@ -320,9 +328,13 @@ struct PredictorView: View {
                     }
                 }
 
-                secondaryActionButton(title: "Simulate Entire Season", icon: "forward.end.fill") {
+                secondaryActionButton(
+                    title: isSimulatingSeason ? "Simulating…" : "Simulate Entire Season",
+                    icon: "forward.end.fill"
+                ) {
                     gatedFullSeason()
                 }
+                .disabled(isSimulatingSeason)
             }
         } else if locked {
             VStack(spacing: 8) {
@@ -345,16 +357,24 @@ struct PredictorView: View {
                         HapticFeedback.success()
                     }
                 }
-                secondaryActionButton(title: "Simulate Entire Season", icon: "forward.end.fill") {
+                secondaryActionButton(
+                    title: isSimulatingSeason ? "Simulating…" : "Simulate Entire Season",
+                    icon: "forward.end.fill"
+                ) {
                     gatedFullSeason()
                 }
+                .disabled(isSimulatingSeason)
             }
         } else {
             VStack(spacing: 8) {
                 submitBar(for: gameweek, prediction: prediction)
-                secondaryActionButton(title: "Simulate Entire Season", icon: "forward.end.fill") {
+                secondaryActionButton(
+                    title: isSimulatingSeason ? "Simulating…" : "Simulate Entire Season",
+                    icon: "forward.end.fill"
+                ) {
                     gatedFullSeason()
                 }
+                .disabled(isSimulatingSeason)
             }
         }
     }

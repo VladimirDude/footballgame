@@ -28,7 +28,7 @@ enum AppAccent: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .classic: BrowseTheme.accent
+        case .classic: Color(red: 0.96, green: 0.52, blue: 0.12)
         case .blue: Color(red: 0.20, green: 0.55, blue: 0.95)
         case .purple: Color(red: 0.55, green: 0.38, blue: 0.98)
         case .green: Color(red: 0.20, green: 0.70, blue: 0.45)
