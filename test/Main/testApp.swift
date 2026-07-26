@@ -9,6 +9,7 @@ struct testApp: App {
     @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
 
     @StateObject private var monetization = MonetizationContainer()
+    @StateObject private var progress = GameProgressStore.shared
 
     private var appearanceMode: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRaw) ?? .system
@@ -40,6 +41,7 @@ struct testApp: App {
             .preferredColorScheme(appearanceMode.colorScheme)
             .withAppPalette()
             .withMonetization(monetization)
+            .environmentObject(progress)
             .onAppear {
                 migrateLegacyAppearanceSetting()
                 monetization.start()

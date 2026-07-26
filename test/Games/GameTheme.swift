@@ -4,6 +4,7 @@ enum GameTab: String, CaseIterable, Identifiable {
     case guessClub
     case guessNation
     case guessPlayer
+    case guessLeague
     case wordle
     case higherLower
 
@@ -11,13 +12,14 @@ enum GameTab: String, CaseIterable, Identifiable {
 
     /// Modes shown in the switcher. Wordle is currently hidden (its code is kept
     /// intact — re-add `.wordle` here to bring it back).
-    static let selectable: [GameTab] = [.guessClub, .guessNation, .guessPlayer, .higherLower]
+    static let selectable: [GameTab] = [.guessClub, .guessNation, .guessPlayer, .guessLeague, .higherLower]
 
     var title: String {
         switch self {
         case .guessClub: "Club"
         case .guessNation: "Nation"
         case .guessPlayer: "Player"
+        case .guessLeague: "League"
         case .wordle: "Wordle"
         case .higherLower: "H/L"
         }
@@ -28,6 +30,7 @@ enum GameTab: String, CaseIterable, Identifiable {
         case .guessClub: "shield.lefthalf.filled"
         case .guessNation: "flag.fill"
         case .guessPlayer: "person.crop.circle.fill"
+        case .guessLeague: "trophy.fill"
         case .wordle: "square.grid.3x3.fill"
         case .higherLower: "arrow.up.arrow.down.circle.fill"
         }

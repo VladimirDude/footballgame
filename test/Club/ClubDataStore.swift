@@ -27,6 +27,7 @@ final class ClubDataStore {
     private let wordlePlayerPool: [WordlePlayer]
     private let nationalTeamSquads: [String: [NationalTeamSquadPlayer]]
     private let higherOrLowerPool: [HLPlayer]
+    private let guessLeaguePool: [GuessLeagueRound]
 
     var clubCount: Int { database.clubs.count }
     var playerCount: Int { allPlayers.count }
@@ -104,6 +105,85 @@ final class ClubDataStore {
         nationalTeamSquads = Self.buildNationalTeamSquads(from: allPlayers)
 
         higherOrLowerPool = Self.buildHigherOrLowerPool(from: allPlayers)
+
+        guessLeaguePool = Self.buildGuessLeaguePool(clubs: database.clubs, leagueByClubID: leagueByClubID)
+    }
+
+    /// Rounds for "Guess the League": a club + its correct league + 3 distractor
+    /// leagues. Uses only clubs with a known league and a bundled crest.
+    private static func buildGuessLeaguePool(
+        clubs: [BundledClub],
+        leagueByClubID: [String: String]
+    ) -> [GuessLeagueRound] {
+        let allLeagues = Set(leagueByClubID.values)
+        guard allLeagues.count >= 4 else { return [] }
+
+        var pool: [GuessLeagueRound] = []
+        for club in clubs {
+            guard let league = leagueByClubID[club.id],
+                  !club.players.isEmpty else { continue }
+            let distractors = Array(allLeagues.subtracting([league]).shuffled().prefix(3))
+            guard distractors.count == 3 else { continue }
+            pool.append(
+                GuessLeagueRound(
+                    id: club.id,
+                    clubID: club.id,
+                    clubName: club.name,
+                    correctLeague: league,
+                    options: ([league] + distractors).shuffled()
+                )
+            )
+        }
+        return pool
+    }
+
+    var guessLeaguePoolCount: Int { guessLeaguePool.count }
+
+    func randomGuessLeagueRound(excluding excludedIDs: Set<String> = []) -> GuessLeagueRound? {
+        let available = guessLeaguePool.filter { !excludedIDs.contains($0.id) }
+        return available.randomElement() ?? guessLeaguePool.randomElement()
+    }
+
+    /// Builds a deterministic set of multiple-choice questions for the Daily
+    /// Challenge (same `seed` → same questions), mixing league / club /
+    /// nationality questions drawn from the existing pools.
+    func makeDailyQuestions(count: Int = DailyChallenge.questionCount, seed: UInt64) -> [DailyQuestion] {
+        var rng = DailySeededRNG(seed: seed)
+        let players = (guessPlayerPools[.easy] ?? []) + (guessPlayerPools[.medium] ?? [])
+        let clubNames = Array(Set(database.clubs.map(\.name)))
+        let nations = knownNationalities
+
+        var questions: [DailyQuestion] = []
+        var i = 0
+        var guard_ = 0
+        while questions.count < count && guard_ < count * 6 {
+            defer { guard_ += 1 }
+            let type = i % 3
+            i += 1
+            switch type {
+            case 0:
+                guard let r = guessLeaguePool.randomElement(using: &rng) else { continue }
+                let opts = r.options.shuffled(using: &rng)
+                questions.append(DailyQuestion(id: questions.count, prompt: "Which league does \(r.clubName) play in?",
+                                               clubID: r.clubID, portraitID: nil, options: opts,
+                                               correctIndex: opts.firstIndex(of: r.correctLeague) ?? 0))
+            case 1:
+                guard let p = players.randomElement(using: &rng), clubNames.count >= 4 else { continue }
+                var opts = [p.clubName] + clubNames.filter { $0 != p.clubName }.shuffled(using: &rng).prefix(3)
+                opts.shuffle(using: &rng)
+                questions.append(DailyQuestion(id: questions.count, prompt: "Which club does \(p.playerName) play for?",
+                                               clubID: nil, portraitID: p.id, options: opts,
+                                               correctIndex: opts.firstIndex(of: p.clubName) ?? 0))
+            default:
+                guard let p = players.randomElement(using: &rng), let nation = p.nationalities.first, nations.count >= 4 else { continue }
+                var opts = [nation] + nations.filter { $0 != nation }.shuffled(using: &rng).prefix(3)
+                opts.shuffle(using: &rng)
+                questions.append(DailyQuestion(id: questions.count, prompt: "What is \(p.playerName)'s nationality?",
+                                               clubID: nil, portraitID: p.id, options: opts,
+                                               correctIndex: opts.firstIndex(of: nation) ?? 0))
+            }
+        }
+        return questions
     }
 
     private static func buildNationalTeamSquads(

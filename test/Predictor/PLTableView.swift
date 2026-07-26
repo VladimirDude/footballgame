@@ -2,7 +2,9 @@ import SwiftUI
 
 struct PLStandingsSection: View {
     @ObservedObject var store: PredictorStore
+    @EnvironmentObject private var entitlements: EntitlementService
     @Environment(\.appPalette) private var palette
+    @State private var showPaywall = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -13,6 +15,15 @@ struct PLStandingsSection: View {
             } else {
                 emptyState
             }
+        }
+        .paywallSheet(isPresented: $showPaywall, source: "predictor_table")
+    }
+
+    /// Full-season simulation is Pro — matches the Gameweek tab's gating.
+    private func gatedFullSeason(reroll: Bool) {
+        PremiumGate.run(.unlimitedSimulations, entitlements: entitlements, showPaywall: $showPaywall) {
+            store.simulateFullSeason(reroll: reroll)
+            HapticFeedback.success()
         }
     }
 
@@ -36,8 +47,7 @@ struct PLStandingsSection: View {
             if store.isSeasonFullySimulated {
                 HStack(spacing: 8) {
                     simulateButton("Re-simulate", icon: "arrow.clockwise") {
-                        store.simulateFullSeason(reroll: true)
-                        HapticFeedback.success()
+                        gatedFullSeason(reroll: true)
                     }
                     simulateButton("Clear", icon: "trash") {
                         store.resetSeasonSimulations()
@@ -46,8 +56,7 @@ struct PLStandingsSection: View {
                 }
             } else {
                 Button {
-                    store.simulateFullSeason(reroll: false)
-                    HapticFeedback.success()
+                    gatedFullSeason(reroll: false)
                 } label: {
                     Text(store.isSimulatingSeason ? "Simulating…" : "Simulate Full Season")
                         .font(.headline.weight(.bold))

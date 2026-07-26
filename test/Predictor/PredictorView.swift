@@ -27,6 +27,7 @@ private enum SimulateSection: String, CaseIterable, Identifiable {
 struct PredictorView: View {
     @StateObject private var store = PredictorStore.shared
     @EnvironmentObject private var entitlements: EntitlementService
+    @EnvironmentObject private var progress: GameProgressStore
     @AppStorage(PredictorStore.simulateOnlyKey) private var simulateOnly = false
     @Environment(\.appPalette) private var palette
     @State private var section: SimulateSection = .gameweek
@@ -415,6 +416,11 @@ struct PredictorView: View {
         return Button {
             store.lockPrediction(for: gameweek.number)
             HapticFeedback.success()
+            // Predictor points feed the profile XP + achievements.
+            if let score = store.score(for: gameweek) {
+                progress.awardXP(score.points)
+                progress.recordResult(mode: .predictor, won: score.correct > 0)
+            }
         } label: {
             Text(complete ? "Lock & Simulate" : "Pick all \(gameweek.matches.count) matches")
                 .font(.headline.weight(.bold))

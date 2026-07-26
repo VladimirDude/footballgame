@@ -42,31 +42,31 @@ struct SearchView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+        // No own NavigationStack — this screen is pushed inside the You tab's stack.
+        ZStack {
+            Color(.systemGroupedBackground).ignoresSafeArea()
 
-                VStack(spacing: 12) {
-                    Picker("Browse", selection: $section) {
-                        ForEach(BrowseSection.allCases) { item in
-                            Text(item.rawValue).tag(item)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-
-                    switch section {
-                    case .players:
-                        playerBrowseContent
-                    case .clubs:
-                        clubBrowseContent
+            VStack(spacing: 12) {
+                Picker("Browse", selection: $section) {
+                    ForEach(BrowseSection.allCases) { item in
+                        Text(item.rawValue).tag(item)
                     }
                 }
-                .adaptiveContentWidth()
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.top, 8)
+
+                switch section {
+                case .players:
+                    playerBrowseContent
+                case .clubs:
+                    clubBrowseContent
+                }
             }
-            .navigationTitle("Search")
+            .adaptiveContentWidth()
         }
+        .navigationTitle("Search")
+        .navigationBarTitleDisplayMode(.inline)
         .paywallSheet(isPresented: $showSearchPaywall, source: "search")
     }
 

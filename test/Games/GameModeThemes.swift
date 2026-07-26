@@ -22,6 +22,7 @@ struct GameModeTheme: Equatable {
         case .guessClub: return isDark ? .club : .clubLight
         case .guessNation: return isDark ? .nation : .nationLight
         case .guessPlayer: return isDark ? .player : .playerLight
+        case .guessLeague: return isDark ? .club : .clubLight
         case .wordle: return isDark ? .wordle : .wordleLight
         case .higherLower: return isDark ? .higherLower : .higherLowerLight
         }
@@ -209,7 +210,7 @@ struct GameModeBackdrop: View {
     var body: some View {
         Group {
             switch tab {
-            case .guessClub:
+            case .guessClub, .guessLeague:
                 ClubPitchBackground()
             case .guessNation:
                 NationPitchBackground()

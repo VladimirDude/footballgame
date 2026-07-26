@@ -4,6 +4,7 @@ import Combine
 struct GameView: View {
     private let store = ClubDataStore.shared
     @EnvironmentObject private var entitlements: EntitlementService
+    @EnvironmentObject private var progress: GameProgressStore
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
 
@@ -123,6 +124,13 @@ struct GameView: View {
     @State private var wordleStreak = 0
     @AppStorage("wordleBestStreak") private var wordleBestStreak = 0
 
+    // Guess the League
+    @State private var glRound: GuessLeagueRound?
+    @State private var glResult: GameResult?
+    @State private var glSelected: String?
+    @State private var glStreak = 0
+    @AppStorage("guessLeagueBestStreak") private var glBestStreak = 0
+
     private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -141,6 +149,8 @@ struct GameView: View {
                         guessNationContent
                     case .guessPlayer:
                         guessPlayerContent
+                    case .guessLeague:
+                        guessLeagueContent
                     case .wordle:
                         wordleContent
                     case .higherLower:
@@ -219,6 +229,7 @@ struct GameView: View {
             hlLastGuessCorrect = false
             hlRevealState = .wrong
             HapticFeedback.error()
+            recordGameResult(.higherLower, won: false)
             withAnimation(GameMotion.fade) { hlShowRightValue = true }
             withAnimation(.default) { hlShakeTrigger = true }
         }
@@ -243,6 +254,7 @@ struct GameView: View {
             gpResult = .lost
         }
         HapticFeedback.error()
+        recordGameResult(.guessPlayer, won: false)
         withAnimation(.default) { gpShakeWrong.toggle() }
     }
 
@@ -453,9 +465,65 @@ struct GameView: View {
             startNewWordleRound()
         case .guessNation where gnRound == nil:
             startNewNationRound()
+        case .guessLeague where glRound == nil:
+            startNewLeagueRound()
         default:
             break
         }
+    }
+
+    // MARK: - Guess the League Logic
+
+    @ViewBuilder
+    private var guessLeagueContent: some View {
+        if let glRound {
+            GuessLeagueGameView(
+                round: glRound,
+                gameResult: glResult,
+                streak: glStreak,
+                bestStreak: glBestStreak,
+                selected: glSelected,
+                onSelect: submitLeagueGuess,
+                onNext: advanceLeagueRound
+            )
+        } else if store.guessLeaguePoolCount == 0 {
+            gamePoolError(retry: startNewLeagueRound)
+        } else {
+            gameLoading("Loading clubs...", onAppear: startNewLeagueRound)
+        }
+    }
+
+    private func startNewLeagueRound() {
+        glResult = nil
+        glSelected = nil
+        glRound = store.randomGuessLeagueRound()
+    }
+
+    private func advanceLeagueRound() {
+        let previousID = glRound?.clubID
+        glResult = nil
+        glSelected = nil
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
+            glRound = store.randomGuessLeagueRound(excluding: Set([previousID].compactMap { $0 }))
+        }
+    }
+
+    private func submitLeagueGuess(_ league: String) {
+        guard glResult == nil, let round = glRound else { return }
+        glSelected = league
+        let won = league == round.correctLeague
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            glResult = won ? .won : .lost
+        }
+        if won {
+            glStreak += 1
+            if glStreak > glBestStreak { glBestStreak = glStreak }
+            HapticFeedback.success()
+        } else {
+            glStreak = 0
+            HapticFeedback.error()
+        }
+        recordGameResult(.guessLeague, won: won)
     }
 
     // MARK: - Wordle Logic
@@ -550,6 +618,7 @@ struct GameView: View {
             gnStreak = 0
             HapticFeedback.error()
         }
+        recordGameResult(.guessNation, won: won)
 
         for slot in round.formation.flatMap({ $0 }) { gnRevealedSlots.insert(slot.id) }
     }
@@ -604,6 +673,12 @@ struct GameView: View {
         return revealedSlots.count < round.formation.flatMap { $0 }.count
     }
 
+    /// Records a finished round into the progression store and analytics.
+    private func recordGameResult(_ mode: GameMode, won: Bool) {
+        progress.recordResult(mode: mode, won: won)
+        AnalyticsService.shared.log(.gameFinished(mode: mode.rawValue, score: won ? 1 : 0))
+    }
+
     private func submitClubGuess() {
         guard gameResult == nil, let round, isSubmittableGuess(guess) else { return }
         let won = ClubGuessValidator.isCorrect(guess: guess, round: round)
@@ -619,6 +694,7 @@ struct GameView: View {
             gcStreak = 0
             HapticFeedback.error()
         }
+        recordGameResult(.guessClub, won: won)
 
         for slot in round.formation.flatMap({ $0 }) { revealedSlots.insert(slot.id) }
     }
@@ -687,6 +763,7 @@ struct GameView: View {
             HapticFeedback.error()
             withAnimation(.default) { gpShakeWrong.toggle() }
         }
+        recordGameResult(.guessPlayer, won: won)
     }
 
     private func resetGuessPlayerTimer() {
@@ -775,6 +852,8 @@ struct GameView: View {
                 hlLastGuessCorrect = false
             }
         }
+
+        recordGameResult(.higherLower, won: isCorrect)
 
         if isCorrect {
             hlScore += 1

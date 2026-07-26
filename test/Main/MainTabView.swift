@@ -5,28 +5,11 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-            SearchView()
+            ProfileView()
                 .tabItem {
-                    Image(systemName: "magnifyingglass")
-                    Text("Search")
+                    Image(systemName: "person.fill")
+                    Text("You")
                 }
-
-            NavigationStack {
-                GameView()
-                    .toolbar(.hidden, for: .navigationBar)
-            }
-            .tabItem {
-                Image(systemName: "gamecontroller.fill")
-                Text("Game")
-            }
-
-            NavigationStack {
-                PredictorView()
-            }
-            .tabItem {
-                Image(systemName: "play.circle.fill")
-                Text("Simulate")
-            }
 
             NavigationStack {
                 MyTeamView()
@@ -44,5 +27,6 @@ struct MainTabView: View {
         }
         .tabViewStyle(.sidebarAdaptable)
         .tint(AppAccent.from(accentRaw).color)
+        .overlay(alignment: .top) { AchievementBannerHost() }
     }
 }
