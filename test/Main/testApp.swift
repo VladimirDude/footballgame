@@ -10,6 +10,7 @@ struct testApp: App {
 
     @StateObject private var monetization = MonetizationContainer()
     @StateObject private var progress = GameProgressStore.shared
+    @StateObject private var alias = AliasContainer()
 
     private var appearanceMode: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRaw) ?? .system
@@ -42,6 +43,7 @@ struct testApp: App {
             .withAppPalette()
             .withMonetization(monetization)
             .environmentObject(progress)
+            .withAlias(alias)
             .onAppear {
                 migrateLegacyAppearanceSetting()
                 monetization.start()

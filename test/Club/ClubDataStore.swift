@@ -32,6 +32,13 @@ final class ClubDataStore {
     var clubCount: Int { database.clubs.count }
     var playerCount: Int { allPlayers.count }
 
+    /// Read-only access to the bundled clubs (with squads). Used by the Alias
+    /// entity-card factory to derive player/club cards.
+    var allClubs: [BundledClub] { database.clubs }
+
+    /// Map of club id → league name (from `ClubLeagueIndex.json`).
+    var leagueIndex: [String: String] { leagueByClubID }
+
     private struct IndexedPlayer {
         let player: ClubSquadPlayer
         let clubName: String

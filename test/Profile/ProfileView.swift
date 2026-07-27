@@ -44,6 +44,14 @@ struct ProfileView: View {
             .buttonStyle(.plain)
 
             NavigationLink {
+                AliasHomeView()
+            } label: {
+                entryRow(title: "Football Alias", subtitle: "Explain & guess — the football party game",
+                         icon: "person.2.fill", tint: DSColor.accent)
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
                 SearchView()
             } label: {
                 entryRow(title: "Search", subtitle: "Browse players and clubs in the offline database",

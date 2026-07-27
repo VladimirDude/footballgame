@@ -14,6 +14,13 @@ enum AnalyticsEvent {
     case gameStarted(mode: String)
     case gameFinished(mode: String, score: Int)
 
+    // Football Alias
+    case aliasGameStarted(teams: Int)
+    case aliasGameFinished(winnerScore: Int)
+    case aliasWordGuessed(category: String)
+    case aliasWordSkipped(category: String)
+    case aliasCategorySelected(category: String)
+
     // Monetization funnel
     case paywallShown(source: String)
     case paywallDismissed(source: String)
@@ -35,6 +42,11 @@ enum AnalyticsEvent {
         case .onboardingCompleted: "onboarding_completed"
         case .gameStarted: "game_started"
         case .gameFinished: "game_finished"
+        case .aliasGameStarted: "alias_game_started"
+        case .aliasGameFinished: "alias_game_finished"
+        case .aliasWordGuessed: "alias_word_guessed"
+        case .aliasWordSkipped: "alias_word_skipped"
+        case .aliasCategorySelected: "alias_category_selected"
         case .paywallShown: "paywall_shown"
         case .paywallDismissed: "paywall_dismissed"
         case .featureBlocked: "feature_blocked"
@@ -55,6 +67,11 @@ enum AnalyticsEvent {
         case .screenViewed(let name): return ["screen": name]
         case .gameStarted(let mode): return ["mode": mode]
         case .gameFinished(let mode, let score): return ["mode": mode, "score": score]
+        case .aliasGameStarted(let teams): return ["teams": teams]
+        case .aliasGameFinished(let score): return ["winner_score": score]
+        case .aliasWordGuessed(let category), .aliasWordSkipped(let category),
+             .aliasCategorySelected(let category):
+            return ["category": category]
         case .paywallShown(let source), .paywallDismissed(let source): return ["source": source]
         case .featureBlocked(let feature), .featureUnlocked(let feature): return ["feature": feature]
         case .purchaseStarted(let id), .purchaseCompleted(let id), .purchaseCancelled(let id):
