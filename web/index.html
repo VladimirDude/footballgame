@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FTMP — Football Quiz &amp; Simulator</title>
+<meta name="description" content="FTMP is a football quiz &amp; simulator: guess clubs, nations and players, play Football Alias, simulate the season, and track your team — all offline.">
+<style>
+  :root{
+    --bg:#0a1f16; --bg2:#06130d; --card:#0f2a1e; --line:rgba(255,255,255,.10);
+    --pitch:#2ea45c; --pitch2:#38c46f; --text:#eaf3ee; --muted:#a9c4b6; --accent:#f0972e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(46,164,92,.18), transparent 60%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--text); font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+  }
+  a{color:inherit}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.5px}
+  .logo{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(180deg,#123223,#07130d);border:1px solid var(--line);font-size:20px}
+  nav a{color:var(--muted);text-decoration:none;margin-left:22px;font-size:14px}
+  nav a:hover{color:var(--text)}
+  .hero{text-align:center;padding:56px 0 40px}
+  .hero h1{font-size:clamp(34px,6vw,58px);line-height:1.05;margin:.2em 0;font-weight:850}
+  .hero p{color:var(--muted);font-size:clamp(16px,2.4vw,20px);max-width:640px;margin:0 auto 26px}
+  .badge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;border:1px solid var(--line);
+    padding:12px 20px;border-radius:14px;text-decoration:none;font-weight:700}
+  .pill{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:13px;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:26px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .card h3{margin:.2em 0 .4em;font-size:18px}
+  .card p{color:var(--muted);margin:0;font-size:14.5px}
+  .ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:20px;
+    background:rgba(46,164,92,.16);margin-bottom:10px}
+  .section{padding:34px 0}
+  .section h2{font-size:clamp(24px,4vw,34px);margin:0 0 6px}
+  .section .sub{color:var(--muted);margin:0 0 18px}
+  .pro{background:linear-gradient(180deg,#123a28,#0c2419);border:1px solid var(--line);border-radius:22px;padding:28px}
+  .pro ul{margin:12px 0 0;padding-left:18px;color:var(--muted)}
+  .pro li{margin:6px 0}
+  .note{color:var(--pitch2);font-weight:700}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;color:var(--muted);font-size:14px}
+  footer a{color:var(--muted);text-decoration:none;margin-right:18px}
+  footer a:hover{color:var(--text)}
+  .disclaim{font-size:12.5px;color:#7f9a8c;margin-top:14px;max-width:760px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="logo">⚽</span> FTMP</div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#pro">Pro</a>
+      <a href="/support">Support</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <span class="pill">Football quiz &amp; simulator · Works offline</span>
+    <h1>Know your football?<br>Prove it.</h1>
+    <p>Guess clubs, nations and players. Explain words in Football Alias. Simulate the whole season. Track your own team. All in one app — no connection required.</p>
+    <a class="badge" href="#">  Download on the App Store</a>
+  </section>
+
+  <section id="features" class="section">
+    <h2>What's inside</h2>
+    <p class="sub">Five ways to play, plus your own club tracker.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">🎯</div><h3>Guess Games</h3><p>Club, nation, player and league guessing — with streaks, timers and difficulty tiers.</p></div>
+      <div class="card"><div class="ico">🗣️</div><h3>Football Alias</h3><p>The football party game: explain the word without saying it before the timer runs out.</p></div>
+      <div class="card"><div class="ico">📊</div><h3>Season Predictor</h3><p>Predict fixtures and simulate a full season with a market-value match engine.</p></div>
+      <div class="card"><div class="ico">🛡️</div><h3>My Team</h3><p>Create or join a team, track players, goals, assists and games — share it with a code.</p></div>
+      <div class="card"><div class="ico">📶</div><h3>Fully Offline</h3><p>Thousands of players and clubs bundled in — play anywhere, no sign-up needed.</p></div>
+      <div class="card"><div class="ico">🏆</div><h3>Level Up</h3><p>Earn XP and achievements as you play — and unlock Pro for free by reaching Level 15.</p></div>
+    </div>
+  </section>
+
+  <section id="pro" class="section">
+    <div class="pro">
+      <h2>FTMP Pro</h2>
+      <p class="sub">Unlock everything the app has to offer.</p>
+      <ul>
+        <li>Unlimited season simulations, advanced match reports &amp; stats</li>
+        <li>Harder difficulties, second chances &amp; relaxed (no-timer) play</li>
+        <li>Pro search filters, extra leagues, theme packs and all Alias packs</li>
+      </ul>
+      <p style="margin-top:14px" class="note">Or reach Level 15 to unlock Pro for free.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Use</a>
+      <a href="/support">Support</a>
+      <a href="mailto:support@ftmpapp.app">support@ftmpapp.app</a>
+    </div>
+    <p style="margin:.8em 0 0">© 2026 FTMP. All rights reserved.</p>
+    <p class="disclaim">FTMP is an independent app and is not affiliated with, endorsed by, or sponsored by any football club, league, competition, or governing body. Club and competition names are used for identification purposes only and remain the property of their respective owners.</p>
+  </footer>
+</div>
+</body>
+</html>

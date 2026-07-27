@@ -190,9 +190,9 @@ struct PaywallView: View {
 
     private var footerLinks: some View {
         HStack(spacing: 16) {
-            Link("Terms of Use", destination: URL(string: "https://ftmpapp.com/terms")!)
+            Link("Terms of Use", destination: URL(string: "https://ftmpapp.app/terms")!)
             Text("·").foregroundStyle(.secondary)
-            Link("Privacy Policy", destination: URL(string: "https://ftmpapp.com/privacy")!)
+            Link("Privacy Policy", destination: URL(string: "https://ftmpapp.app/privacy")!)
         }
         .font(.caption)
     }

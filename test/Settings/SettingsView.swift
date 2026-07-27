@@ -57,13 +57,13 @@ struct SettingsView: View {
                     Button { requestReview() } label: {
                         Label("Rate FTMP", systemImage: "star.fill")
                     }
-                    Button { openURL(URL(string: "mailto:support@ftmpapp.com")!) } label: {
+                    Button { openURL(URL(string: "mailto:support@ftmpapp.app")!) } label: {
                         Label("Contact Support", systemImage: "envelope.fill")
                     }
-                    Link(destination: URL(string: "https://ftmpapp.com/privacy")!) {
+                    Link(destination: URL(string: "https://ftmpapp.app/privacy")!) {
                         Label("Privacy Policy", systemImage: "lock.fill")
                     }
-                    Link(destination: URL(string: "https://ftmpapp.com/terms")!) {
+                    Link(destination: URL(string: "https://ftmpapp.app/terms")!) {
                         Label("Terms of Use", systemImage: "doc.text.fill")
                     }
                     Button(role: .destructive) { showResetConfirm = true } label: {

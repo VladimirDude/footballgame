@@ -3,19 +3,23 @@
 <!--
   Privacy Manifest (required by App Store review).
 
-  Current state of the app: fully offline, no accounts, no third-party SDKs,
-  and it does NOT collect or transmit any user or device data. The only
-  "required reason" API in use is UserDefaults (via SwiftUI @AppStorage) for
-  local settings and game scores.
+  Reflects the app's actual data practices (see https://ftmpapp.app/privacy):
+    • No account or personal details are required; core play is offline.
+    • Firebase Analytics collects app usage (product interaction) and a Firebase
+      device/instance identifier to help improve the app.
+    • The Pro purchase funnel is logged as analytics events → Purchase History.
+    • "My Team" cloud sharing (optional) uses anonymous Firebase Auth and uploads
+      the team content and any photos you choose to share to Firestore/Storage
+      (App Functionality).
+    • None of this is used to track you across other companies' apps or websites,
+      and the Advertising Identifier (IDFA) is not used → NSPrivacyTracking = false.
 
-  IMPORTANT — keep this file in sync with reality:
-    • When Firebase Analytics / Crashlytics is added, declare the collected
-      data types under NSPrivacyCollectedDataTypes and add Firebase's own
-      manifest requirements.
-    • When StoreKit purchases are added, add the "Purchase History" data type
-      if any purchase data is linked to the user off-device.
-    • If ad attribution (AppsFlyer/ATT) is ever added, set NSPrivacyTracking to
-      true and list NSPrivacyTrackingDomains.
+  Note: the Firebase SDKs ship their own privacy manifests declaring their
+  required-reason API usage; this file declares the APP-level data collection plus
+  the UserDefaults required-reason API used directly by the app (@AppStorage).
+
+  Keep this file in sync with the App Store Connect "App Privacy" answers and the
+  published privacy policy.
 -->
 <plist version="1.0">
 <dict>
@@ -23,8 +27,82 @@
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
+
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
+	<array>
+		<!-- App usage / feature interaction (Firebase Analytics) -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+
+		<!-- Firebase device/instance identifier (Analytics) + the anonymous UID that
+		     scopes cloud team edits to your device (App Functionality) -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeDeviceID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+
+		<!-- Pro purchase funnel logged as analytics events -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePurchaseHistory</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+
+		<!-- My Team content you choose to share to the cloud (team name, players, games) -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+
+		<!-- Optional player/team photos you add and share to the cloud -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePhotosorVideos</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
+
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
