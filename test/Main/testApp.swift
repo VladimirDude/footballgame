@@ -30,12 +30,14 @@ struct testApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if hasCompletedOnboarding {
-                    MainTabView()
-                } else {
-                    OnboardingView {
-                        hasCompletedOnboarding = true
+            RootView {
+                Group {
+                    if hasCompletedOnboarding {
+                        MainTabView()
+                    } else {
+                        OnboardingView {
+                            hasCompletedOnboarding = true
+                        }
                     }
                 }
             }
