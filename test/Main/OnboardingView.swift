@@ -113,11 +113,6 @@ struct OnboardingView: View {
                     title: "Stats",
                     detail: "Golden Boot, team leaders, and biggest wins after simulation."
                 ),
-                OnboardingHighlight(
-                    icon: "forward.fill",
-                    title: "Simulate Only",
-                    detail: "Skip predictions in Settings and just run match simulations."
-                ),
             ]
         ),
         OnboardingPage(
@@ -125,7 +120,7 @@ struct OnboardingView: View {
             icon: "checkmark.circle.fill",
             tint: GameDesign.success,
             title: "You're all set",
-            subtitle: "Everything works offline. Customize appearance and haptics in Settings.",
+            subtitle: "Everything works offline. Customize the appearance in Settings.",
             highlights: [
                 OnboardingHighlight(
                     icon: "paintbrush.fill",

@@ -115,7 +115,7 @@ struct HigherOrLowerGameView: View {
             let arenaHeight = min(max(geo.size.height * 0.52, 260), 360)
 
             VStack(spacing: 16) {
-                HLScoreBar(score: streak, best: bestStreak, timeRemaining: timeRemaining, total: 5)
+                HLScoreBar(score: streak, best: bestStreak, timeRemaining: timeRemaining, total: 15)
 
                 if let left, let right {
                     HLCompareBoard(

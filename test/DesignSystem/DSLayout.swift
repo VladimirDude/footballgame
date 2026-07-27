@@ -54,13 +54,18 @@ extension View {
         self
             .padding(padding)
             .background(
+                // Cast the shadow from the opaque background shape, NOT the whole
+                // card. Applying `.shadow` to the composited content (incl. text)
+                // forces an offscreen render pass per frame and janks scrolling;
+                // shadowing just the filled rounded-rect is visually identical but
+                // cheap.
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .fill(DSColor.surface)
+                    .shadow(color: elevation.color, radius: elevation.radius, x: 0, y: elevation.y)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .stroke(DSColor.separator, lineWidth: 0.5)
             )
-            .dsElevation(elevation)
     }
 }

@@ -1,9 +1,8 @@
 import UIKit
 
 enum HapticFeedback {
-    private static var isEnabled: Bool {
-        UserDefaults.standard.object(forKey: "hapticsEnabled") as? Bool ?? true
-    }
+    /// Haptics are always on — there is no user-facing toggle.
+    private static var isEnabled: Bool { true }
 
     static func success() {
         guard isEnabled else { return }

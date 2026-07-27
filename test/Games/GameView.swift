@@ -81,11 +81,11 @@ struct GameView: View {
     @State private var gpShakeWrong = false
     @State private var gpStreak = 0
     @AppStorage("guessPlayerBestStreak") private var gpBestStreak = 0
-    @State private var gpTimeRemaining = 10
+    @State private var gpTimeRemaining = 15
     @State private var gpTimerActive = false
     @State private var gpDifficulty: GameDifficulty = .easy
 
-    private let gpTotalTime = 10
+    private let gpTotalTime = 15
 
     private var gatedPlayerDifficulty: Binding<GameDifficulty> {
         Binding(
@@ -111,7 +111,7 @@ struct GameView: View {
     @State private var hlShakeTrigger = false
     @State private var hlRevealState: HLRevealState = .hidden
     @State private var hlLastGuessCorrect: Bool?
-    @State private var hlTimeRemaining = 5
+    @State private var hlTimeRemaining = 15
     @State private var hlTimerActive = false
 
     // Wordle
@@ -448,7 +448,7 @@ struct GameView: View {
             }
             hlPlayerRight = next
             resetHLRoundState()
-            hlTimeRemaining = 5
+            hlTimeRemaining = 15
             hlTimerActive = true
         }
     }
@@ -810,7 +810,7 @@ struct GameView: View {
         hlPlayerLeft = randomized[0]
         hlPlayerRight = pickHLChallenger(excluding: hlPlayerLeft, from: pool) ?? randomized[1]
         resetHLRoundState()
-        hlTimeRemaining = 5
+        hlTimeRemaining = 15
         hlTimerActive = true
     }
 
@@ -881,7 +881,7 @@ struct GameView: View {
 
         hlPlayerRight = next
         resetHLRoundState()
-        hlTimeRemaining = 5
+        hlTimeRemaining = 15
         hlTimerActive = true
     }
 

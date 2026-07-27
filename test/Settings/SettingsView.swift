@@ -7,9 +7,6 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @State private var showResetConfirm = false
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
-    @AppStorage("hapticsEnabled") private var hapticsEnabled = true
-    @AppStorage(PredictorStore.simulateOnlyKey) private var predictorSimulateOnly = false
-    @AppStorage("gameRelaxedMode") private var relaxedMode = false
     @AppStorage(AppAccent.storageKey) private var accentRaw = AppAccent.classic.rawValue
     @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
     @State private var showPaywall = false
@@ -34,25 +31,6 @@ struct SettingsView: View {
                         Label("Theme", systemImage: "circle.lefthalf.filled")
                     }
                     .pickerStyle(.segmented)
-                }
-
-                Section {
-                    Toggle(isOn: $hapticsEnabled) {
-                        Label("Haptic Feedback", systemImage: "iphone.radiowaves.left.and.right")
-                    }
-                    Toggle(isOn: $predictorSimulateOnly) {
-                        Label("Simulate Only", systemImage: "sportscourt.fill")
-                    }
-                    Toggle(isOn: relaxedBinding) {
-                        HStack(spacing: DSSpacing.xs) {
-                            Label("Relaxed Mode", systemImage: "timer")
-                            if !entitlements.canAccess(.relaxedMode) { PremiumBadge() }
-                        }
-                    }
-                } header: {
-                    Text("Gameplay")
-                } footer: {
-                    Text("Relaxed Mode removes the timers from Guess Player and Higher or Lower.")
                 }
 
                 Section("Accent") {
@@ -146,23 +124,6 @@ struct SettingsView: View {
     }
 
     // MARK: - Gating helpers
-
-    /// Relaxed Mode is Pro — free users get the paywall instead of enabling it.
-    private var relaxedBinding: Binding<Bool> {
-        Binding(
-            get: { relaxedMode },
-            set: { newValue in
-                if !newValue {
-                    relaxedMode = false
-                } else if entitlements.canAccess(.relaxedMode) {
-                    relaxedMode = true
-                } else {
-                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.relaxedMode.rawValue))
-                    showPaywall = true
-                }
-            }
-        )
-    }
 
     private func selectAccent(_ accent: AppAccent) {
         if accent.isFree || entitlements.canAccess(.themePacks) {

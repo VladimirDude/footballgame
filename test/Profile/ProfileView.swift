@@ -10,7 +10,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: DSSpacing.lg) {
+                LazyVStack(spacing: DSSpacing.lg) {
                     levelHeader
                     playSection
                     dailyCard
