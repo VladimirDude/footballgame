@@ -28,10 +28,10 @@ struct TeamProfileView: View {
                             .background(TeamTheme.blue.opacity(0.15), in: Circle())
                     }
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Cognaize Futsal").font(.system(size: 18, weight: .bold)).foregroundStyle(TeamTheme.textPrimary)
-                        Text(vm.isAdmin ? "Admin Mode" : "User Mode")
+                        Text(vm.teamName ?? "My Team").font(.system(size: 18, weight: .bold)).foregroundStyle(TeamTheme.textPrimary)
+                        Text(roleLabel)
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(vm.isAdmin ? TeamTheme.red : TeamTheme.textSecondary)
+                            .foregroundStyle(roleTint)
                     }
                 }
                 .listRowBackground(TeamTheme.cardBg)
@@ -46,7 +46,7 @@ struct TeamProfileView: View {
             }
             .listRowBackground(TeamTheme.cardBg)
 
-            if vm.isAdmin {
+            if vm.isLive {
                 Section("Shared Team") {
                     if let code = sync.membership?.teamID, sync.canEdit {
                         VStack(alignment: .leading, spacing: 10) {
@@ -83,7 +83,9 @@ struct TeamProfileView: View {
                     }
                 }
                 .listRowBackground(TeamTheme.cardBg)
+            }
 
+            if vm.canEdit {
                 Section("Quick Add Game") {
                     Button { showQuickAdd = true } label: {
                         Label("Paste Game Text", systemImage: "doc.text.fill")
@@ -116,6 +118,21 @@ struct TeamProfileView: View {
                 .listRowBackground(TeamTheme.cardBg)
             }
 
+            Section {
+                Button(role: .destructive) {
+                    if sync.isJoined { sync.leaveTeam(vm) }
+                    vm.deleteTeam()
+                    dismiss()
+                } label: {
+                    Label(sync.isJoined ? "Leave Team" : "Delete Team", systemImage: "trash.fill")
+                }
+            } footer: {
+                Text(sync.isJoined
+                     ? "Leaves the shared team on this device and returns to the start screen."
+                     : "Removes this team from this device and returns to the start screen.")
+            }
+            .listRowBackground(TeamTheme.cardBg)
+
             Section("About") {
                 HStack {
                     Text("Version").foregroundStyle(TeamTheme.textSecondary)
@@ -143,6 +160,8 @@ struct TeamProfileView: View {
                 }
                 vm.players = result.players
                 vm.games = result.games
+                if let name = result.teamName { vm.teamName = name }
+                vm.mode = result.mode ?? vm.mode ?? .user
                 alertMessage = "Imported \(result.players.count) players, \(result.games.count) games."; showAlert = true
             }
         }
@@ -150,6 +169,22 @@ struct TeamProfileView: View {
             if let url = exportURL {
                 ShareSheet(items: [url])
             }
+        }
+    }
+
+    private var roleLabel: String {
+        switch vm.mode {
+        case .admin:  return "Admin · Live"
+        case .viewer: return "Viewer · Read-only"
+        default:      return "User · Local"
+        }
+    }
+
+    private var roleTint: Color {
+        switch vm.mode {
+        case .admin:  return TeamTheme.red
+        case .viewer: return TeamTheme.textSecondary
+        default:      return TeamTheme.blue
         }
     }
 
@@ -166,7 +201,7 @@ struct TeamProfileView: View {
     }
 
     private func saveData() {
-        if DataExporter.saveToDisk(players: vm.players, games: vm.games) {
+        if DataExporter.saveToDisk(players: vm.players, games: vm.games, teamName: vm.teamName, mode: vm.mode) {
             alertMessage = "Saved successfully."; showAlert = true
         } else {
             alertMessage = "Save failed."; showAlert = true
@@ -174,8 +209,8 @@ struct TeamProfileView: View {
     }
 
     private func exportData() {
-        guard let data = DataExporter.export(players: vm.players, games: vm.games) else { return }
-        let url = DataExporter.documentsURL.appendingPathComponent("cognaize_export_\(Int(Date().timeIntervalSince1970)).json")
+        guard let data = DataExporter.export(players: vm.players, games: vm.games, teamName: vm.teamName, mode: vm.mode) else { return }
+        let url = DataExporter.documentsURL.appendingPathComponent("team_export_\(Int(Date().timeIntervalSince1970)).json")
         try? data.write(to: url)
         exportURL = url
         showExportShare = true
@@ -187,6 +222,8 @@ struct TeamProfileView: View {
         }
         vm.players = result.players
         vm.games = result.games
+        if let name = result.teamName { vm.teamName = name }
+        vm.mode = result.mode ?? vm.mode ?? .user
         alertMessage = "Loaded \(result.players.count) players, \(result.games.count) games."; showAlert = true
     }
 }

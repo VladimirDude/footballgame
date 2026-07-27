@@ -8,6 +8,12 @@ enum DataExporter {
         var players: [PlayerDTO]
         var games: [GameDTO]
         var exportDate: Date
+        /// Optional for backward-compatibility with snapshots authored before teams
+        /// had a name.
+        var teamName: String?
+        /// Local role (`user`/`admin`/`viewer`). Only used for on-device restore; the
+        /// cloud/redeem path derives the mode from membership, not the snapshot.
+        var teamMode: String?
     }
 
     struct PlayerDTO: Codable {
@@ -51,7 +57,7 @@ enum DataExporter {
 
     // MARK: - Export
 
-    static func export(players: [TeamPlayer], games: [TeamGame]) -> Data? {
+    static func export(players: [TeamPlayer], games: [TeamGame], teamName: String? = nil, mode: TeamMode? = nil) -> Data? {
         let playerDTOs = players.map { p -> PlayerDTO in
             PlayerDTO(
                 name: p.name, role: p.role.rawValue,
@@ -77,7 +83,7 @@ enum DataExporter {
             )
         }
 
-        let data = ExportData(players: playerDTOs, games: gameDTOs, exportDate: Date())
+        let data = ExportData(players: playerDTOs, games: gameDTOs, exportDate: Date(), teamName: teamName, teamMode: mode?.rawValue)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -86,7 +92,7 @@ enum DataExporter {
 
     // MARK: - Import
 
-    static func importData(_ data: Data) -> (players: [TeamPlayer], games: [TeamGame])? {
+    static func importData(_ data: Data) -> (players: [TeamPlayer], games: [TeamGame], teamName: String?, mode: TeamMode?)? {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         guard let exported = try? decoder.decode(ExportData.self, from: data) else { return nil }
@@ -114,7 +120,7 @@ enum DataExporter {
             )
         }
 
-        return (players, games)
+        return (players, games, exported.teamName, exported.teamMode.flatMap(TeamMode.init(rawValue:)))
     }
 
     // MARK: - File URL
@@ -124,16 +130,20 @@ enum DataExporter {
     }
 
     static var saveURL: URL {
-        documentsURL.appendingPathComponent("cognaize_team_data.json")
+        documentsURL.appendingPathComponent("team_data.json")
     }
 
-    static func saveToDisk(players: [TeamPlayer], games: [TeamGame]) -> Bool {
-        guard let data = export(players: players, games: games) else { return false }
+    static func saveToDisk(players: [TeamPlayer], games: [TeamGame], teamName: String?, mode: TeamMode? = nil) -> Bool {
+        guard let data = export(players: players, games: games, teamName: teamName, mode: mode) else { return false }
         do { try data.write(to: saveURL); return true } catch { return false }
     }
 
-    static func loadFromDisk() -> (players: [TeamPlayer], games: [TeamGame])? {
+    static func loadFromDisk() -> (players: [TeamPlayer], games: [TeamGame], teamName: String?, mode: TeamMode?)? {
         guard let data = try? Data(contentsOf: saveURL) else { return nil }
         return importData(data)
+    }
+
+    static func deleteFromDisk() {
+        try? FileManager.default.removeItem(at: saveURL)
     }
 }

@@ -7,12 +7,11 @@ import UIKit
 struct TeamSyncMenu: View {
     @ObservedObject var vm: TeamStore
     @ObservedObject var sync: TeamSyncService
-    @State private var showRedeem = false
     @State private var showShareCode = false
 
     var body: some View {
         Group {
-            if sync.isConfigured {
+            if sync.isConfigured && (sync.isJoined || vm.isLive) {
                 Menu {
                     if let membership = sync.membership {
                         Section("Shared team · \(membership.role.rawValue.capitalized)") {
@@ -31,16 +30,11 @@ struct TeamSyncMenu: View {
                                 sync.leaveTeam(vm)
                             } label: { Label("Leave Team", systemImage: "rectangle.portrait.and.arrow.right") }
                         }
-                    } else if vm.isAdmin {
-                        // Admins create & share a team; they don't join someone else's.
+                    } else if vm.isLive {
+                        // Admin team not yet published to the cloud — create & share it.
                         Button {
                             createAndShare()
                         } label: { Label("Create Shared Team", systemImage: "plus.circle.fill") }
-                    } else {
-                        // Regular users join with a code; they don't create teams.
-                        Button {
-                            showRedeem = true
-                        } label: { Label("Join with Code", systemImage: "key.fill") }
                     }
                 } label: {
                     Image(systemName: sync.isJoined ? "icloud.fill" : "icloud")
@@ -50,9 +44,6 @@ struct TeamSyncMenu: View {
                     if sync.isBusy { ProgressView().scaleEffect(0.7) }
                 }
             }
-        }
-        .sheet(isPresented: $showRedeem) {
-            RedeemCodeSheet(vm: vm, sync: sync)
         }
         .sheet(isPresented: $showShareCode) {
             if let code = sync.membership?.teamID {
@@ -69,7 +60,7 @@ struct TeamSyncMenu: View {
     /// alert shows and no sheet is presented.
     private func createAndShare() {
         Task {
-            await sync.createTeam(name: "My Team", from: vm)
+            await sync.createTeam(name: vm.teamName ?? "My Team", from: vm)
             if sync.membership != nil { showShareCode = true }
         }
     }

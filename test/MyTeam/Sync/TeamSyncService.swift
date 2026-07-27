@@ -81,7 +81,8 @@ final class TeamSyncService: ObservableObject {
                 apply(data, to: store)
                 await downloadPhotos(teamID: membership.teamID, into: store)
             }
-            store.isAdmin = membership.role.canEdit
+            // Redeem-code users view an admin club read-only; only the owner edits.
+            store.mode = membership.role.canEdit ? .admin : .viewer
         }
     }
 
@@ -90,8 +91,9 @@ final class TeamSyncService: ObservableObject {
             let teamID = try await remote.createTeam(name: name)
             let membership = TeamMembership(teamID: teamID, role: .owner)
             persist(membership)
-            store.isAdmin = true
-            if let data = DataExporter.export(players: store.players, games: store.games) {
+            store.mode = .admin
+            if store.teamName == nil { store.teamName = name }
+            if let data = DataExporter.export(players: store.players, games: store.games, teamName: store.teamName) {
                 try await remote.publish(teamID: teamID, snapshotJSON: data)
             }
         }
@@ -107,7 +109,7 @@ final class TeamSyncService: ObservableObject {
         }
         await run {
             try await uploadPhotos(teamID: membership.teamID, from: store)
-            guard let data = DataExporter.export(players: store.players, games: store.games) else { return }
+            guard let data = DataExporter.export(players: store.players, games: store.games, teamName: store.teamName) else { return }
             try await remote.publish(teamID: membership.teamID, snapshotJSON: data)
             lastSyncedAt = Date()
         }
@@ -126,8 +128,15 @@ final class TeamSyncService: ObservableObject {
     }
 
     func leaveTeam(_ store: TeamStore) {
+        detachMembership()
+        // Clearing the local team returns the user to the Create/Join onboarding.
+        store.deleteTeam()
+    }
+
+    /// Detaches this device from the shared team (stops live sync) but keeps the
+    /// local roster — used when switching an Admin team back to a local User team.
+    func detachMembership() {
         membership = nil
-        store.isAdmin = false
         UserDefaults.standard.removeObject(forKey: Keys.teamID)
         UserDefaults.standard.removeObject(forKey: Keys.role)
     }
@@ -138,6 +147,7 @@ final class TeamSyncService: ObservableObject {
         guard let imported = DataExporter.importData(data) else { return }
         store.players = imported.players
         store.games = imported.games
+        if let name = imported.teamName { store.teamName = name }
     }
 
     /// Admin: uploads any local photos that don't yet have a cloud key, assigns

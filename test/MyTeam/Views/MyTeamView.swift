@@ -4,8 +4,7 @@ struct MyTeamView: View {
     @StateObject private var vm = TeamStore()
     @StateObject private var sync = TeamSyncService()
     @EnvironmentObject private var entitlements: EntitlementService
-    @State private var showAdminPassphrase = false
-    @State private var showAdminPaywall = false
+    @State private var showRolePaywall = false
     @State private var showCoachDetail = false
     @State private var showGames = false
     @State private var editingPlayerId: UUID?
@@ -16,6 +15,16 @@ struct MyTeamView: View {
     @State private var showProfile = false
 
     var body: some View {
+        Group {
+            if vm.hasTeam || sync.isJoined {
+                dashboard
+            } else {
+                TeamOnboardingView(vm: vm, sync: sync)
+            }
+        }
+    }
+
+    private var dashboard: some View {
         List {
             Group {
                 headerSection
@@ -57,54 +66,76 @@ struct MyTeamView: View {
             }
             ToolbarItem(placement: .navigationBarTrailing) { adminBadge }
         }
-        .sheet(isPresented: $showAdminPassphrase) {
-            AdminPassphraseSheet { vm.isAdmin = true }
-        }
-        .paywallSheet(isPresented: $showAdminPaywall, source: "team_admin")
-        .onChange(of: entitlements.isPro) { _, isPro in
-            // Losing Pro revokes admin access immediately.
-            if !isPro { vm.isAdmin = false }
+        .paywallSheet(isPresented: $showRolePaywall, source: "team_admin")
+    }
+
+    // MARK: - Role Badge
+
+    private var roleStyle: (title: String, icon: String, tint: Color) {
+        switch vm.mode {
+        case .admin:  return ("Admin", "shield.checkered", TeamTheme.red)
+        case .viewer: return ("Viewer", "eye.fill", TeamTheme.textSecondary)
+        default:      return ("User", "person.fill", TeamTheme.blue)
         }
     }
 
-    // MARK: - Admin Badge
-
-    /// Admin is a Pro feature: free users get the paywall, Pro users must still
-    /// enter the secret passphrase. "User" is always available.
-    private func requestAdminAccess() {
-        guard !vm.isAdmin else { return }
-        if entitlements.canAccess(.adminMode) {
-            showAdminPassphrase = true
-        } else {
-            AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.adminMode.rawValue))
-            showAdminPaywall = true
-        }
-    }
-
+    /// The current role plus the ways to switch or exit it. The role is set at team
+    /// creation (User / Admin·Pro) or Viewer when joining; this menu is the way out.
     private var adminBadge: some View {
         Menu {
-            Button {
-                vm.isAdmin = false
-            } label: {
-                Label(AppRole.user.rawValue, systemImage: "lock.fill")
-            }
-            Button {
-                requestAdminAccess()
-            } label: {
-                Label(AppRole.admin.rawValue, systemImage: entitlements.canAccess(.adminMode) ? "lock.open.fill" : "crown.fill")
+            Section(roleStyle.title + " mode") {
+                switch vm.mode {
+                case .user:
+                    Button { switchToAdmin() } label: {
+                        Label("Switch to Admin (Live)", systemImage: "shield.checkered")
+                    }
+                case .admin:
+                    Button { switchToUser() } label: {
+                        Label("Switch to User (Local)", systemImage: "person.fill")
+                    }
+                case .viewer, .none:
+                    EmptyView()
+                }
+                Button(role: .destructive) { leaveTeam() } label: {
+                    Label(sync.isJoined ? "Leave Team" : "Delete Team", systemImage: "rectangle.portrait.and.arrow.right")
+                }
             }
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: vm.isAdmin ? "shield.checkered" : "person.fill")
-                    .font(.system(size: 12, weight: .bold))
-                Text(vm.isAdmin ? AppRole.admin.rawValue : AppRole.user.rawValue)
-                    .font(.system(size: 11, weight: .bold))
+                Image(systemName: roleStyle.icon).font(.system(size: 12, weight: .bold))
+                Text(roleStyle.title).font(.system(size: 11, weight: .bold))
+                Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold))
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(vm.isAdmin ? TeamTheme.red.opacity(0.2) : TeamTheme.blue.opacity(0.15), in: Capsule())
-            .foregroundStyle(vm.isAdmin ? TeamTheme.red : TeamTheme.blue)
+            .background(roleStyle.tint.opacity(0.18), in: Capsule())
+            .foregroundStyle(roleStyle.tint)
         }
+    }
+
+    /// User → Admin: keep the roster, go live (Pro; publishes to the cloud when a
+    /// backend is configured).
+    private func switchToAdmin() {
+        guard entitlements.canAccess(.adminMode) else {
+            AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.adminMode.rawValue))
+            showRolePaywall = true
+            return
+        }
+        vm.mode = .admin
+        if sync.isConfigured {
+            Task { await sync.createTeam(name: vm.teamName ?? "My Team", from: vm) }
+        }
+    }
+
+    /// Admin → User: keep the roster, stop live sync and go local-only.
+    private func switchToUser() {
+        sync.detachMembership()
+        vm.mode = .user
+    }
+
+    /// Exit the current team back to the Create / Join screen.
+    private func leaveTeam() {
+        if sync.isJoined { sync.leaveTeam(vm) } else { vm.deleteTeam() }
     }
 
     // MARK: - Header (gradient hero — the legacy `board` image asset is absent,
@@ -162,7 +193,7 @@ struct MyTeamView: View {
                     }
                 }
 
-                Text("Cognaize Futsal")
+                Text(vm.teamName ?? "My Team")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
 
