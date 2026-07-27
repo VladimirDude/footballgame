@@ -38,6 +38,7 @@ enum AchievementCatalog {
         Achievement(id: "level_5", title: "Level 5", detail: "Reach level 5", icon: "chevron.up.circle.fill", tier: .bronze) { XPCurve.level(forXP: $0.totalXP).level >= 5 },
         Achievement(id: "level_10", title: "Level 10", detail: "Reach level 10", icon: "chevron.up.circle.fill", tier: .silver) { XPCurve.level(forXP: $0.totalXP).level >= 10 },
         Achievement(id: "level_20", title: "Level 20", detail: "Reach level 20", icon: "crown.fill", tier: .gold) { XPCurve.level(forXP: $0.totalXP).level >= 20 },
+        Achievement(id: "pro_unlocked", title: "Pro Unlocked", detail: "Reach level \(ProgressionRewards.proUnlockLevel) — all premium features are yours", icon: "crown.fill", tier: .gold) { XPCurve.level(forXP: $0.totalXP).level >= ProgressionRewards.proUnlockLevel },
         Achievement(id: "daily_3", title: "Habit", detail: "3-day daily streak", icon: "calendar", tier: .bronze) { $0.dailyStreak >= 3 },
         Achievement(id: "daily_7", title: "Week Warrior", detail: "7-day daily streak", icon: "calendar.badge.clock", tier: .silver) { $0.dailyStreak >= 7 },
         Achievement(id: "daily_30", title: "Ever-Present", detail: "30-day daily streak", icon: "calendar.badge.checkmark", tier: .gold, isPro: true) { $0.dailyStreak >= 30 },

@@ -12,6 +12,9 @@ struct ProfileView: View {
             ScrollView {
                 LazyVStack(spacing: DSSpacing.lg) {
                     levelHeader
+                    if !entitlements.isSubscribed && !entitlements.progressionUnlocked {
+                        proProgressCard
+                    }
                     playSection
                     dailyCard
                     statsGrid
@@ -129,11 +132,45 @@ struct ProfileView: View {
             .accessibilityLabel("Level \(lvl.level)")
 
             VStack(alignment: .leading, spacing: DSSpacing.xxs) {
-                Text(lvl.title).dsFont(.title3).foregroundStyle(DSColor.textPrimary)
+                HStack(spacing: DSSpacing.xs) {
+                    Text(lvl.title).dsFont(.title3).foregroundStyle(DSColor.textPrimary)
+                    if entitlements.progressionUnlocked && !entitlements.isSubscribed {
+                        PremiumBadge()
+                    }
+                }
                 Text("\(lvl.xpIntoLevel) / \(lvl.xpForNext) XP to next level")
                     .dsFont(.subheadline).foregroundStyle(DSColor.textSecondary)
                 ProgressView(value: lvl.progress).tint(DSColor.accent)
             }
+        }
+        .dsCard()
+    }
+
+    // MARK: - Pro progress (earn Pro by leveling up)
+
+    /// Cumulative XP needed to reach the Pro-unlock level (level L→L+1 costs L×100).
+    private var proUnlockXP: Int {
+        let n = ProgressionRewards.proUnlockLevel
+        return 100 * (n - 1) * n / 2
+    }
+
+    private var proProgressCard: some View {
+        let lvl = progress.level
+        let fraction = min(1.0, Double(progress.progress.totalXP) / Double(max(1, proUnlockXP)))
+        return VStack(alignment: .leading, spacing: DSSpacing.sm) {
+            HStack(spacing: DSSpacing.md) {
+                ZStack {
+                    Circle().fill(DSColor.gold.opacity(0.15)).frame(width: 46, height: 46)
+                    Image(systemName: "crown.fill").font(.title3).foregroundStyle(DSColor.gold)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Unlock Pro for free").dsFont(.headline).foregroundStyle(DSColor.textPrimary)
+                    Text("Reach Level \(ProgressionRewards.proUnlockLevel) — you're at Level \(lvl.level)")
+                        .dsFont(.subheadline).foregroundStyle(DSColor.textSecondary)
+                }
+                Spacer(minLength: 0)
+            }
+            ProgressView(value: fraction).tint(DSColor.gold)
         }
         .dsCard()
     }

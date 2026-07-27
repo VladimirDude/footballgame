@@ -26,6 +26,7 @@ struct PaywallView: View {
                 VStack(spacing: 22) {
                     header
                     benefitsList
+                    progressionNote
                     planSection
                     footerLinks
                 }
@@ -93,6 +94,22 @@ struct PaywallView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Nudges free players toward the progression path — Pro can also be earned.
+    private var progressionNote: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "gamecontroller.fill")
+                .font(.subheadline)
+                .foregroundStyle(.tint)
+            Text("Or reach Level \(ProgressionRewards.proUnlockLevel) to unlock Pro for free.")
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.tint.opacity(0.08)))
     }
 
     @ViewBuilder

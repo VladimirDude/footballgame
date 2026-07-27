@@ -17,21 +17,21 @@ struct SubscriptionSettingsSection: View {
             statusRow
             Divider().padding(.leading, 52)
 
-            if entitlements.isPro {
+            if entitlements.isSubscribed {
                 linkRow(title: "Manage Subscription",
                         subtitle: "Change or cancel your plan",
                         icon: "gearshape.fill", tint: .blue) {
                     UIApplication.shared.open(manageURL)
                 }
-            } else {
+                Divider().padding(.leading, 52)
+            } else if !entitlements.progressionUnlocked {
                 actionRow(title: "Upgrade to Pro",
                           subtitle: "Unlock everything with a free trial",
                           icon: "crown.fill", tint: .yellow) {
                     showPaywall = true
                 }
+                Divider().padding(.leading, 52)
             }
-
-            Divider().padding(.leading, 52)
 
             actionRow(title: "Restore Purchases",
                       subtitle: "Already subscribed? Restore access",
@@ -57,13 +57,21 @@ struct SubscriptionSettingsSection: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(entitlements.isPro ? "FTMP Pro" : "Free Plan")
                     .font(.body.weight(.semibold))
-                Text(entitlements.isPro ? "All features unlocked" : "Upgrade to unlock everything")
+                Text(statusSubtitle)
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             if entitlements.isPro { PremiumBadge() }
         }
         .padding(.vertical, 6)
+    }
+
+    private var statusSubtitle: String {
+        if entitlements.isSubscribed { return "All features unlocked" }
+        if entitlements.progressionUnlocked {
+            return "Earned at Level \(ProgressionRewards.proUnlockLevel)"
+        }
+        return "Upgrade to unlock everything"
     }
 
     private func actionRow(title: String, subtitle: String, icon: String, tint: Color,
