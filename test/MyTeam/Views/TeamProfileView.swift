@@ -41,8 +41,15 @@ struct TeamProfileView: View {
                 summaryRow("Players", "\(vm.playerCount)", "figure.run")
                 summaryRow("Goalkeepers", "\(vm.goalkeeperCount)", "hand.raised.fill")
                 summaryRow("Coaches", "\(vm.coachCount)", "person.badge.clock.fill")
-                summaryRow("Games Played", "\(vm.games.count)", "sportscourt")
+                summaryRow("Games Played", "\(vm.gamesInScope.count)", "sportscourt")
                 summaryRow("Total Goals", "\(vm.totalGoals)", "soccerball")
+                NavigationLink { SeasonsView(vm: vm) } label: {
+                    HStack {
+                        Label("Seasons", systemImage: "calendar").foregroundStyle(TeamTheme.textSecondary)
+                        Spacer()
+                        Text("\(vm.seasons.count)").foregroundStyle(TeamTheme.textTertiary)
+                    }
+                }
             }
             .listRowBackground(TeamTheme.cardBg)
 
@@ -140,9 +147,9 @@ struct TeamProfileView: View {
                     Text("1.0").foregroundStyle(TeamTheme.textTertiary)
                 }
                 HStack {
-                    Text("Season").foregroundStyle(TeamTheme.textSecondary)
+                    Text("Current season").foregroundStyle(TeamTheme.textSecondary)
                     Spacer()
-                    Text("2025").foregroundStyle(TeamTheme.textTertiary)
+                    Text(vm.currentSeason?.name ?? "—").foregroundStyle(TeamTheme.textTertiary)
                 }
             }
             .listRowBackground(TeamTheme.cardBg)

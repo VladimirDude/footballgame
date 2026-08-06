@@ -13,8 +13,17 @@ struct TeamGamesView: View {
         ScrollView {
             VStack(spacing: 14) {
                 recordSummary
-                ForEach(vm.games.sorted(by: { $0.date > $1.date })) { game in
-                    gameCard(game)
+                if vm.gamesInScope.isEmpty {
+                    DSEmptyState(
+                        title: "No matches",
+                        systemImage: "sportscourt",
+                        message: "Nothing recorded for \(vm.seasonScopeLabel.lowercased()) yet."
+                    )
+                    .padding(.top, 40)
+                } else {
+                    ForEach(vm.gamesInScope) { game in
+                        gameCard(game)
+                    }
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 16)
@@ -23,6 +32,7 @@ struct TeamGamesView: View {
         .navigationTitle("Match History")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) { SeasonPickerButton(vm: vm) }
             if vm.isAdmin {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showAddGame = true } label: {
@@ -36,7 +46,9 @@ struct TeamGamesView: View {
     }
 
     private var recordSummary: some View {
-        let g = vm.games
+        // Scoped to the selected season — an all-time record under a season filter
+        // would contradict the list right below it.
+        let g = vm.gamesInScope
         let wins = g.filter { $0.result == .win }.count
         let draws = g.filter { $0.result == .draw }.count
         let losses = g.filter { $0.result == .loss }.count

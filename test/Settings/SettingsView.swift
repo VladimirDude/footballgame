@@ -150,7 +150,16 @@ struct SettingsView: View {
             defaults.removeObject(forKey: key)
         }
         PredictorStore.shared.resetAllProgress()
+        // Teams now live in `TeamData/` (one folder each, plus images and the
+        // index); removing only the legacy file would leave a half-reset app.
         try? FileManager.default.removeItem(at: DataExporter.saveURL)
+        try? FileManager.default.removeItem(at: DataExporter.previousSaveURL)
+        try? FileManager.default.removeItem(
+            at: DataExporter.documentsURL.appendingPathComponent("TeamData", isDirectory: true)
+        )
+        for key in ["teamSync.teamID", "teamSync.role", "teamSync.memberships.v2"] {
+            defaults.removeObject(forKey: key)
+        }
         HapticFeedback.success()
     }
 }

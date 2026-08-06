@@ -6,9 +6,9 @@ struct EditPlayerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String
-    @State private var goals: Int
-    @State private var assists: Int
     @State private var bonus: Double
+    @State private var carryGoals: Int
+    @State private var carryAssists: Int
     @State private var gkAttended: Int
     @State private var gkConceded: Int
     @State private var gkCleanSheets: Int
@@ -21,17 +21,40 @@ struct EditPlayerSheet: View {
 
     private var player: TeamPlayer? { vm.players.first { $0.id == playerId } }
 
+    /// Hand-entered figures are written against a specific season, so the sheet
+    /// always edits one — the current season when the view is scoped to all time.
+    private var editingSeasonID: UUID? {
+        if case .season(let id) = vm.seasonScope { return id }
+        return vm.currentSeason?.id
+    }
+
+    private var derived: PlayerSeasonStats {
+        player.map { vm.stats(for: $0) } ?? .empty(playerId)
+    }
+
+    private var scopeHeader: String {
+        if case .season = vm.seasonScope { return vm.seasonScopeLabel }
+        return "All time"
+    }
+
+    private var hasCarryOver: Bool { carryGoals > 0 || carryAssists > 0 }
+
     init(vm: TeamStore, playerId: UUID) {
         self.vm = vm
         self.playerId = playerId
         let p = vm.players.first { $0.id == playerId }
+        let seasonID: UUID? = {
+            if case .season(let id) = vm.seasonScope { return id }
+            return vm.currentSeason?.id
+        }()
+        let entry = seasonID.flatMap { vm.seasonEntry(for: playerId, seasonID: $0) }
         _name = State(initialValue: p?.name ?? "")
-        _goals = State(initialValue: p?.goals ?? 0)
-        _assists = State(initialValue: p?.assists ?? 0)
-        _bonus = State(initialValue: p?.bonusPoints ?? 0)
-        _gkAttended = State(initialValue: p?.goalkeeperStats?.matchesAttended ?? 0)
-        _gkConceded = State(initialValue: p?.goalkeeperStats?.goalsConceded ?? 0)
-        _gkCleanSheets = State(initialValue: p?.goalkeeperStats?.cleanSheets ?? 0)
+        _bonus = State(initialValue: entry?.bonusPoints ?? 0)
+        _carryGoals = State(initialValue: entry?.carryOverGoals ?? 0)
+        _carryAssists = State(initialValue: entry?.carryOverAssists ?? 0)
+        _gkAttended = State(initialValue: entry?.goalkeeper?.matchesAttended ?? 0)
+        _gkConceded = State(initialValue: entry?.goalkeeper?.goalsConceded ?? 0)
+        _gkCleanSheets = State(initialValue: entry?.goalkeeper?.cleanSheets ?? 0)
         _photo = State(initialValue: p?.photo)
         _specialty = State(initialValue: p?.coachInfo?.specialty ?? "")
         _tactics = State(initialValue: p?.coachInfo?.tactics ?? "")
@@ -56,9 +79,12 @@ struct EditPlayerSheet: View {
                 }
 
                 if player?.role != .coach {
-                    Section("Statistics") {
-                        Stepper("Goals: \(goals)", value: $goals, in: 0...999)
-                        Stepper("Assists: \(assists)", value: $assists, in: 0...999)
+                    Section {
+                        // Read-only: goals and assists are counted from the match
+                        // log. An editable stepper here would fight the derivation
+                        // and there'd be no way to tell which number was true.
+                        LabeledContent("Goals", value: "\(derived.goals)")
+                        LabeledContent("Assists", value: "\(derived.assists)")
                         HStack {
                             Text("Bonus")
                             Spacer()
@@ -66,6 +92,21 @@ struct EditPlayerSheet: View {
                                 .keyboardType(.decimalPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 60)
+                        }
+                    } header: {
+                        Text(scopeHeader)
+                    } footer: {
+                        Text("Goals and assists come from the match log. Add scorers to a match and they'll count here.")
+                    }
+
+                    if hasCarryOver {
+                        Section {
+                            Stepper("Goals: \(carryGoals)", value: $carryGoals, in: 0...999)
+                            Stepper("Assists: \(carryAssists)", value: $carryAssists, in: 0...999)
+                        } header: {
+                            Text("Recorded before match logging")
+                        } footer: {
+                            Text("These were entered by hand before matches tracked scorers, and are included in the totals above. Set them to zero once the match log is complete.")
                         }
                     }
                 }
@@ -112,19 +153,29 @@ struct EditPlayerSheet: View {
     }
 
     private func save() {
-        if let i = vm.players.firstIndex(where: { $0.id == playerId }) {
-            vm.players[i].name = name
-            vm.players[i].goals = goals
-            vm.players[i].assists = assists
-            vm.players[i].bonusPoints = bonus
-            vm.players[i].photo = photo
-            if vm.players[i].role == .goalkeeper {
-                vm.players[i].goalkeeperStats = GoalkeeperStats(matchesAttended: gkAttended, goalsConceded: gkConceded, cleanSheets: gkCleanSheets)
-            }
-            if vm.players[i].role == .coach {
-                vm.players[i].coachInfo = CoachInfo(specialty: specialty, tactics: tactics, experience: experience, philosophy: philosophy)
-            }
+        guard let i = vm.players.firstIndex(where: { $0.id == playerId }) else { return }
+        let role = vm.players[i].role
+        vm.players[i].name = name
+        if vm.players[i].photo !== photo {
+            vm.updatePlayerPhoto(id: playerId, photo: photo)
         }
+        if role == .coach {
+            vm.players[i].coachInfo = CoachInfo(specialty: specialty, tactics: tactics,
+                                                experience: experience, philosophy: philosophy)
+            return
+        }
+        // Everything numeric is per-season state, not a property of the player.
+        guard let seasonID = editingSeasonID else { return }
+        vm.updateSeasonEntry(
+            playerID: playerId,
+            seasonID: seasonID,
+            bonusPoints: bonus,
+            goalkeeper: role == .goalkeeper
+                ? GoalkeeperStats(matchesAttended: gkAttended, goalsConceded: gkConceded, cleanSheets: gkCleanSheets)
+                : nil,
+            carryOverGoals: carryGoals,
+            carryOverAssists: carryAssists
+        )
     }
 }
 
@@ -206,12 +257,41 @@ struct EditGameSheet: View {
                 Section("Match Info") {
                     TextField("Opponent", text: $game.opponent)
                     DatePicker("Date", selection: $game.date, displayedComponents: .date)
+                    if !vm.seasons.isEmpty {
+                        Picker("Season", selection: $game.seasonID) {
+                            ForEach(vm.seasons) { season in
+                                Text(season.name).tag(Optional(season.id))
+                            }
+                            if game.seasonID == nil { Text("Unassigned").tag(UUID?.none) }
+                        }
+                    }
                     Stepper("Goals For: \(game.goalsFor)", value: $game.goalsFor, in: 0...99)
                     Stepper("Goals Against: \(game.goalsAgainst)", value: $game.goalsAgainst, in: 0...99)
                 }
 
-                Section("Scorers") {
-                    TextField("e.g. Narek x2, Rob, Aro", text: $scorersText)
+                // Structured rows rather than a comma-separated string: this is
+                // what makes `goalDetails` authoritative for new data, so the
+                // rankings never need the repair flow for matches added here.
+                Section {
+                    ForEach($game.goalDetails) { $goal in
+                        goalRow($goal)
+                    }
+                    .onDelete { game.goalDetails.remove(atOffsets: $0) }
+
+                    Button {
+                        game.goalDetails.append(GoalDetail(time: "", scorer: ""))
+                    } label: {
+                        Label("Add Goal", systemImage: "plus.circle")
+                    }
+                } header: {
+                    HStack {
+                        Text("Goals")
+                        Spacer()
+                        Text("\(ourGoalCount) of \(game.goalsFor) credited")
+                            .foregroundStyle(ourGoalCount == game.goalsFor ? TeamTheme.textTertiary : TeamTheme.orange)
+                    }
+                } footer: {
+                    Text("Pick the scorer from your squad so the goal counts towards their season stats.")
                 }
 
                 Section("Highlight Image") {
@@ -264,8 +344,9 @@ struct EditGameSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        game.scorers = scorersText.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
                         game.highlightImage = highlightImage
+                        // `scorers` is regenerated from the goal list by the store,
+                        // so it can't drift from what's actually recorded.
                         if isNew { vm.addGame(game) } else { vm.updateGame(game) }
                         dismiss()
                     }
@@ -275,5 +356,63 @@ struct EditGameSheet: View {
             }
             .sheet(isPresented: $showImagePicker) { ImagePicker(image: $highlightImage) }
         }
+    }
+
+    // MARK: - Goal row
+
+    private func goalRow(_ goal: Binding<GoalDetail>) -> some View {
+        VStack(spacing: 8) {
+            HStack {
+                TextField("12:30", text: goal.time)
+                    .frame(width: 70)
+                    .font(.system(size: 14, design: .monospaced))
+                Toggle("Opponent", isOn: goal.isOpponent)
+                    .labelsHidden()
+                Text(goal.wrappedValue.isOpponent ? "Opponent goal" : "Our goal")
+                    .font(.system(size: 12))
+                    .foregroundStyle(TeamTheme.textSecondary)
+                Spacer()
+            }
+
+            if goal.wrappedValue.isOpponent {
+                TextField("Scorer (optional)", text: goal.scorer)
+            } else {
+                Picker("Scorer", selection: scorerBinding(goal)) {
+                    Text("Unassigned").tag(UUID?.none)
+                    ForEach(squad) { p in Text(p.name).tag(Optional(p.id)) }
+                }
+                Picker("Assist", selection: assistBinding(goal)) {
+                    Text("None").tag(UUID?.none)
+                    ForEach(squad) { p in Text(p.name).tag(Optional(p.id)) }
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var squad: [TeamPlayer] { vm.players.filter { $0.role != .coach } }
+
+    private var ourGoalCount: Int { game.goalDetails.filter { !$0.isOpponent }.count }
+
+    /// Keeps the id and the display name in step — the name is still what a v1
+    /// client reads, and what shows if the player is later removed.
+    private func scorerBinding(_ goal: Binding<GoalDetail>) -> Binding<UUID?> {
+        Binding(
+            get: { goal.wrappedValue.scorerID },
+            set: { id in
+                goal.wrappedValue.scorerID = id
+                goal.wrappedValue.scorer = squad.first { $0.id == id }?.name ?? goal.wrappedValue.scorer
+            }
+        )
+    }
+
+    private func assistBinding(_ goal: Binding<GoalDetail>) -> Binding<UUID?> {
+        Binding(
+            get: { goal.wrappedValue.assistID },
+            set: { id in
+                goal.wrappedValue.assistID = id
+                goal.wrappedValue.assist = squad.first { $0.id == id }?.name ?? ""
+            }
+        )
     }
 }

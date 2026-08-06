@@ -18,6 +18,17 @@ struct TeamDocument: Equatable {
     var remoteCode: String?
     var players: [TeamPlayer]
     var games: [TeamGame]
+    var seasons: [Season]
+    /// The season new matches default to. A pointer rather than an `isCurrent`
+    /// flag per season, because a flag admits "two currents" and "no current" and
+    /// every read then has to defend against both.
+    var currentSeasonID: UUID?
+    /// Hand-entered, per (season, player). Everything derivable from the match log
+    /// is computed instead — see `PlayerSeasonStats`.
+    var seasonEntries: [PlayerSeasonEntry]
+    /// Scorer names the admin marked as not-a-squad-member, so the "unlinked
+    /// names" prompt stays quiet about them permanently.
+    var ignoredScorerNames: [String]
     /// Empty until the tactics board ships. Persisted now so that feature needs no
     /// further schema migration — its slot assignments reference `TeamPlayer.id`,
     /// which only becomes stable with snapshot v2.
@@ -30,6 +41,10 @@ struct TeamDocument: Equatable {
         remoteCode: String? = nil,
         players: [TeamPlayer] = [],
         games: [TeamGame] = [],
+        seasons: [Season] = [],
+        currentSeasonID: UUID? = nil,
+        seasonEntries: [PlayerSeasonEntry] = [],
+        ignoredScorerNames: [String] = [],
         tacticsPlans: [TacticsPlan] = []
     ) {
         self.id = id
@@ -38,7 +53,28 @@ struct TeamDocument: Equatable {
         self.remoteCode = remoteCode
         self.players = players
         self.games = games
+        self.seasons = seasons
+        self.currentSeasonID = currentSeasonID
+        self.seasonEntries = seasonEntries
+        self.ignoredScorerNames = ignoredScorerNames
         self.tacticsPlans = tacticsPlans
+    }
+
+    /// Seasons newest-first (highest `sortIndex` first).
+    var orderedSeasons: [Season] {
+        seasons.sorted { $0.sortIndex > $1.sortIndex }
+    }
+
+    var currentSeason: Season? {
+        currentSeasonID.flatMap { id in seasons.first { $0.id == id } }
+    }
+
+    func season(_ id: UUID?) -> Season? {
+        id.flatMap { id in seasons.first { $0.id == id } }
+    }
+
+    var hasUnassignedGames: Bool {
+        games.contains { $0.seasonID == nil }
     }
 }
 

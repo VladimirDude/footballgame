@@ -3,6 +3,9 @@ import SwiftUI
 struct StatRowView: View {
     let index: Int
     let player: TeamPlayer
+    /// Season-scoped figures. Passed explicitly because `player`'s own counters
+    /// are all-time legacy mirrors and would contradict the table's season filter.
+    let stats: PlayerSeasonStats
     let highlightBonus: Bool
     let isAdmin: Bool
     var onEdit: (() -> Void)? = nil
@@ -26,21 +29,21 @@ struct StatRowView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            if player.role == .goalkeeper, let gk = player.goalkeeperStats {
+            if player.role == .goalkeeper, let gk = stats.goalkeeper {
                 Text("\(gk.matchesAttended)").statCell(color: TeamTheme.textSecondary)
                 Text("\(gk.goalsConceded)").statCell(color: TeamTheme.red.opacity(0.8))
                 Text("\(gk.cleanSheets)").statCell(color: TeamTheme.green)
             } else {
-                Text("\(player.goals)").statCell()
-                Text("\(player.assists)").statCell()
-                Text("\(player.total)").statCell()
+                Text("\(stats.goals)").statCell()
+                Text("\(stats.assists)").statCell()
+                Text("\(stats.contributions)").statCell()
             }
 
             HStack(spacing: 2) {
-                Text(formatScore(player.totalWithBonus))
+                Text(formatScore(stats.points))
                     .font(.system(size: 13, weight: .bold, design: .monospaced))
-                    .foregroundStyle(highlightBonus && player.bonusPoints > 0 ? TeamTheme.orange : TeamTheme.textPrimary)
-                if player.bonusPoints > 0 {
+                    .foregroundStyle(highlightBonus && stats.bonusPoints > 0 ? TeamTheme.orange : TeamTheme.textPrimary)
+                if stats.bonusPoints > 0 {
                     Text("*")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(TeamTheme.orange)

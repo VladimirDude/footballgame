@@ -57,6 +57,7 @@ enum PremiumFeature: String, CaseIterable, Codable, Sendable {
     case extraLeagues            // Leagues beyond the free Premier League
     case themePacks              // Cosmetic theme skins
     case adminMode               // My Team admin: create/edit/publish shared teams
+    case multipleTeams           // My Team: manage a second team on one device
     case relaxedMode             // Untimed / no-pressure mode for timed games
     case aliasPremiumPacks       // Football Alias: premium categories + Hard/Expert cards
 
@@ -73,6 +74,7 @@ enum PremiumFeature: String, CaseIterable, Codable, Sendable {
         case .extraLeagues: "All Leagues"
         case .themePacks: "Theme Packs"
         case .adminMode: "Team Admin"
+        case .multipleTeams: "Multiple Teams"
         case .relaxedMode: "Relaxed Mode"
         case .aliasPremiumPacks: "All Alias Packs"
         }

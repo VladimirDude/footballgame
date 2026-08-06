@@ -63,6 +63,31 @@ enum DataExporter {
         var teamId: String?
         var remoteCode: String?
         var tacticsPlans: [TacticsPlanDTO]?
+        var seasons: [SeasonDTO]?
+        var currentSeasonId: String?
+        var seasonEntries: [PlayerSeasonEntryDTO]?
+        var ignoredScorerNames: [String]?
+    }
+
+    struct SeasonDTO: Codable {
+        var id: String
+        var name: String
+        var startDate: Date?
+        var endDate: Date?
+        var sortIndex: Int
+    }
+
+    /// Flat rather than a dictionary: a `[SeasonPlayerKey: …]` map cannot round-trip
+    /// through JSON with a struct key.
+    struct PlayerSeasonEntryDTO: Codable {
+        var seasonId: String
+        var playerId: String
+        var bonusPoints: Double
+        var gkAttended: Int?
+        var gkConceded: Int?
+        var gkCleanSheets: Int?
+        var carryOverGoals: Int?
+        var carryOverAssists: Int?
     }
 
     struct PlayerDTO: Codable {
@@ -96,6 +121,7 @@ enum DataExporter {
         var mediaLinks: [MediaLinkDTO]
         // v2 additions
         var id: String?
+        var seasonId: String?
     }
 
     struct GoalDTO: Codable {
@@ -105,6 +131,12 @@ enum DataExporter {
         var isOpponent: Bool
         // v2 additions
         var id: String?
+        var scorerId: String?
+        var assistId: String?
+        /// Synthesized by migration from the flat `scorers` list, so it carries no
+        /// real minute. Lets the UI render it differently and stops a future
+        /// re-derive pass from double-counting.
+        var isInferred: Bool?
     }
 
     struct MediaLinkDTO: Codable {
@@ -132,13 +164,19 @@ enum DataExporter {
     // MARK: - Encode
 
     static func encode(_ doc: TeamDocument) -> Data? {
+        // Legacy mirrors carry the *all-time derived* figures, so a v1 client (or a
+        // viewer still on the old build) sees the same numbers this app shows,
+        // rather than the stale hand-entered counters.
+        let allTime = TeamStatsCalculator.stats(for: doc, scope: .allTime)
+
         let playerDTOs = doc.players.map { p -> PlayerDTO in
-            PlayerDTO(
+            let s = allTime[p.id] ?? .empty(p.id)
+            return PlayerDTO(
                 name: p.name, role: p.role.rawValue,
-                goals: p.goals, assists: p.assists, bonusPoints: p.bonusPoints,
-                gkAttended: p.goalkeeperStats?.matchesAttended,
-                gkConceded: p.goalkeeperStats?.goalsConceded,
-                gkCleanSheets: p.goalkeeperStats?.cleanSheets,
+                goals: s.goals, assists: s.assists, bonusPoints: s.bonusPoints,
+                gkAttended: s.goalkeeper?.matchesAttended,
+                gkConceded: s.goalkeeper?.goalsConceded,
+                gkCleanSheets: s.goalkeeper?.cleanSheets,
                 coachSpecialty: p.coachInfo?.specialty,
                 coachTactics: p.coachInfo?.tactics,
                 coachExperience: p.coachInfo?.experience,
@@ -153,16 +191,38 @@ enum DataExporter {
             GameDTO(
                 date: g.date, opponent: g.opponent,
                 goalsFor: g.goalsFor, goalsAgainst: g.goalsAgainst,
-                scorers: g.scorers,
+                // Regenerated from the authoritative goal list rather than stored,
+                // so the two can't drift. v1 clients read this.
+                scorers: displayScorers(g),
                 goals: g.goalDetails.map {
                     GoalDTO(time: $0.time, scorer: $0.scorer, assist: $0.assist,
-                            isOpponent: $0.isOpponent, id: $0.id.uuidString)
+                            isOpponent: $0.isOpponent, id: $0.id.uuidString,
+                            scorerId: $0.scorerID?.uuidString, assistId: $0.assistID?.uuidString,
+                            isInferred: $0.isInferred ? true : nil)
                 },
                 mediaLinks: g.mediaLinks.map {
                     MediaLinkDTO(title: $0.title, urlString: $0.urlString,
                                  type: $0.type.rawValue, id: $0.id.uuidString)
                 },
-                id: g.id.uuidString
+                id: g.id.uuidString,
+                seasonId: g.seasonID?.uuidString
+            )
+        }
+
+        let seasonDTOs = doc.seasons.map {
+            SeasonDTO(id: $0.id.uuidString, name: $0.name, startDate: $0.startDate,
+                      endDate: $0.endDate, sortIndex: $0.sortIndex)
+        }
+
+        let entryDTOs = doc.seasonEntries.map { entry in
+            PlayerSeasonEntryDTO(
+                seasonId: entry.seasonID.uuidString, playerId: entry.playerID.uuidString,
+                bonusPoints: entry.bonusPoints,
+                gkAttended: entry.goalkeeper?.matchesAttended,
+                gkConceded: entry.goalkeeper?.goalsConceded,
+                gkCleanSheets: entry.goalkeeper?.cleanSheets,
+                carryOverGoals: entry.carryOverGoals == 0 ? nil : entry.carryOverGoals,
+                carryOverAssists: entry.carryOverAssists == 0 ? nil : entry.carryOverAssists
             )
         }
 
@@ -181,7 +241,11 @@ enum DataExporter {
             players: playerDTOs, games: gameDTOs, exportDate: Date(),
             teamName: doc.name, teamMode: doc.mode.rawValue, version: currentVersion,
             teamId: doc.id.uuidString, remoteCode: doc.remoteCode,
-            tacticsPlans: tacticsDTOs.isEmpty ? nil : tacticsDTOs
+            tacticsPlans: tacticsDTOs.isEmpty ? nil : tacticsDTOs,
+            seasons: seasonDTOs.isEmpty ? nil : seasonDTOs,
+            currentSeasonId: doc.currentSeasonID?.uuidString,
+            seasonEntries: entryDTOs.isEmpty ? nil : entryDTOs,
+            ignoredScorerNames: doc.ignoredScorerNames.isEmpty ? nil : doc.ignoredScorerNames
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -244,17 +308,41 @@ enum DataExporter {
         let games = exported.games.map { dto -> TeamGame in
             TeamGame(
                 id: uuid(dto.id),
+                seasonID: optionalUUID(dto.seasonId),
                 date: dto.date, opponent: dto.opponent,
                 goalsFor: dto.goalsFor, goalsAgainst: dto.goalsAgainst,
                 scorers: dto.scorers,
                 goalDetails: dto.goals.map {
                     GoalDetail(id: uuid($0.id), time: $0.time, scorer: $0.scorer,
-                               assist: $0.assist, isOpponent: $0.isOpponent)
+                               assist: $0.assist, isOpponent: $0.isOpponent,
+                               scorerID: optionalUUID($0.scorerId),
+                               assistID: optionalUUID($0.assistId),
+                               isInferred: $0.isInferred ?? false)
                 },
                 mediaLinks: dto.mediaLinks.map {
                     MediaLink(id: uuid($0.id), title: $0.title, urlString: $0.urlString,
                               type: MediaType(rawValue: $0.type) ?? .video)
                 }
+            )
+        }
+
+        let seasons = (exported.seasons ?? []).map {
+            Season(id: uuid($0.id), name: $0.name, startDate: $0.startDate,
+                   endDate: $0.endDate, sortIndex: $0.sortIndex)
+        }
+
+        let entries: [PlayerSeasonEntry] = (exported.seasonEntries ?? []).compactMap { dto in
+            guard let seasonID = UUID(uuidString: dto.seasonId),
+                  let playerID = UUID(uuidString: dto.playerId) else { return nil }
+            var gk: GoalkeeperStats?
+            if let att = dto.gkAttended, let con = dto.gkConceded, let cs = dto.gkCleanSheets {
+                gk = GoalkeeperStats(matchesAttended: att, goalsConceded: con, cleanSheets: cs)
+            }
+            return PlayerSeasonEntry(
+                seasonID: seasonID, playerID: playerID, bonusPoints: dto.bonusPoints,
+                goalkeeper: gk,
+                carryOverGoals: dto.carryOverGoals ?? 0,
+                carryOverAssists: dto.carryOverAssists ?? 0
             )
         }
 
@@ -266,16 +354,35 @@ enum DataExporter {
             )
         }
 
-        let document = TeamDocument(
+        var document = TeamDocument(
             id: uuid(exported.teamId),
             name: name,
             mode: exported.teamMode.flatMap(TeamMode.init(rawValue:)) ?? .user,
             remoteCode: exported.remoteCode,
             players: players,
             games: games,
+            seasons: seasons,
+            currentSeasonID: optionalUUID(exported.currentSeasonId),
+            seasonEntries: entries,
+            ignoredScorerNames: exported.ignoredScorerNames ?? [],
             tacticsPlans: plans
         )
+        // Bring anything older up to today's shape. Pure and idempotent: it uses
+        // the snapshot's own dates, never `Date()`, so running it twice on the
+        // same bytes produces the same document.
+        TeamMigration.apply(to: &document, referenceDate: exported.exportDate)
         return (document, version)
+    }
+
+    /// "Alex x2, Ben" — the same aggregation `GameParser` produces, rebuilt from
+    /// `goalDetails` so the denormalized list always agrees with the goal list.
+    /// Falls back to the stored strings for matches that have no goal detail.
+    static func displayScorers(_ game: TeamGame) -> [String] {
+        let names = game.goalDetails.filter { !$0.isOpponent }.map(\.scorer).filter { !$0.isEmpty }
+        guard !names.isEmpty else { return game.scorers }
+        let counts = Dictionary(names.map { ($0, 1) }, uniquingKeysWith: +)
+        return counts.sorted { $0.value == $1.value ? $0.key < $1.key : $0.value > $1.value }
+            .map { $0.value > 1 ? "\($0.key) x\($0.value)" : $0.key }
     }
 
     /// Minimal shape used to read `version` without committing to the full payload.
@@ -285,6 +392,12 @@ enum DataExporter {
     /// persisted from then on.
     private static func uuid(_ raw: String?) -> UUID {
         raw.flatMap(UUID.init(uuidString:)) ?? UUID()
+    }
+
+    /// Unlike `uuid(_:)`, absence stays absent — used where `nil` is meaningful
+    /// (an unassigned season, an unlinked scorer).
+    private static func optionalUUID(_ raw: String?) -> UUID? {
+        raw.flatMap(UUID.init(uuidString:))
     }
 
     private static func describe(_ error: Error) -> String {

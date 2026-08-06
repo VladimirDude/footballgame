@@ -1,8 +1,26 @@
 import SwiftUI
 
+/// Owns the team registry and hands the open team to `TeamHomeView`.
+///
+/// The split exists so the home screen can hold the active `TeamStore` as a real
+/// `@ObservedObject` — reading it through a computed property would render once
+/// and then never update.
 struct MyTeamView: View {
-    @StateObject private var vm = TeamStore()
+    @StateObject private var teams = TeamsStore()
     @StateObject private var sync = TeamSyncService()
+
+    var body: some View {
+        TeamHomeView(vm: teams.active, teams: teams, sync: sync)
+            // Rebuilds the subtree when the open team changes, so `vm` is
+            // re-bound rather than left pointing at the previous team.
+            .id(teams.activeID?.uuidString ?? "pending-\(teams.revision)")
+    }
+}
+
+struct TeamHomeView: View {
+    @ObservedObject var vm: TeamStore
+    @ObservedObject var teams: TeamsStore
+    @ObservedObject var sync: TeamSyncService
     @EnvironmentObject private var entitlements: EntitlementService
     @State private var showRolePaywall = false
     @State private var showCoachDetail = false
@@ -13,6 +31,10 @@ struct MyTeamView: View {
     @State private var editingGame: TeamGame?
     @State private var showTeamIconPicker = false
     @State private var showProfile = false
+    @State private var showLeaderboard = false
+    @State private var showLinkScorers = false
+    @State private var dismissedLinkBanner = false
+    @State private var showSecondTeamPaywall = false
 
     var body: some View {
         Group {
@@ -33,6 +55,8 @@ struct MyTeamView: View {
         List {
             Group {
                 headerSection
+                seasonBar
+                unlinkedScorersBanner
                 overviewCards
                 recentGamesSection
                 leaderboardSection
@@ -50,10 +74,15 @@ struct MyTeamView: View {
         .background(TeamTheme.bg.ignoresSafeArea())
         .adaptiveContentWidth(AdaptiveLayout.detailMaxWidth)
         .searchable(text: $vm.searchText, prompt: "Search player...")
-        .navigationTitle("My Team")
+        .navigationTitle(vm.teamName ?? "My Team")
+        .toolbarTitleMenu { teamSwitcher }
         .navigationDestination(isPresented: $showProfile) { TeamProfileView(vm: vm, sync: sync) }
-        .navigationDestination(isPresented: $showCoachDetail) { CoachDetailView(coaches: vm.coaches) }
+        .navigationDestination(isPresented: $showCoachDetail) {
+            CoachDetailView(coaches: vm.coaches, teamName: vm.teamName)
+        }
         .navigationDestination(isPresented: $showGames) { TeamGamesView(vm: vm) }
+        .navigationDestination(isPresented: $showLeaderboard) { LeaderboardView(vm: vm) }
+        .sheet(isPresented: $showLinkScorers) { LinkScorersView(vm: vm) }
         .sheet(item: $editingPlayerId) { pid in
             EditPlayerSheet(vm: vm, playerId: pid)
         }
@@ -72,6 +101,47 @@ struct MyTeamView: View {
             ToolbarItem(placement: .navigationBarTrailing) { adminBadge }
         }
         .paywallSheet(isPresented: $showRolePaywall, source: "team_admin")
+        .paywallSheet(isPresented: $showSecondTeamPaywall, source: "team_second")
+    }
+
+    // MARK: - Team switcher
+
+    /// Lives in the title menu: native, discoverable via the title chevron, and no
+    /// layout risk on a screen that's already dense.
+    @ViewBuilder
+    private var teamSwitcher: some View {
+        ForEach(teams.teams, id: \.id) { entry in
+            Button {
+                teams.setActive(entry.id)
+            } label: {
+                Label(entry.store.teamName ?? "Team",
+                      systemImage: entry.id == teams.activeID ? "checkmark" : "person.3")
+            }
+        }
+        Divider()
+        // Never hidden — a cap the user can't see reads as a bug.
+        Button {
+            addTeam()
+        } label: {
+            Label(addTeamTitle, systemImage: "plus")
+        }
+        .disabled(teams.isAtCap)
+    }
+
+    private var addTeamTitle: String {
+        if teams.isAtCap { return "Team limit reached (\(TeamsStore.maxTeams))" }
+        return entitlements.canAccess(.multipleTeams) || teams.count == 0 ? "Add Team" : "Add Team (PRO)"
+    }
+
+    private func addTeam() {
+        guard teams.canCreateTeam(isPro: entitlements.canAccess(.multipleTeams)) else {
+            AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.multipleTeams.rawValue))
+            showSecondTeamPaywall = true
+            return
+        }
+        // Routes back into the existing create/join flow: `beginNewTeam` clears the
+        // active team, which is the condition onboarding already keys off.
+        teams.beginNewTeam()
     }
 
     // MARK: - Role Badge
@@ -140,7 +210,10 @@ struct MyTeamView: View {
 
     /// Exit the current team back to the Create / Join screen.
     private func leaveTeam() {
-        if sync.isJoined { sync.leaveTeam(vm) } else { vm.deleteTeam() }
+        if sync.isJoined { sync.detachMembership() }
+        // Goes through the registry so the index, the folder and the legacy mirror
+        // are cleaned up, and another team (if any) becomes active.
+        teams.deleteActiveTeam()
     }
 
     // MARK: - Header (gradient hero — the legacy `board` image asset is absent,
@@ -253,10 +326,48 @@ struct MyTeamView: View {
 
     // MARK: - Recent Games
 
+    /// Season selector plus a reminder of what the numbers below are scoped to.
+    private var seasonBar: some View {
+        HStack(spacing: 8) {
+            SeasonPickerButton(vm: vm)
+            teamsChip
+            Spacer()
+            if vm.seasonScope == .allTime, vm.seasons.count > 1 {
+                Text("\(vm.seasons.count) seasons")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(TeamTheme.textTertiary)
+            }
+        }
+    }
+
+    /// The visible entry point for switching and adding teams.
+    ///
+    /// `toolbarTitleMenu` alone isn't enough: with a large navigation title iOS
+    /// draws no chevron, so the menu is invisible and "Add Team" would be as
+    /// unreachable as the feature it lives next to.
+    private var teamsChip: some View {
+        Menu {
+            teamSwitcher
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "person.3.fill").font(.system(size: 11, weight: .semibold))
+                Text(teams.count > 1 ? "\(teams.count) teams" : "Teams")
+                    .font(.system(size: 13, weight: .semibold))
+                Image(systemName: "chevron.down").font(.system(size: 10, weight: .bold))
+            }
+            .foregroundStyle(TeamTheme.purple)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(TeamTheme.purple.opacity(0.12), in: Capsule())
+        }
+        .accessibilityLabel("Teams. Currently \(vm.teamName ?? "none")")
+    }
+
     private var recentGamesSection: some View {
-        let recent = vm.games.sorted { $0.date > $1.date }.prefix(3)
-        let wins = vm.games.filter { $0.result == .win }.count
-        let record = "\(wins)W \(vm.games.filter { $0.result == .draw }.count)D \(vm.games.filter { $0.result == .loss }.count)L"
+        let scoped = vm.gamesInScope
+        let recent = scoped.prefix(3)
+        let wins = scoped.filter { $0.result == .win }.count
+        let record = "\(wins)W \(scoped.filter { $0.result == .draw }.count)D \(scoped.filter { $0.result == .loss }.count)L"
 
         return VStack(spacing: 10) {
             HStack {
@@ -314,11 +425,53 @@ struct MyTeamView: View {
 
     private var leaderboardSection: some View {
         VStack(spacing: 10) {
-            SectionHeaderView(icon: "trophy.fill", title: "Leaderboard", trailing: "Top 3")
-            VStack(spacing: 8) {
-                ForEach(Array(vm.leaderboard.enumerated()), id: \.element.id) { i, p in
-                    LeaderboardRow(rank: i + 1, player: p)
+            HStack {
+                SectionHeaderView(icon: "trophy.fill", title: "Leaderboard",
+                                  trailing: vm.leaderboardMetric.fullName)
+                Spacer()
+                Button { showLeaderboard = true } label: {
+                    Text("See all").font(.system(size: 13, weight: .semibold)).foregroundStyle(TeamTheme.blue)
                 }
+            }
+            VStack(spacing: 8) {
+                ForEach(vm.leaderboard) { entry in
+                    LeaderboardRow(rank: entry.rank, player: entry.player,
+                                   stats: entry.stats, metric: vm.leaderboardMetric)
+                }
+            }
+        }
+    }
+
+    /// Prompt shown to editors when goals in the log aren't credited to anyone.
+    @ViewBuilder
+    private var unlinkedScorersBanner: some View {
+        let unlinked = vm.unlinkedScorerNames
+        if vm.isAdmin, !unlinked.isEmpty, !dismissedLinkBanner {
+            let goals = unlinked.reduce(0) { $0 + $1.goals }
+            Button { showLinkScorers = true } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "person.fill.questionmark")
+                        .font(.system(size: 18))
+                        .foregroundStyle(TeamTheme.orange)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(unlinked.count) name\(unlinked.count == 1 ? "" : "s") not linked to a player")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(TeamTheme.textPrimary)
+                        Text(goals == 1 ? "1 goal isn't counted in the rankings."
+                                        : "\(goals) goals aren't counted in the rankings.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(TeamTheme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(TeamTheme.textTertiary)
+                }
+                .padding(14)
+                .background(TeamTheme.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                Button("Dismiss") { dismissedLinkBanner = true }
             }
         }
     }
@@ -338,7 +491,7 @@ struct MyTeamView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(gk.name).font(.system(size: 16, weight: .bold)).foregroundStyle(TeamTheme.textPrimary)
-                if let s = gk.goalkeeperStats {
+                if let s = vm.stats(for: gk).goalkeeper {
                     HStack(spacing: 12) {
                         Label("\(s.matchesAttended)", systemImage: "checkmark.circle")
                         Label("\(s.goalsConceded)", systemImage: "xmark.circle").foregroundStyle(TeamTheme.red.opacity(0.8))
@@ -347,7 +500,7 @@ struct MyTeamView: View {
                 }
             }
             Spacer()
-            if let s = gk.goalkeeperStats {
+            if let s = vm.stats(for: gk).goalkeeper {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(String(format: "%.1f", s.rating)).font(.system(size: 20, weight: .bold, design: .rounded)).foregroundStyle(TeamTheme.orange)
                     Text("rating").font(.system(size: 9, weight: .semibold)).foregroundStyle(TeamTheme.textTertiary).textCase(.uppercase)
@@ -386,7 +539,8 @@ struct MyTeamView: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(vm.filteredPlayers.enumerated()), id: \.element.id) { i, p in
-                    StatRowView(index: i, player: p, highlightBonus: vm.sortOption == .totalWithBonus, isAdmin: vm.isAdmin) {
+                    StatRowView(index: i, player: p, stats: vm.stats(for: p),
+                                highlightBonus: vm.sortOption == .totalWithBonus, isAdmin: vm.isAdmin) {
                         editingPlayerId = p.id
                     }
                     if i < vm.filteredPlayers.count - 1 { Divider().overlay(TeamTheme.cardBorder).padding(.horizontal, 12) }

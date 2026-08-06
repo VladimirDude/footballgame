@@ -4,12 +4,38 @@ import UIKit
 struct GoalDetail: Identifiable, Equatable {
     let id: UUID
     var time: String
+    /// The scorer's name as written. **Always kept**, even once `scorerID` is
+    /// resolved: opponent goals name the opposing club, a guest may never join the
+    /// roster, and a v1 client reads this field.
     var scorer: String
     var assist: String
     var isOpponent: Bool
+    /// Resolved squad member, when the name could be matched. `nil` means unlinked
+    /// — the goal still counts for the team, just not for any player.
+    var scorerID: UUID?
+    var assistID: UUID?
+    /// Synthesized by migration from the flat `scorers` list, so it has no real
+    /// minute. Rendered differently, and skipped by any future re-derive pass.
+    var isInferred: Bool
 
-    init(id: UUID = UUID(), time: String, scorer: String, assist: String = "", isOpponent: Bool = false) {
-        self.id = id; self.time = time; self.scorer = scorer; self.assist = assist; self.isOpponent = isOpponent
+    init(
+        id: UUID = UUID(),
+        time: String,
+        scorer: String,
+        assist: String = "",
+        isOpponent: Bool = false,
+        scorerID: UUID? = nil,
+        assistID: UUID? = nil,
+        isInferred: Bool = false
+    ) {
+        self.id = id
+        self.time = time
+        self.scorer = scorer
+        self.assist = assist
+        self.isOpponent = isOpponent
+        self.scorerID = scorerID
+        self.assistID = assistID
+        self.isInferred = isInferred
     }
 
     var display: String {
@@ -21,6 +47,10 @@ struct GoalDetail: Identifiable, Equatable {
 struct TeamGame: Identifiable, Equatable {
     /// Stable across launches as of snapshot v2 (see `TeamPlayer.id`).
     let id: UUID
+    /// Which season this match counts towards. `nil` ("Unassigned") only arrives
+    /// from a client older than season support — never coerce it to the current
+    /// season on read, that would rewrite history.
+    var seasonID: UUID?
     var date: Date
     var opponent: String
     var goalsFor: Int
@@ -40,6 +70,7 @@ struct TeamGame: Identifiable, Equatable {
 
     init(
         id: UUID = UUID(),
+        seasonID: UUID? = nil,
         date: Date = Date(),
         opponent: String = "",
         goalsFor: Int = 0,
@@ -50,6 +81,7 @@ struct TeamGame: Identifiable, Equatable {
         highlightImage: UIImage? = nil
     ) {
         self.id = id
+        self.seasonID = seasonID
         self.date = date
         self.opponent = opponent
         self.goalsFor = goalsFor
@@ -64,6 +96,7 @@ struct TeamGame: Identifiable, Equatable {
     /// (see `TeamPlayer.==`).
     static func == (lhs: TeamGame, rhs: TeamGame) -> Bool {
         lhs.id == rhs.id
+            && lhs.seasonID == rhs.seasonID
             && lhs.date == rhs.date
             && lhs.opponent == rhs.opponent
             && lhs.goalsFor == rhs.goalsFor

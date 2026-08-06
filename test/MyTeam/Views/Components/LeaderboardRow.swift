@@ -3,6 +3,10 @@ import SwiftUI
 struct LeaderboardRow: View {
     let rank: Int
     let player: TeamPlayer
+    /// Figures for the season currently in scope — passed in rather than read off
+    /// `player`, whose counters are legacy mirrors and are not season-aware.
+    let stats: PlayerSeasonStats
+    let metric: LeaderboardMetric
 
     private var medal: String {
         switch rank {
@@ -34,8 +38,8 @@ struct LeaderboardRow: View {
                     .foregroundStyle(TeamTheme.textPrimary)
 
                 HStack(spacing: 12) {
-                    Label("\(player.goals)", systemImage: "soccerball")
-                    Label("\(player.assists)", systemImage: "arrow.triangle.branch")
+                    Label("\(stats.goals)", systemImage: "soccerball")
+                    Label("\(stats.assists)", systemImage: "arrow.triangle.branch")
                 }
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(TeamTheme.textSecondary)
@@ -44,10 +48,10 @@ struct LeaderboardRow: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(formatScore(player.totalWithBonus))
+                Text(metric.display(stats))
                     .font(.system(size: 24, weight: .black, design: .rounded))
                     .foregroundStyle(accent)
-                Text("pts")
+                Text(metric.rawValue)
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(TeamTheme.textTertiary)
                     .textCase(.uppercase)
@@ -60,11 +64,5 @@ struct LeaderboardRow: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(accent.opacity(0.2), lineWidth: 1)
         )
-    }
-
-    private func formatScore(_ value: Double) -> String {
-        value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", value)
-            : String(format: "%.1f", value)
     }
 }
