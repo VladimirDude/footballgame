@@ -155,14 +155,16 @@ struct TeamProfileView: View {
         .sheet(isPresented: $showQuickAdd) { QuickAddGameSheet(vm: vm) }
         .sheet(isPresented: $showImportPicker) {
             DocumentPicker { data in
-                guard let result = DataExporter.importData(data) else {
-                    alertMessage = "Failed to import. Invalid format."; showAlert = true; return
+                do {
+                    guard let incoming = try DataExporter.decode(data) else {
+                        alertMessage = "That file doesn't contain a team."; showAlert = true; return
+                    }
+                    vm.replaceDocument(incoming)
+                    alertMessage = "Imported \(incoming.players.count) players, \(incoming.games.count) games."
+                    showAlert = true
+                } catch {
+                    alertMessage = error.localizedDescription; showAlert = true
                 }
-                vm.players = result.players
-                vm.games = result.games
-                if let name = result.teamName { vm.teamName = name }
-                vm.mode = result.mode ?? vm.mode ?? .user
-                alertMessage = "Imported \(result.players.count) players, \(result.games.count) games."; showAlert = true
             }
         }
         .sheet(isPresented: $showExportShare) {
@@ -201,15 +203,19 @@ struct TeamProfileView: View {
     }
 
     private func saveData() {
-        if DataExporter.saveToDisk(players: vm.players, games: vm.games, teamName: vm.teamName, mode: vm.mode) {
+        guard let doc = vm.doc else {
+            alertMessage = "There's no team to save."; showAlert = true; return
+        }
+        do {
+            try DataExporter.saveToDisk(doc)
             alertMessage = "Saved successfully."; showAlert = true
-        } else {
-            alertMessage = "Save failed."; showAlert = true
+        } catch {
+            alertMessage = "Save failed. \(error.localizedDescription)"; showAlert = true
         }
     }
 
     private func exportData() {
-        guard let data = DataExporter.export(players: vm.players, games: vm.games, teamName: vm.teamName, mode: vm.mode) else { return }
+        guard let doc = vm.doc, let data = DataExporter.encode(doc) else { return }
         let url = DataExporter.documentsURL.appendingPathComponent("team_export_\(Int(Date().timeIntervalSince1970)).json")
         try? data.write(to: url)
         exportURL = url
@@ -217,14 +223,16 @@ struct TeamProfileView: View {
     }
 
     private func loadSaved() {
-        guard let result = DataExporter.loadFromDisk() else {
-            alertMessage = "No saved data found."; showAlert = true; return
+        do {
+            guard let loaded = try DataExporter.loadFromDisk() else {
+                alertMessage = "No saved data found."; showAlert = true; return
+            }
+            vm.replaceDocument(loaded)
+            alertMessage = "Loaded \(loaded.players.count) players, \(loaded.games.count) games."
+            showAlert = true
+        } catch {
+            alertMessage = error.localizedDescription; showAlert = true
         }
-        vm.players = result.players
-        vm.games = result.games
-        if let name = result.teamName { vm.teamName = name }
-        vm.mode = result.mode ?? vm.mode ?? .user
-        alertMessage = "Loaded \(result.players.count) players, \(result.games.count) games."; showAlert = true
     }
 }
 

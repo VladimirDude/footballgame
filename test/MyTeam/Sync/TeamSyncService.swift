@@ -93,7 +93,8 @@ final class TeamSyncService: ObservableObject {
             persist(membership)
             store.mode = .admin
             if store.teamName == nil { store.teamName = name }
-            if let data = DataExporter.export(players: store.players, games: store.games, teamName: store.teamName) {
+            store.setRemoteCode(teamID)
+            if let doc = store.doc, let data = DataExporter.encode(doc) {
                 try await remote.publish(teamID: teamID, snapshotJSON: data)
             }
         }
@@ -109,7 +110,7 @@ final class TeamSyncService: ObservableObject {
         }
         await run {
             try await uploadPhotos(teamID: membership.teamID, from: store)
-            guard let data = DataExporter.export(players: store.players, games: store.games, teamName: store.teamName) else { return }
+            guard let doc = store.doc, let data = DataExporter.encode(doc) else { return }
             try await remote.publish(teamID: membership.teamID, snapshotJSON: data)
             lastSyncedAt = Date()
         }
@@ -144,10 +145,16 @@ final class TeamSyncService: ObservableObject {
     // MARK: - Helpers
 
     private func apply(_ data: Data, to store: TeamStore) {
-        guard let imported = DataExporter.importData(data) else { return }
-        store.players = imported.players
-        store.games = imported.games
-        if let name = imported.teamName { store.teamName = name }
+        do {
+            guard let incoming = try DataExporter.decode(data) else { return }
+            // Keep the local mode: it comes from membership (owner vs viewer), not
+            // from whatever the publisher happened to have when they uploaded.
+            store.replaceDocument(incoming, keepingMode: true)
+        } catch {
+            // A snapshot we can't read must not silently do nothing — the user
+            // would see a successful "Refresh from Cloud" that changed nothing.
+            lastError = error.localizedDescription
+        }
     }
 
     /// Admin: uploads any local photos that don't yet have a cloud key, assigns

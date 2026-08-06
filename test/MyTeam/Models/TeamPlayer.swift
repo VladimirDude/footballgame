@@ -30,7 +30,7 @@ enum PlayerRole: String, CaseIterable, Identifiable {
 
 // MARK: - Goalkeeper Stats
 
-struct GoalkeeperStats {
+struct GoalkeeperStats: Equatable {
     var matchesAttended: Int
     var goalsConceded: Int
     var cleanSheets: Int
@@ -43,7 +43,7 @@ struct GoalkeeperStats {
 
 // MARK: - Coach Info
 
-struct CoachInfo {
+struct CoachInfo: Equatable {
     var specialty: String
     var tactics: String
     var experience: String
@@ -52,7 +52,10 @@ struct CoachInfo {
 
 // MARK: - TeamPlayer
 
-struct TeamPlayer: Identifiable {
+struct TeamPlayer: Identifiable, Equatable {
+    /// Stable across launches as of snapshot v2. Pre-v2 snapshots carried no ids,
+    /// so one is minted during migration and persisted from then on — everything
+    /// keyed by player (season stats, tactics slots) depends on that.
     let id: UUID
     var name: String
     var role: PlayerRole
@@ -66,6 +69,9 @@ struct TeamPlayer: Identifiable {
     /// "players/UUID.jpg"). Travels in the synced payload so team members can
     /// download the same photo. `nil` until an admin uploads one.
     var photoPath: String?
+    /// Pitch position ("GK", "CB", "ST"…). Unused today; persisted so the tactics
+    /// board can place players without a second schema migration.
+    var position: String?
 
     var total: Int { goals + assists }
     var totalWithBonus: Double { Double(total) + bonusPoints }
@@ -80,7 +86,8 @@ struct TeamPlayer: Identifiable {
         goalkeeperStats: GoalkeeperStats? = nil,
         coachInfo: CoachInfo? = nil,
         photo: UIImage? = nil,
-        photoPath: String? = nil
+        photoPath: String? = nil,
+        position: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -92,6 +99,23 @@ struct TeamPlayer: Identifiable {
         self.coachInfo = coachInfo
         self.photo = photo
         self.photoPath = photoPath
+        self.position = position
+    }
+
+    /// Compares persisted state only. `photo` is a hydrated side-car image, not
+    /// part of the snapshot, and `UIImage` identity would make every hydration
+    /// look like an edit and trigger a pointless save.
+    static func == (lhs: TeamPlayer, rhs: TeamPlayer) -> Bool {
+        lhs.id == rhs.id
+            && lhs.name == rhs.name
+            && lhs.role == rhs.role
+            && lhs.goals == rhs.goals
+            && lhs.assists == rhs.assists
+            && lhs.bonusPoints == rhs.bonusPoints
+            && lhs.goalkeeperStats == rhs.goalkeeperStats
+            && lhs.coachInfo == rhs.coachInfo
+            && lhs.photoPath == rhs.photoPath
+            && lhs.position == rhs.position
     }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct GoalDetail: Identifiable {
+struct GoalDetail: Identifiable, Equatable {
     let id: UUID
     var time: String
     var scorer: String
@@ -18,7 +18,8 @@ struct GoalDetail: Identifiable {
     }
 }
 
-struct TeamGame: Identifiable {
+struct TeamGame: Identifiable, Equatable {
+    /// Stable across launches as of snapshot v2 (see `TeamPlayer.id`).
     let id: UUID
     var date: Date
     var opponent: String
@@ -58,6 +59,19 @@ struct TeamGame: Identifiable {
         self.mediaLinks = mediaLinks
         self.highlightImage = highlightImage
     }
+
+    /// Persisted state only — `highlightImage` is a hydrated side-car image
+    /// (see `TeamPlayer.==`).
+    static func == (lhs: TeamGame, rhs: TeamGame) -> Bool {
+        lhs.id == rhs.id
+            && lhs.date == rhs.date
+            && lhs.opponent == rhs.opponent
+            && lhs.goalsFor == rhs.goalsFor
+            && lhs.goalsAgainst == rhs.goalsAgainst
+            && lhs.scorers == rhs.scorers
+            && lhs.goalDetails == rhs.goalDetails
+            && lhs.mediaLinks == rhs.mediaLinks
+    }
 }
 
 enum TeamGameResult: String {
@@ -66,7 +80,7 @@ enum TeamGameResult: String {
     case draw = "D"
 }
 
-struct MediaLink: Identifiable {
+struct MediaLink: Identifiable, Equatable {
     let id: UUID
     var title: String
     var urlString: String

@@ -25,8 +25,20 @@ struct MainTabView: View {
                     Text("Settings")
                 }
         }
-        .tabViewStyle(.sidebarAdaptable)
+        .sidebarAdaptableTabStyle()
         .tint(AppAccent.from(accentRaw).color)
         .overlay(alignment: .top) { AchievementBannerHost() }
+    }
+}
+
+private extension View {
+    /// `.sidebarAdaptable` is iOS 18+; fall back to the default tab style below that.
+    @ViewBuilder
+    func sidebarAdaptableTabStyle() -> some View {
+        if #available(iOS 18.0, *) {
+            tabViewStyle(.sidebarAdaptable)
+        } else {
+            self
+        }
     }
 }

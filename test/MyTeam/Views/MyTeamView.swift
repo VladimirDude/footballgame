@@ -16,7 +16,12 @@ struct MyTeamView: View {
 
     var body: some View {
         Group {
-            if vm.hasTeam || sync.isJoined {
+            if vm.loadState.isRecoverable {
+                // A save file exists but couldn't be read. Never fall through to
+                // onboarding here — that is what used to let the next edit
+                // overwrite recoverable data with an empty team.
+                TeamDataRecoveryView(vm: vm)
+            } else if vm.hasTeam || sync.isJoined {
                 dashboard
             } else {
                 TeamOnboardingView(vm: vm, sync: sync)
