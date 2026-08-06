@@ -70,14 +70,12 @@ struct SearchFiltersBar: View {
                         }
                     }
                 }
-                .padding(.horizontal)
             }
 
             if filters.isActive {
                 Text(activeFilterSummary)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal)
             }
         }
         .sheet(isPresented: $showNationalityPicker) {

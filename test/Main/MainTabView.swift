@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @AppStorage(AppAccent.storageKey) private var accentRaw = AppAccent.classic.rawValue
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         TabView {
@@ -27,6 +28,9 @@ struct MainTabView: View {
         }
         .sidebarAdaptableTabStyle()
         .tint(AppAccent.from(accentRaw).color)
+        // Force Liquid Glass tab chrome to rebuild on scheme change without
+        // animating through a broken intermediate material state.
+        .animation(nil, value: colorScheme)
         .overlay(alignment: .top) { AchievementBannerHost() }
     }
 }

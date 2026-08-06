@@ -14,21 +14,54 @@ struct PremiumBadge: View {
 }
 
 /// The overlay shown on top of gated content when the user isn't entitled.
+/// Uses `ViewThatFits` so short targets (e.g. the search filter chip row) get a
+/// compact lock instead of a tall stack that overflows into neighboring UI.
+///
+/// Avoids `.ultraThinMaterial` / Liquid Glass — those materials re-sample the
+/// backdrop on light/dark switches and flash or tear. A solid adaptive frost
+/// stays stable across appearance changes.
 struct PremiumLockOverlay: View {
     let feature: PremiumFeature
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-            VStack(spacing: 6) {
-                Image(systemName: "lock.fill").font(.title3.bold())
-                Text(feature.displayName).font(.caption.weight(.semibold))
-                Text("Tap to unlock with Pro").font(.caption2).foregroundStyle(.secondary)
+                .fill(frostFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(frostStroke, lineWidth: 1)
+                )
+            ViewThatFits(in: .vertical) {
+                VStack(spacing: 6) {
+                    Image(systemName: "lock.fill").font(.title3.bold())
+                    Text(feature.displayName).font(.caption.weight(.semibold))
+                    Text("Tap to unlock with Pro").font(.caption2).foregroundStyle(.secondary)
+                }
+                .padding(10)
+
+                HStack(spacing: 8) {
+                    Image(systemName: "lock.fill").font(.subheadline.weight(.bold))
+                    Text(feature.displayName).font(.caption.weight(.semibold))
+                    Text("· Pro").font(.caption2).foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 14)
             }
-            .padding(10)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(feature.displayName). Locked. Tap to unlock with Pro.")
+    }
+
+    private var frostFill: Color {
+        colorScheme == .dark
+            ? Color.black.opacity(0.62)
+            : Color.white.opacity(0.82)
+    }
+
+    private var frostStroke: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.14)
+            : Color.black.opacity(0.08)
     }
 }
 
@@ -50,6 +83,7 @@ private struct PremiumGateModifier: ViewModifier {
                 .disabled(true)
                 .blur(radius: 4)
                 .overlay { PremiumLockOverlay(feature: feature) }
+                .clipped()
                 .contentShape(Rectangle())
                 .onTapGesture {
                     AnalyticsService.shared.log(.featureBlocked(feature: feature.rawValue))

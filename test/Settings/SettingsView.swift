@@ -23,7 +23,7 @@ struct SettingsView: View {
                 }
 
                 Section("Appearance") {
-                    Picker(selection: $appearanceModeRaw) {
+                    Picker(selection: appearanceModeBinding) {
                         ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.title).tag(mode.rawValue)
                         }
@@ -92,6 +92,21 @@ struct SettingsView: View {
     }
 
     // MARK: - Accent row
+
+    /// Appearance changes must not animate — Liquid Glass chrome (tab bar, nav,
+    /// materials) interpolates badly across light/dark and flashes/tears.
+    private var appearanceModeBinding: Binding<String> {
+        Binding(
+            get: { appearanceModeRaw },
+            set: { newValue in
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    appearanceModeRaw = newValue
+                }
+            }
+        )
+    }
 
     @ViewBuilder
     private func accentRow(_ accent: AppAccent) -> some View {

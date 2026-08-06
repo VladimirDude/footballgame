@@ -88,6 +88,7 @@ struct SearchView: View {
                 searchPlayers()
             }
             .premiumGate(.advancedSearchFilters, source: "search_filters")
+            .padding(.horizontal)
 
             if resultsTruncated {
                 Button {

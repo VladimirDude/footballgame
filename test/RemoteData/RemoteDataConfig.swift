@@ -2,24 +2,23 @@ import Foundation
 
 /// Single switch that takes the app from offline (bundle-only) to online.
 ///
-/// Everything here is `nil`/empty by default, so the app behaves exactly as it
-/// does today until you fill these in. Point them at your Firebase Storage
-/// (or any CDN — the client only speaks HTTPS) and the app starts refreshing
-/// data over the air with the bundle as a fallback.
+/// Point `manifestURL` at your hosted `manifest.json` (Firebase Hosting under
+/// `web/data/`, or any CDN). The app checks it on launch and downloads a newer
+/// `ClubDatabase.json` in the background when `version` increases.
 ///
-/// Firebase Storage public download URLs look like:
-///   https://firebasestorage.googleapis.com/v0/b/<BUCKET>/o/<PATH>?alt=media
-/// where <PATH> is URL-encoded (a `/` becomes `%2F`). The `{id}` token in the
-/// image templates is substituted with the player/club id at load time.
+/// Publish updates with: `python3 scripts/publish_remote_data.py --upload`
 enum RemoteDataConfig {
-    /// URL of the small version manifest checked on launch. `nil` = stay offline.
-    static let manifestURL: URL? = nil
+    /// URL of the small version manifest checked on launch. `nil` = stay offline
+    /// (bundled DB only). Publish updates with:
+    ///   python3 scripts/publish_remote_data.py --upload
+    static let manifestURL = URL(string: "https://ftmp-8a367.web.app/data/manifest.json")
 
     /// Template for a player portrait, with `{id}` where the player id goes.
     /// e.g. "https://cdn.example.com/portraits/{id}.heic"
     static let portraitURLTemplate: String? = nil
 
     /// Template for a club logo, with `{id}` where the club id goes.
+    /// e.g. "https://cdn.example.com/logos/{id}.png"
     static let logoURLTemplate: String? = nil
 
     /// Whether online refresh is enabled at all.

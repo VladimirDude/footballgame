@@ -1,0 +1,4 @@
+{
+  "description": "Manual player patches applied on top of ClubDatabase.json when publishing. Survives a full Transfermarkt re-fetch — re-applied by publish_remote_data.py.",
+  "overrides": []
+}

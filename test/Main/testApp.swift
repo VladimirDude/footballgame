@@ -42,6 +42,8 @@ struct testApp: App {
                 }
             }
             .preferredColorScheme(appearanceMode.colorScheme)
+            // Liquid Glass / materials glitch when color scheme animates.
+            .animation(nil, value: appearanceModeRaw)
             .withAppPalette()
             .withMonetization(monetization)
             .environmentObject(progress)

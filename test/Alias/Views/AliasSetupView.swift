@@ -149,7 +149,7 @@ struct AliasSetupView: View {
         }
         .disabled(!canStart)
         .padding(DSSpacing.md)
-        .background(.ultraThinMaterial)
+        .background(DSColor.surface)
     }
 
     // MARK: Helpers
