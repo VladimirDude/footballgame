@@ -2,7 +2,11 @@ import Foundation
 
 enum FuzzyMatcher {
 
-    static func matches(guess: String, candidates: [String]) -> Bool {
+    static func matches(
+        guess: String,
+        candidates: [String],
+        allowSingleTokenWordMatch: Bool = true
+    ) -> Bool {
         let normalizedGuess = normalize(guess)
         guard normalizedGuess.count >= 2 else { return false }
 
@@ -14,7 +18,9 @@ enum FuzzyMatcher {
 
         for candidate in expandedCandidates {
             if directMatch(normalizedGuess, candidate) { return true }
-            if tokenMatch(normalizedGuess, candidate) { return true }
+            if tokenMatch(normalizedGuess, candidate, allowSingleTokenWordMatch: allowSingleTokenWordMatch) {
+                return true
+            }
             if levenshteinMatch(normalizedGuess, candidate) { return true }
         }
 
@@ -26,7 +32,9 @@ enum FuzzyMatcher {
         guard normalizedGuess.count >= 2 else { return false }
 
         var candidates = [fullName] + extraAliases
-        if let lastName = fullName.split(separator: " ").last.map(String.init), lastName.count >= 4 {
+        // Last-name-only guesses need enough letters to stay unambiguous
+        // ("Silva" ok; "Lee" / "Son" too risky).
+        if let lastName = fullName.split(separator: " ").last.map(String.init), lastName.count >= 5 {
             candidates.append(lastName)
         }
 
@@ -42,36 +50,55 @@ enum FuzzyMatcher {
         guess == candidate
     }
 
-    private static func tokenMatch(_ guess: String, _ candidate: String) -> Bool {
+    private static func tokenMatch(
+        _ guess: String,
+        _ candidate: String,
+        allowSingleTokenWordMatch: Bool = true
+    ) -> Bool {
         let guessTokens = tokens(from: guess)
         let candidateTokens = tokens(from: candidate)
         guard !guessTokens.isEmpty, !candidateTokens.isEmpty else { return false }
 
         // A single-word guess must equal a full candidate word and be long
         // enough to be unambiguous — no prefixes (blocks "man" → "manchester").
+        // Clubs disable this so "madrid" / "united" / "inter" can't match every
+        // team that contains that word — only exact aliases / full names.
         if guessTokens.count == 1 {
-            guard let single = guessTokens.first, single.count >= 4 else { return false }
+            guard allowSingleTokenWordMatch else { return false }
+            guard let single = guessTokens.first, single.count >= 5 else { return false }
             return candidateTokens.contains(single)
         }
 
         // Multi-word: every guess token must match a candidate word; prefix
-        // matching is only allowed for tokens long enough to be safe.
+        // matching is only allowed when the token is long and covers most of
+        // the candidate word (blocks "man che" → "manchester chelsea").
         return guessTokens.allSatisfy { token in
             candidateTokens.contains { candidateToken in
-                candidateToken == token
-                    || (token.count >= 4 && (candidateToken.hasPrefix(token) || token.hasPrefix(candidateToken)))
+                if candidateToken == token { return true }
+                guard token.count >= 5 else { return false }
+                let shorter = min(token.count, candidateToken.count)
+                let longer = max(token.count, candidateToken.count)
+                guard Double(shorter) / Double(longer) >= 0.75 else { return false }
+                return candidateToken.hasPrefix(token) || token.hasPrefix(candidateToken)
             }
         }
     }
 
     private static func levenshteinMatch(_ guess: String, _ candidate: String) -> Bool {
+        let maxLen = max(guess.count, candidate.count)
         let limit: Int
-        switch max(guess.count, candidate.count) {
-        case ..<5: return false
-        case 5...8: limit = 1
+        switch maxLen {
+        case ..<6: return false
+        case 6...10: limit = 1
         default: limit = 2
         }
-        return levenshteinDistance(guess, candidate) <= limit
+        // Same first letter keeps "ronaldo" from matching "ronaldinho" with limit 2
+        // when lengths diverge a lot — still allow small typos on the same name.
+        guard guess.first == candidate.first else { return false }
+        let distance = levenshteinDistance(guess, candidate)
+        guard distance <= limit else { return false }
+        // Relative cap: typos can't be a large fraction of a long name.
+        return Double(distance) / Double(maxLen) <= 0.2
     }
 
     private static func tokens(from value: String) -> [String] {

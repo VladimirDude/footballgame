@@ -18,6 +18,7 @@ struct PaywallView: View {
         ("slider.horizontal.3", "Pro search & filters", "Multi-select filters, no result limits"),
         ("flag.2.crossed.fill", "All leagues & difficulties", "Beyond the Premier League and easy mode"),
         ("heart.fill", "Second chances & no timers", "Play your way, pressure optional"),
+        ("flame.fill", "Streak repair", "Save a daily streak once every 2 months"),
     ]
 
     var body: some View {

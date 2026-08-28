@@ -2,6 +2,8 @@ import SwiftUI
 
 enum OnboardingStorage {
     static let completedKey = "hasCompletedOnboarding"
+    /// Set when onboarding finishes via "Play Daily" so the You tab opens Daily once.
+    static let openDailyAfterOnboardingKey = "openDailyAfterOnboarding"
 }
 
 // MARK: - Page model
@@ -30,6 +32,7 @@ struct OnboardingView: View {
 
     @Environment(\.appPalette) private var palette
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var page = 0
 
     private let pages: [OnboardingPage] = [
@@ -73,7 +76,7 @@ struct OnboardingView: View {
                 OnboardingHighlight(
                     icon: "doc.text.magnifyingglass",
                     title: "Player profiles",
-                    detail: "Tap a player for portraits, market value, and squad rank."
+                    detail: "Age, foot, height, peak value, nationality, and club."
                 ),
             ]
         ),
@@ -117,52 +120,68 @@ struct OnboardingView: View {
         ),
         OnboardingPage(
             id: "ready",
-            icon: "checkmark.circle.fill",
-            tint: GameDesign.success,
-            title: "You're all set",
-            subtitle: "Everything works offline. Customize the appearance in Settings.",
+            icon: "flame.fill",
+            tint: Color(red: 1.0, green: 0.55, blue: 0.15),
+            title: "Start your streak",
+            subtitle: "The Daily Challenge is five quick questions — finish it to earn XP and day one of your streak.",
             highlights: [
                 OnboardingHighlight(
-                    icon: "paintbrush.fill",
-                    title: "Appearance",
-                    detail: "Choose System, Light, or Dark mode."
+                    icon: "calendar",
+                    title: "One shared puzzle",
+                    detail: "Everyone gets the same questions each day."
                 ),
                 OnboardingHighlight(
-                    icon: "iphone.radiowaves.left.and.right",
-                    title: "Haptics",
-                    detail: "Feel correct and wrong answers as you play."
+                    icon: "star.fill",
+                    title: "+50 XP",
+                    detail: "Completing Daily advances your level toward Pro."
+                ),
+                OnboardingHighlight(
+                    icon: "bell.fill",
+                    title: "Optional reminder",
+                    detail: "Turn on Daily reminders later in Settings."
                 ),
             ]
         ),
     ]
 
     private var isLastPage: Bool { page == pages.count - 1 }
+    private var isRegularWidth: Bool { horizontalSizeClass == .regular }
 
     var body: some View {
         ZStack {
+            // Full-bleed backdrop — never constrain this on iPad.
             onboardingBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topBar
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity)
 
                 TabView(selection: $page) {
                     ForEach(Array(pages.enumerated()), id: \.element.id) { index, pageData in
-                        OnboardingPageView(page: pageData)
+                        OnboardingPageView(page: pageData, isRegularWidth: isRegularWidth)
                             .tag(index)
+                            .frame(maxWidth: contentMaxWidth)
+                            .frame(maxWidth: .infinity)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.smooth(duration: 0.35), value: page)
 
                 bottomBar
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity)
             }
         }
-        .adaptiveContentWidth(AdaptiveLayout.settingsMaxWidth)
+    }
+
+    private var contentMaxWidth: CGFloat {
+        isRegularWidth ? AdaptiveLayout.formMaxWidth : .infinity
     }
 
     private var onboardingBackground: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            DSColor.groupedBackground
             if colorScheme == .dark {
                 RadialGradient(
                     colors: [palette.accentGlow, .clear],
@@ -178,25 +197,25 @@ struct OnboardingView: View {
         HStack {
             Spacer()
             if !isLastPage {
-                Button("Skip") { finish() }
+                Button("Skip") { finish(openDaily: false) }
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(palette.textMuted)
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, isRegularWidth ? 32 : 20)
         .padding(.top, 12)
         .frame(height: 44)
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 12) {
             pageIndicator
 
             Button(action: advance) {
                 HStack(spacing: 8) {
-                    Text(isLastPage ? "Get Started" : "Continue")
+                    Text(isLastPage ? "Play Daily Challenge" : "Continue")
                         .font(.headline.weight(.bold))
-                    Image(systemName: isLastPage ? "arrow.right" : "chevron.right")
+                    Image(systemName: isLastPage ? "flame.fill" : "chevron.right")
                         .font(.subheadline.weight(.bold))
                 }
                 .frame(maxWidth: .infinity)
@@ -204,13 +223,19 @@ struct OnboardingView: View {
                 .foregroundStyle(palette.buttonOnAccent)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(isLastPage ? GameDesign.success : BrowseTheme.accent)
+                        .fill(isLastPage ? Color(red: 1.0, green: 0.55, blue: 0.15) : BrowseTheme.accent)
                 )
             }
             .buttonStyle(.plain)
+
+            if isLastPage {
+                Button("Maybe later") { finish(openDaily: false) }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.textMuted)
+            }
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 32)
+        .padding(.horizontal, isRegularWidth ? 32 : 24)
+        .padding(.bottom, isRegularWidth ? 40 : 32)
         .padding(.top, 8)
     }
 
@@ -227,13 +252,14 @@ struct OnboardingView: View {
 
     private func advance() {
         if isLastPage {
-            finish()
+            finish(openDaily: true)
         } else {
             withAnimation { page += 1 }
         }
     }
 
-    private func finish() {
+    private func finish(openDaily: Bool) {
+        UserDefaults.standard.set(openDaily, forKey: OnboardingStorage.openDailyAfterOnboardingKey)
         withAnimation(.easeOut(duration: 0.25)) {
             onComplete()
         }
@@ -244,19 +270,23 @@ struct OnboardingView: View {
 
 private struct OnboardingPageView: View {
     let page: OnboardingPage
+    var isRegularWidth: Bool = false
 
     @Environment(\.appPalette) private var palette
 
+    private var heroHeight: CGFloat { isRegularWidth ? 180 : (page.usesPitchHero ? 140 : 120) }
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 24) {
+            VStack(spacing: isRegularWidth ? 28 : 24) {
                 hero
                 textBlock
                 highlightsCard
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 8)
+            .padding(.horizontal, isRegularWidth ? 32 : 24)
+            .padding(.top, isRegularWidth ? 16 : 8)
             .padding(.bottom, 16)
+            .frame(maxWidth: .infinity)
         }
         .scrollBounceBehavior(.basedOnSize)
     }
@@ -266,7 +296,7 @@ private struct OnboardingPageView: View {
             if page.usesPitchHero {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(BrowseTheme.pitchGradient)
-                    .frame(height: 140)
+                    .frame(height: heroHeight)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
                             .stroke(Color.white.opacity(0.12), lineWidth: 1)
@@ -274,16 +304,16 @@ private struct OnboardingPageView: View {
 
                 VStack(spacing: 10) {
                     Image(systemName: page.icon)
-                        .font(.system(size: 36, weight: .semibold))
+                        .font(.system(size: isRegularWidth ? 44 : 36, weight: .semibold))
                         .foregroundStyle(.white)
                     Text(AppBranding.name)
-                        .font(.title.weight(.heavy))
+                        .font(isRegularWidth ? .largeTitle.weight(.heavy) : .title.weight(.heavy))
                         .foregroundStyle(.white)
                 }
             } else {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(palette.panelFill)
-                    .frame(height: 120)
+                    .frame(height: heroHeight)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
                             .stroke(palette.panelStroke, lineWidth: 1)
@@ -292,25 +322,26 @@ private struct OnboardingPageView: View {
                         ZStack {
                             Circle()
                                 .fill(page.tint.opacity(0.14))
-                                .frame(width: 72, height: 72)
+                                .frame(width: isRegularWidth ? 88 : 72, height: isRegularWidth ? 88 : 72)
                             Image(systemName: page.icon)
-                                .font(.system(size: 32, weight: .semibold))
+                                .font(.system(size: isRegularWidth ? 38 : 32, weight: .semibold))
                                 .foregroundStyle(page.tint)
                         }
                     }
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var textBlock: some View {
         VStack(spacing: 8) {
             Text(page.title)
-                .font(.title2.weight(.bold))
+                .font(isRegularWidth ? .title.weight(.bold) : .title2.weight(.bold))
                 .foregroundStyle(palette.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text(page.subtitle)
-                .font(.subheadline)
+                .font(isRegularWidth ? .body : .subheadline)
                 .foregroundStyle(palette.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -319,25 +350,71 @@ private struct OnboardingPageView: View {
     }
 
     private var highlightsCard: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(page.highlights.enumerated()), id: \.element.id) { index, highlight in
-                if index > 0 {
-                    Divider()
-                        .overlay(palette.panelStroke.opacity(0.6))
-                        .padding(.leading, 52)
+        Group {
+            if isRegularWidth && page.highlights.count >= 3 {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: 12),
+                        GridItem(.flexible(), spacing: 12),
+                    ],
+                    spacing: 12
+                ) {
+                    ForEach(page.highlights) { highlight in
+                        highlightTile(highlight)
+                    }
                 }
-                highlightRow(highlight)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(page.highlights.enumerated()), id: \.element.id) { index, highlight in
+                        if index > 0 {
+                            Divider()
+                                .overlay(palette.panelStroke.opacity(0.6))
+                                .padding(.leading, 52)
+                        }
+                        highlightRow(highlight)
+                    }
+                }
+                .padding(.vertical, 4)
+                .background(highlightsBackground)
             }
         }
-        .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(palette.panelFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(palette.panelStroke, lineWidth: 1)
-                )
-        )
+    }
+
+    private func highlightTile(_ highlight: OnboardingHighlight) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(page.tint.opacity(0.12))
+                    .frame(width: 38, height: 38)
+                Image(systemName: highlight.icon)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(page.tint)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(highlight.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.textPrimary)
+                Text(highlight.detail)
+                    .font(.caption)
+                    .foregroundStyle(palette.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+        .background(highlightsBackground)
+    }
+
+    private var highlightsBackground: some View {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(palette.panelFill)
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(palette.panelStroke, lineWidth: 1)
+            )
     }
 
     private func highlightRow(_ highlight: OnboardingHighlight) -> some View {

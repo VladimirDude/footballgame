@@ -11,14 +11,14 @@ enum HLRevealState: Equatable {
 // MARK: - Tokens
 
 private enum HLStyle {
-    static let surface = Color.white.opacity(0.08)
-    static let surfaceStroke = Color.white.opacity(0.14)
-    static let surfaceGlow = Color(red: 0.45, green: 0.55, blue: 0.75).opacity(0.15)
-    static let divider = Color.white.opacity(0.12)
+    static func surface(_ theme: GameModeTheme) -> Color { theme.surfaceFill }
+    static func surfaceStroke(_ theme: GameModeTheme) -> Color { theme.panelStroke }
+    static func surfaceGlow(_ theme: GameModeTheme) -> Color { theme.accent.opacity(0.12) }
+    static func divider(_ theme: GameModeTheme) -> Color { theme.panelStroke }
     static let higher = Color(red: 0.95, green: 0.5, blue: 0.08)
     static let lower = Color(red: 0.34, green: 0.54, blue: 0.9)
-    static let gold = Color(red: 1.0, green: 0.84, blue: 0.38)
-    static let muted = Color.white.opacity(0.45)
+    static func gold(_ theme: GameModeTheme) -> Color { theme.gold }
+    static func muted(_ theme: GameModeTheme) -> Color { theme.textMuted }
 }
 
 private enum HLMotion {
@@ -110,6 +110,8 @@ struct HigherOrLowerGameView: View {
     let onContinue: () -> Void
     var onRevive: (() -> Void)? = nil
 
+    @Environment(\.gameTheme) private var theme
+
     var body: some View {
         GeometryReader { geo in
             let arenaHeight = min(max(geo.size.height * 0.52, 260), 360)
@@ -140,7 +142,7 @@ struct HigherOrLowerGameView: View {
                     )
                 } else {
                     Spacer()
-                    ProgressView().tint(HLStyle.gold)
+                    ProgressView().tint(theme.gold)
                     Spacer()
                 }
             }
@@ -162,7 +164,7 @@ private struct HLScoreBar: View {
     var body: some View {
         HStack(spacing: 0) {
             scoreCell(icon: "flame.fill", value: "\(score)", label: "Score", tint: HLStyle.higher)
-            scoreCell(icon: "trophy.fill", value: "\(best)", label: "Best", tint: HLStyle.gold)
+            scoreCell(icon: "trophy.fill", value: "\(best)", label: "Best", tint: theme.gold)
             Spacer(minLength: 12)
             if let timeRemaining {
                 HLTimerBadge(remaining: timeRemaining, total: total)
@@ -291,11 +293,11 @@ private struct HLCompareBoard: View, Equatable {
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .stroke(theme.panelStroke, lineWidth: 1)
                 )
-                .shadow(color: HLStyle.surfaceGlow, radius: 24, y: 8)
+                .shadow(color: HLStyle.surfaceGlow(theme), radius: 24, y: 8)
 
             // Ambient glow
             RadialGradient(
-                colors: [HLStyle.gold.opacity(0.08), Color.clear],
+                colors: [HLStyle.gold(theme).opacity(0.08), Color.clear],
                 center: .center,
                 startRadius: 10,
                 endRadius: 200
@@ -353,12 +355,13 @@ private struct HLVSBadge: View {
     let challengerID: String
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.gameTheme) private var theme
     @State private var pop: CGFloat = 1
 
     var body: some View {
         Text("VS")
             .font(.system(size: 10, weight: .black))
-            .foregroundStyle(.white)
+            .foregroundStyle(DSColor.onAccent)
             .padding(.horizontal, 9)
             .padding(.vertical, 6)
             .background(
@@ -366,7 +369,7 @@ private struct HLVSBadge: View {
                     .fill(HLStyle.higher)
                     .shadow(color: HLStyle.higher.opacity(0.4), radius: 6, y: 2)
             )
-            .overlay(Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1))
+            .overlay(Capsule().stroke(theme.panelStroke, lineWidth: 1))
             .modifier(HLPopModifier(progress: pop))
             .onAppear { bounce() }
             .onChange(of: challengerID) { _, _ in bounce() }
@@ -539,11 +542,11 @@ private struct HLValueLabel: View {
 
     private var color: Color {
         switch display {
-        case .shown: HLStyle.gold
+        case .shown: theme.gold
         case .hidden: theme.textMuted
         case .revealed(_, .correct): GameDesign.success
         case .revealed(_, .wrong): GameDesign.danger
-        case .revealed: HLStyle.gold
+        case .revealed: theme.gold
         }
     }
 }
@@ -644,6 +647,8 @@ private struct HLSplitChoice: View, Equatable {
 private struct HLReviveButton: View {
     let action: () -> Void
 
+    @Environment(\.gameTheme) private var theme
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
@@ -654,10 +659,10 @@ private struct HLReviveButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .foregroundStyle(.black)
+            .foregroundStyle(DSColor.onAccent)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(HLStyle.gold)
+                    .fill(theme.gold)
             )
         }
         .buttonStyle(HLPressStyle())
@@ -679,12 +684,10 @@ private struct HLContinueCTA: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .foregroundStyle(isGameOver ? .white : theme.buttonLabelOnLight)
+            .foregroundStyle(DSColor.onAccent)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isGameOver
-                          ? AnyShapeStyle(GameDesign.danger)
-                          : AnyShapeStyle(Color.white))
+                    .fill(isGameOver ? AnyShapeStyle(GameDesign.danger) : AnyShapeStyle(theme.accent))
             )
         }
         .buttonStyle(HLPressStyle())

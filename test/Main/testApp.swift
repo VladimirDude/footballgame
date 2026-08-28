@@ -5,6 +5,7 @@ import FirebaseCore
 
 @main
 struct testApp: App {
+    @UIApplicationDelegateAdaptor(FTMPAppDelegate.self) private var appDelegate
     @AppStorage("appearanceMode") private var appearanceModeRaw = AppearanceMode.system.rawValue
     @AppStorage(OnboardingStorage.completedKey) private var hasCompletedOnboarding = false
 
@@ -48,15 +49,33 @@ struct testApp: App {
             .withMonetization(monetization)
             .environmentObject(progress)
             .withAlias(alias)
+            .background(DailyReminderSceneObserver())
             .onAppear {
                 migrateLegacyAppearanceSetting()
                 monetization.start()
+                let entitlements = monetization.entitlements
+                progress.canUnlockProAchievements = { entitlements.isPro }
+                progress.refreshWidget()
                 AnalyticsService.shared.log(.appOpened)
                 Task.detached(priority: .utility) {
                     await RemoteDataRepository.shared.refreshIfNeeded()
                 }
+                Task { @MainActor in
+                    await Self.refreshDailyReminderSchedule()
+                }
+            }
+            .onOpenURL { url in
+                guard FTMPDeepLink.isDaily(url) else { return }
+                UserDefaults.standard.set(true, forKey: OnboardingStorage.openDailyAfterOnboardingKey)
             }
         }
+    }
+
+    @MainActor
+    static func refreshDailyReminderSchedule() async {
+        let completed = GameProgressStore.shared.dailyCompletedToday
+        await DailyReminderService.shared.refreshAuthorizationStatus()
+        await DailyReminderService.shared.reschedule(completedToday: completed)
     }
 
     private func migrateLegacyAppearanceSetting() {
@@ -65,5 +84,23 @@ struct testApp: App {
             return
         }
         appearanceModeRaw = isDarkMode ? AppearanceMode.dark.rawValue : AppearanceMode.light.rawValue
+    }
+}
+
+/// Keeps the rolling reminder schedule fresh whenever the app becomes active.
+private struct DailyReminderSceneObserver: View {
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active else { return }
+                Task { @MainActor in
+                    GameProgressStore.shared.reconcileDailyStreak()
+                    GameProgressStore.shared.refreshWidget()
+                    await testApp.refreshDailyReminderSchedule()
+                }
+            }
     }
 }

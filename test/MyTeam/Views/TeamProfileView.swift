@@ -5,6 +5,8 @@ import UniformTypeIdentifiers
 struct TeamProfileView: View {
     @ObservedObject var vm: TeamStore
     @ObservedObject var sync: TeamSyncService
+    var onDeleteTeam: (() -> Void)?
+    @EnvironmentObject private var entitlements: EntitlementService
     @Environment(\.dismiss) private var dismiss
     @State private var showImportPicker = false
     @State private var showExportShare = false
@@ -127,8 +129,12 @@ struct TeamProfileView: View {
 
             Section {
                 Button(role: .destructive) {
-                    if sync.isJoined { sync.leaveTeam(vm) }
-                    vm.deleteTeam()
+                    if let onDeleteTeam {
+                        onDeleteTeam()
+                    } else {
+                        sync.leaveTeam(vm)
+                        vm.deleteTeam()
+                    }
                     dismiss()
                 } label: {
                     Label(sync.isJoined ? "Leave Team" : "Delete Team", systemImage: "trash.fill")
@@ -163,8 +169,12 @@ struct TeamProfileView: View {
         .sheet(isPresented: $showImportPicker) {
             DocumentPicker { data in
                 do {
-                    guard let incoming = try DataExporter.decode(data) else {
+                    guard var incoming = try DataExporter.decode(data) else {
                         alertMessage = "That file doesn't contain a team."; showAlert = true; return
+                    }
+                    if incoming.mode == .admin, !entitlements.canAccess(.adminMode) {
+                        incoming.mode = .user
+                        incoming.remoteCode = nil
                     }
                     vm.replaceDocument(incoming)
                     alertMessage = "Imported \(incoming.players.count) players, \(incoming.games.count) games."
@@ -230,16 +240,14 @@ struct TeamProfileView: View {
     }
 
     private func loadSaved() {
-        do {
-            guard let loaded = try DataExporter.loadFromDisk() else {
-                alertMessage = "No saved data found."; showAlert = true; return
-            }
-            vm.replaceDocument(loaded)
-            alertMessage = "Loaded \(loaded.players.count) players, \(loaded.games.count) games."
-            showAlert = true
-        } catch {
-            alertMessage = error.localizedDescription; showAlert = true
+        let beforeCount = vm.players.count
+        vm.restorePreviousSave()
+        if vm.players.count != beforeCount || vm.hasTeam {
+            alertMessage = "Restored previous save (\(vm.players.count) players, \(vm.games.count) games)."
+        } else {
+            alertMessage = "No previous save found."
         }
+        showAlert = true
     }
 }
 

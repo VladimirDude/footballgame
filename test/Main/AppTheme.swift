@@ -51,6 +51,8 @@ enum AdaptiveLayout {
     static let gameMaxWidth: CGFloat = 720
     static let settingsMaxWidth: CGFloat = 640
     static let detailMaxWidth: CGFloat = 760
+    /// Readable column for full-screen covers / forms on iPad.
+    static let formMaxWidth: CGFloat = 700
 
     static func gridColumns(for sizeClass: UserInterfaceSizeClass?) -> [GridItem] {
         if sizeClass == .regular {

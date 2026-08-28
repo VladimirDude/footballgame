@@ -60,6 +60,7 @@ enum PremiumFeature: String, CaseIterable, Codable, Sendable {
     case multipleTeams           // My Team: manage a second team on one device
     case relaxedMode             // Untimed / no-pressure mode for timed games
     case aliasPremiumPacks       // Football Alias: premium categories + Hard/Expert cards
+    case streakRepair            // Restore a daily streak after missing exactly one day
 
     /// Short, user-facing name for paywall / lock copy.
     var displayName: String {
@@ -77,6 +78,7 @@ enum PremiumFeature: String, CaseIterable, Codable, Sendable {
         case .multipleTeams: "Multiple Teams"
         case .relaxedMode: "Relaxed Mode"
         case .aliasPremiumPacks: "All Alias Packs"
+        case .streakRepair: "Streak Repair"
         }
     }
 }

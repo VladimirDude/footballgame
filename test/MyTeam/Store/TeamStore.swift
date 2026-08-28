@@ -127,7 +127,9 @@ final class TeamStore: ObservableObject {
     /// Records the cloud address assigned when the team went live. Identity is
     /// `doc.id` and does not change — only the address is added.
     func setRemoteCode(_ code: String?) {
-        doc?.remoteCode = code
+        guard var document = doc else { return }
+        document.remoteCode = code
+        doc = document
     }
 
     // MARK: - Seasons

@@ -108,6 +108,10 @@ final class TeamSyncService: ObservableObject {
             lastError = TeamSyncError.notAuthorized.errorDescription
             return
         }
+        guard store.doc?.remoteCode == membership.teamID else {
+            lastError = "Switch to your shared team before publishing."
+            return
+        }
         await run {
             try await uploadPhotos(teamID: membership.teamID, from: store)
             guard let doc = store.doc, let data = DataExporter.encode(doc) else { return }
@@ -119,19 +123,29 @@ final class TeamSyncService: ObservableObject {
     /// Refresh local data from the backend (any member).
     func pull(into store: TeamStore) async {
         guard let membership else { return }
+        guard store.doc?.remoteCode == membership.teamID || store.doc == nil else {
+            lastError = "Switch to your shared team before refreshing."
+            return
+        }
         await run {
-            if let data = try await remote.fetchSnapshot(teamID: membership.teamID) {
-                apply(data, to: store)
-                await downloadPhotos(teamID: membership.teamID, into: store)
-                lastSyncedAt = Date()
+            guard let data = try await remote.fetchSnapshot(teamID: membership.teamID) else {
+                lastError = "No cloud snapshot found for this team yet."
+                return
             }
+            apply(data, to: store)
+            await downloadPhotos(teamID: membership.teamID, into: store)
+            lastSyncedAt = Date()
         }
     }
 
+    /// Detach cloud membership. Does not delete the local roster — callers
+    /// (registry / profile) decide whether to remove the team folder.
     func leaveTeam(_ store: TeamStore) {
         detachMembership()
-        // Clearing the local team returns the user to the Create/Join onboarding.
-        store.deleteTeam()
+        store.setRemoteCode(nil)
+        if store.mode == .viewer {
+            store.mode = .user
+        }
     }
 
     /// Detaches this device from the shared team (stops live sync) but keeps the

@@ -33,6 +33,7 @@ struct AliasHomeView: View {
                 }
             }
             .padding(DSSpacing.lg)
+            .adaptiveContentWidth(AdaptiveLayout.gameMaxWidth)
         }
         .background(DSColor.groupedBackground.ignoresSafeArea())
         .navigationTitle("Football Alias")

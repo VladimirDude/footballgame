@@ -46,18 +46,9 @@ final class ClubDataStore {
     }
 
     private init() {
-        // Offline-first: read the over-the-air copy if one has been downloaded,
-        // otherwise the bundled seed. A newer copy fetched this session is picked
-        // up on the next launch (see RemoteDataRepository).
-        if
-            let url = RemoteDataRepository.shared.currentDatabaseURL,
-            let data = try? Data(contentsOf: url),
-            let decoded = try? JSONDecoder().decode(ClubDatabase.self, from: data)
-        {
-            database = decoded
-        } else {
-            database = ClubDatabase(updatedAt: "", clubs: [])
-        }
+        // Offline-first: prefer the OTA cache, then the bundled seed. Skip a
+        // corrupt/empty cache so a bad download never blanks the whole app.
+        database = Self.loadDatabase()
 
         allPlayers = database.clubs.flatMap { club in
             club.players.map { player in
@@ -114,6 +105,26 @@ final class ClubDataStore {
         higherOrLowerPool = Self.buildHigherOrLowerPool(from: allPlayers)
 
         guessLeaguePool = Self.buildGuessLeaguePool(clubs: database.clubs, leagueByClubID: leagueByClubID)
+    }
+
+    /// Prefer OTA cache; if missing/corrupt/empty, fall back to the bundled seed.
+    private static func loadDatabase() -> ClubDatabase {
+        var urls: [URL] = []
+        if let cached = DataCache.shared.cachedDatabaseURL() {
+            urls.append(cached)
+        }
+        if let bundled = Bundle.main.url(forResource: "ClubDatabase", withExtension: "json") {
+            urls.append(bundled)
+        }
+        for url in urls {
+            guard let data = try? Data(contentsOf: url),
+                  let decoded = try? JSONDecoder().decode(ClubDatabase.self, from: data),
+                  !decoded.clubs.isEmpty else {
+                continue
+            }
+            return decoded
+        }
+        return ClubDatabase(updatedAt: "", clubs: [])
     }
 
     /// Rounds for "Guess the League": a club + its correct league + 3 distractor
@@ -219,12 +230,16 @@ final class ClubDataStore {
     }
 
     /// Higher-or-Lower duels compare market values, so the pool must exclude
-    /// €0 / unpriced players (which make "€0 vs €0" duels unwinnable) and
-    /// players without a portrait. Built once and cached, not per round.
+    /// unpriced / low-value players, Free Agents, and anyone without a portrait.
+    /// A €1M floor keeps academy fluff and junk valuations out of fair duels.
+    private static let higherOrLowerMinimumValue = 1_000_000
+
     private static func buildHigherOrLowerPool(from players: [IndexedPlayer]) -> [HLPlayer] {
         players.compactMap { indexed in
+            guard indexed.clubID != "free-agent" else { return nil }
             let value = indexed.player.marketValue ?? 0
-            guard value > 0, PortraitAsset.exists(forID: indexed.player.id) else { return nil }
+            guard value >= higherOrLowerMinimumValue,
+                  PortraitAsset.exists(forID: indexed.player.id) else { return nil }
             return HLPlayer(
                 id: indexed.player.id,
                 name: indexed.player.name,
@@ -458,10 +473,16 @@ final class ClubDataStore {
             name: indexed.player.name,
             clubID: indexed.clubID,
             clubName: indexed.clubName,
+            league: leagueByClubID[indexed.clubID],
             position: indexed.player.position,
             positionGroup: PositionGroup.from(position: indexed.player.position),
             marketValue: indexed.player.marketValue ?? 0,
+            highestMarketValue: indexed.player.highestMarketValue,
             nationalities: indexed.player.nationality,
+            countryOfBirth: indexed.player.countryOfBirth,
+            dateOfBirth: indexed.player.dateOfBirth,
+            foot: indexed.player.foot,
+            heightCm: indexed.player.heightCm,
             squadRank: squadRank,
             squadSize: club.players.count,
             hasPortrait: hasPortrait

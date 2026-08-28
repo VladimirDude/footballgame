@@ -88,10 +88,10 @@ struct PlayerPortraitImage: View {
         switch style {
         case .game, .hl:
             RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                .stroke(DSColor.separator, lineWidth: 1)
         default:
             RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                .stroke(DSColor.separator, lineWidth: 1.5)
         }
     }
 
@@ -99,8 +99,8 @@ struct PlayerPortraitImage: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 0.82, green: 0.86, blue: 0.9),
-                    Color(red: 0.68, green: 0.74, blue: 0.8),
+                    DSColor.fill,
+                    DSColor.separator,
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -108,7 +108,7 @@ struct PlayerPortraitImage: View {
 
             Image(systemName: "person.fill")
                 .font(.system(size: style.placeholderIconSize, weight: .medium))
-                .foregroundStyle(Color.white.opacity(0.85))
+                .foregroundStyle(DSColor.textTertiary)
         }
     }
 }

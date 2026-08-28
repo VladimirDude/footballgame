@@ -19,6 +19,8 @@ struct GameProgress: Codable, Equatable {
     var unlockedAchievements: Set<String> = []
     var dailyLastCompleted: Date? = nil
     var dailyStreak: Int = 0
+    /// When Pro last used a streak repair. Cooldown is 2 calendar months.
+    var dailyStreakLastRepaired: Date? = nil
     var lastPlayed: Date? = nil
 
     func stats(for mode: GameMode) -> ModeStats { modeStats[mode.rawValue] ?? ModeStats() }

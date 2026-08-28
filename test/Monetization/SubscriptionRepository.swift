@@ -21,20 +21,11 @@ actor SubscriptionRepository {
         try await provider.loadPlans()
     }
 
-    /// Resolves the entitlement, preferring a live verified value and falling
-    /// back to the on-disk cache when the store yields nothing (offline).
+    /// Resolves the entitlement from the live store and always persists that
+    /// result. StoreKit's `Transaction.currentEntitlements` works offline, so a
+    /// verified `.free` must clear a stale Pro cache (refund / mock poison).
     func resolveEntitlement() async -> Entitlement {
         let verified = await provider.currentEntitlement()
-        if verified.tier == .pro {
-            persist(verified)
-            return verified
-        }
-        // Store says free — but if we're offline it may just not know yet.
-        // Honor a cached, still-valid Pro entitlement.
-        if let cached = readCache(), cached.isProActive() {
-            return Entitlement(tier: .pro, expirationDate: cached.expirationDate,
-                               productID: cached.productID, source: .cached)
-        }
         persist(verified)
         return verified
     }
@@ -59,6 +50,8 @@ actor SubscriptionRepository {
         guard let data = try? JSONEncoder().encode(entitlement) else { return }
         try? data.write(to: cacheURL, options: .atomic)
     }
+
+    func peekCache() -> Entitlement? { readCache() }
 
     private func readCache() -> Entitlement? {
         guard let data = try? Data(contentsOf: cacheURL) else { return nil }

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct WordleGameView: View {
     @Environment(\.gameTheme) private var theme
@@ -252,7 +253,12 @@ struct WordleGameView: View {
 
 enum WordlePalette {
     static let correct = GameDesign.success
-    static let wrong = Color(red: 0.47, green: 0.47, blue: 0.45)
+    static var wrong: Color {
+        DSColor.dyn(
+            light: UIColor(red: 0.55, green: 0.56, blue: 0.58, alpha: 1),
+            dark: UIColor(red: 0.47, green: 0.47, blue: 0.45, alpha: 1)
+        )
+    }
     static let valueHint = Color(red: 0.35, green: 0.55, blue: 0.85)
     // Adaptive (was a forced-white island that looked wrong in dark mode).
     static var inputBackground: Color { DSColor.surface }
@@ -399,7 +405,7 @@ struct WordleTile: View {
             }
         }
         .frame(width: WordleLayout.attributeColumnWidth, height: 34)
-        .foregroundStyle(Color.white)
+        .foregroundStyle(DSColor.onAccent)
     }
 
     private var backgroundColor: Color {

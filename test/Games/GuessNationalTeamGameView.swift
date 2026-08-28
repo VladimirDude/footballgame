@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct GuessNationalTeamGameView: View {
+    @EnvironmentObject private var entitlements: EntitlementService
+
     let round: NationalTeamRound
     @Binding var guess: String
     let gameResult: GameResult?
@@ -27,7 +29,8 @@ struct GuessNationalTeamGameView: View {
                 GameSegmentedControl(
                     items: NationalTeamDifficulty.allCases,
                     selection: $difficulty,
-                    title: \.rawValue
+                    title: \.rawValue,
+                    isLocked: { $0 != .easy && !entitlements.canAccess(.hardDifficulty) }
                 )
 
                 GameStatsBar(streak: streak, bestStreak: bestStreak)

@@ -114,6 +114,7 @@ final class AliasGameEngine: ObservableObject, Identifiable {
 
     /// Commit the reviewed turn: apply the score, then either finish or rotate.
     func commitTurn() {
+        guard status == .roundReview else { return }
         let delta = currentTurnDelta
         teams[currentTeamIndex].score += delta
         teams[currentTeamIndex].roundScores.append(delta)

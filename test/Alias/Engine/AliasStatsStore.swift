@@ -36,4 +36,8 @@ final class AliasStatsStore {
             defaults.set(data, forKey: key)
         }
     }
+
+    func reset() {
+        defaults.removeObject(forKey: key)
+    }
 }

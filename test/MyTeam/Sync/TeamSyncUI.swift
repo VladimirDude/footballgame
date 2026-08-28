@@ -7,6 +7,7 @@ import UIKit
 struct TeamSyncMenu: View {
     @ObservedObject var vm: TeamStore
     @ObservedObject var sync: TeamSyncService
+    var onLeave: (() -> Void)?
     @State private var showShareCode = false
 
     var body: some View {
@@ -27,7 +28,11 @@ struct TeamSyncMenu: View {
                                 Task { await sync.pull(into: vm) }
                             } label: { Label("Refresh from Cloud", systemImage: "arrow.clockwise") }
                             Button(role: .destructive) {
-                                sync.leaveTeam(vm)
+                                if let onLeave {
+                                    onLeave()
+                                } else {
+                                    sync.leaveTeam(vm)
+                                }
                             } label: { Label("Leave Team", systemImage: "rectangle.portrait.and.arrow.right") }
                         }
                     } else if vm.isLive {

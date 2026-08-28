@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0DE0000000000000000000E /* StreakWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000001 /* StreakWidget.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FB0000000000000000000020 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000010 /* FirebaseAnalytics */; };
 		FB0000000000000000000023 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000013 /* FirebaseStorage */; };
 		FB0000000000000000000024 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000000000000000000014 /* FirebaseAuth */; };
@@ -21,10 +22,32 @@
 			remoteGlobalIDString = E75931FD2FF3C6FC00BCFE69;
 			remoteInfo = test;
 		};
+		C0DE0000000000000000000B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E75931F62FF3C6FC00BCFE69 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C0DE00000000000000000003;
+			remoteInfo = StreakWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C0DE0000000000000000000D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C0DE0000000000000000000E /* StreakWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		ABCDEF010000000000000003 /* AliasTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AliasTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0DE00000000000000000001 /* StreakWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = StreakWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E75931FE2FF3C6FC00BCFE69 /* test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = test.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -44,6 +67,11 @@
 			path = AliasTests;
 			sourceTree = "<group>";
 		};
+		C0DE00000000000000000002 /* StreakWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = StreakWidget;
+			sourceTree = "<group>";
+		};
 		E75932002FF3C6FC00BCFE69 /* test */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -56,6 +84,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		ABCDEF010000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0DE00000000000000000005 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -80,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				E75932002FF3C6FC00BCFE69 /* test */,
+				C0DE00000000000000000002 /* StreakWidget */,
 				ABCDEF010000000000000001 /* AliasTests */,
 				E75931FF2FF3C6FC00BCFE69 /* Products */,
 			);
@@ -89,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				E75931FE2FF3C6FC00BCFE69 /* test.app */,
+				C0DE00000000000000000001 /* StreakWidget.appex */,
 				ABCDEF010000000000000003 /* AliasTests.xctest */,
 			);
 			name = Products;
@@ -120,6 +157,28 @@
 			productReference = ABCDEF010000000000000003 /* AliasTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		C0DE00000000000000000003 /* StreakWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0DE00000000000000000009 /* Build configuration list for PBXNativeTarget "StreakWidget" */;
+			buildPhases = (
+				C0DE00000000000000000004 /* Sources */,
+				C0DE00000000000000000005 /* Frameworks */,
+				C0DE00000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C0DE00000000000000000002 /* StreakWidget */,
+			);
+			name = StreakWidget;
+			packageProductDependencies = (
+			);
+			productName = StreakWidget;
+			productReference = C0DE00000000000000000001 /* StreakWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		E75931FD2FF3C6FC00BCFE69 /* test */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E75932092FF3C6FD00BCFE69 /* Build configuration list for PBXNativeTarget "test" */;
@@ -127,10 +186,12 @@
 				E75931FA2FF3C6FC00BCFE69 /* Sources */,
 				E75931FB2FF3C6FC00BCFE69 /* Frameworks */,
 				E75931FC2FF3C6FC00BCFE69 /* Resources */,
+				C0DE0000000000000000000D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C0DE0000000000000000000C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E75932002FF3C6FC00BCFE69 /* test */,
@@ -160,6 +221,9 @@
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = E75931FD2FF3C6FC00BCFE69;
 					};
+					C0DE00000000000000000003 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					E75931FD2FF3C6FC00BCFE69 = {
 						CreatedOnToolsVersion = 26.6;
 					};
@@ -183,6 +247,7 @@
 			projectRoot = "";
 			targets = (
 				E75931FD2FF3C6FC00BCFE69 /* test */,
+				C0DE00000000000000000003 /* StreakWidget */,
 				ABCDEF010000000000000002 /* AliasTests */,
 			);
 		};
@@ -190,6 +255,13 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		ABCDEF010000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0DE00000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -213,6 +285,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0DE00000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E75931FA2FF3C6FC00BCFE69 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -227,6 +306,11 @@
 			isa = PBXTargetDependency;
 			target = E75931FD2FF3C6FC00BCFE69 /* test */;
 			targetProxy = ABCDEF01000000000000000B /* PBXContainerItemProxy */;
+		};
+		C0DE0000000000000000000C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C0DE00000000000000000003 /* StreakWidget */;
+			targetProxy = C0DE0000000000000000000B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -270,6 +354,64 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/test.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/test";
+			};
+			name = Release;
+		};
+		C0DE00000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = StreakWidget/StreakWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8854THZ9VX;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "StreakWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = FTMP;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ftmpapp.app.StreakWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C0DE00000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = StreakWidget/StreakWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8854THZ9VX;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "StreakWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = FTMP;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ftmpapp.app.StreakWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -397,6 +539,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = test/FTMP.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8854THZ9VX;
@@ -433,6 +576,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = test/FTMP.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8854THZ9VX;
@@ -472,6 +616,15 @@
 			buildConfigurations = (
 				ABCDEF010000000000000008 /* Debug */,
 				ABCDEF010000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0DE00000000000000000009 /* Build configuration list for PBXNativeTarget "StreakWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0DE00000000000000000007 /* Debug */,
+				C0DE00000000000000000008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

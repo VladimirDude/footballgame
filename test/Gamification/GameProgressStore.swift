@@ -16,6 +16,9 @@ final class GameProgressStore: ObservableObject {
     private let key = "gameProgressV1"
     private let defaults: UserDefaults
 
+    /// Injected from the app root so Pro-only achievements stay locked for free users.
+    var canUnlockProAchievements: () -> Bool = { false }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         if let data = defaults.data(forKey: key),
@@ -24,6 +27,31 @@ final class GameProgressStore: ObservableObject {
         } else {
             progress = GameProgress()
         }
+        reconcileDailyStreak()
+        publishStreakWidget()
+    }
+
+    /// Clears a dead daily streak after a multi-day gap (repair window is exactly one missed day).
+    /// Call on launch and whenever the app becomes active.
+    func reconcileDailyStreak() {
+        guard progress.dailyStreak > 0, let last = progress.dailyLastCompleted else { return }
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let lastDay = cal.startOfDay(for: last)
+        let diff = cal.dateComponents([.day], from: lastDay, to: today).day ?? 99
+        // 0 = today, 1 = yesterday (alive), 2 = one miss (repair eligible). 3+ = dead.
+        guard diff >= 3 else { return }
+        progress.dailyStreak = 0
+        persist()
+    }
+
+    /// Zeros the persisted win streak for a mode (New Game / difficulty change).
+    func resetModeStreak(_ mode: GameMode) {
+        var stats = progress.stats(for: mode)
+        guard stats.currentStreak != 0 else { return }
+        stats.currentStreak = 0
+        progress.modeStats[mode.rawValue] = stats
+        persist()
     }
 
     var level: LevelInfo { XPCurve.level(forXP: progress.totalXP) }
@@ -73,12 +101,57 @@ final class GameProgressStore: ObservableObject {
         }
         progress.dailyLastCompleted = today
         progress.totalXP += 50
-        return finish()
+        let unlocked = finish()
+        Task {
+            await DailyReminderService.shared.reschedule(completedToday: true)
+        }
+        return unlocked
     }
 
     var dailyCompletedToday: Bool {
         guard let last = progress.dailyLastCompleted else { return false }
         return Calendar.current.isDateInToday(last)
+    }
+
+    /// Missed exactly one calendar day (last play was two days ago) with a live streak.
+    var dailyStreakMissedOneDay: Bool {
+        guard progress.dailyStreak > 0, !dailyCompletedToday else { return false }
+        guard let last = progress.dailyLastCompleted else { return false }
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let lastDay = cal.startOfDay(for: last)
+        return cal.dateComponents([.day], from: lastDay, to: today).day == 2
+    }
+
+    /// Pro cooldown: next repair is allowed 2 calendar months after the last one.
+    var streakRepairAvailableAt: Date? {
+        guard let last = progress.dailyStreakLastRepaired else { return nil }
+        return Calendar.current.date(byAdding: .month, value: 2, to: last)
+    }
+
+    var streakRepairOnCooldown: Bool {
+        guard let available = streakRepairAvailableAt else { return false }
+        return Date() < available
+    }
+
+    /// Whether the UI should offer repair (gap + cooldown). Pro entitlement is checked separately.
+    var canOfferStreakRepair: Bool {
+        dailyStreakMissedOneDay && !streakRepairOnCooldown
+    }
+
+    /// Bridges a one-day gap so today's completion continues the existing streak.
+    /// Caller must enforce Pro. Returns `false` if the repair isn't eligible.
+    @discardableResult
+    func repairDailyStreak() -> Bool {
+        guard canOfferStreakRepair else { return false }
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        guard let yesterday = cal.date(byAdding: .day, value: -1, to: today) else { return false }
+        progress.dailyLastCompleted = yesterday
+        progress.dailyStreakLastRepaired = Date()
+        persist()
+        HapticFeedback.success()
+        return true
     }
 
     // MARK: - Unlock queue
@@ -93,12 +166,16 @@ final class GameProgressStore: ObservableObject {
         unlockQueue.removeAll()
         pendingUnlock = nil
         persist()
+        DailyStreakBridge.clear()
     }
 
     // MARK: - Private
 
     private func finish() -> [Achievement] {
-        let newly = AchievementCatalog.newlyUnlocked(in: progress)
+        let newly = AchievementCatalog.newlyUnlocked(
+            in: progress,
+            allowPro: canUnlockProAchievements()
+        )
         for achievement in newly { progress.unlockedAchievements.insert(achievement.id) }
         if !newly.isEmpty {
             var queue = newly
@@ -113,5 +190,20 @@ final class GameProgressStore: ObservableObject {
         if let data = try? JSONEncoder().encode(progress) {
             defaults.set(data, forKey: key)
         }
+        publishStreakWidget()
+    }
+
+    /// Push current streak state to the Home Screen widget (call on launch / foreground).
+    func refreshWidget() {
+        publishStreakWidget()
+    }
+
+    private func publishStreakWidget() {
+        DailyStreakBridge.publish(
+            streak: progress.dailyStreak,
+            completedToday: dailyCompletedToday,
+            lastCompleted: progress.dailyLastCompleted,
+            dayLabel: DailyChallenge.label()
+        )
     }
 }

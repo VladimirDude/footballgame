@@ -20,6 +20,7 @@ struct AliasSetupView: View {
                 roundSection
             }
             .padding(DSSpacing.lg)
+            .adaptiveContentWidth(AdaptiveLayout.gameMaxWidth)
         }
         .background(DSColor.groupedBackground.ignoresSafeArea())
         .navigationTitle("New Match")

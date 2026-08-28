@@ -58,6 +58,7 @@ final class SubscriptionService: ObservableObject {
             return entitlements.isPro
         case .userCancelled:
             analytics.log(.purchaseCancelled(productID: plan.id))
+            lastMessage = "Purchase cancelled."
             return false
         case .pending:
             lastMessage = "Your purchase is pending approval."

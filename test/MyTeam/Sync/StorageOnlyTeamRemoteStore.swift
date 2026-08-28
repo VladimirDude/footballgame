@@ -69,7 +69,17 @@ struct StorageOnlyTeamRemoteStore: TeamRemoteStore {
         do {
             return try await teamRef(teamID).data(maxSize: 5 * 1024 * 1024)
         } catch {
-            return nil
+            let ns = error as NSError
+            // Storage not-found / object-missing → nil; anything else surfaces to the UI.
+            if ns.domain == StorageErrorDomain,
+               ns.code == StorageErrorCode.objectNotFound.rawValue {
+                return nil
+            }
+            let message = error.localizedDescription.lowercased()
+            if message.contains("not found") || message.contains("does not exist") {
+                return nil
+            }
+            throw error
         }
     }
 

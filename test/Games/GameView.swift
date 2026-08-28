@@ -85,7 +85,7 @@ struct GameView: View {
     @State private var gpTimerActive = false
     @State private var gpDifficulty: GameDifficulty = .easy
 
-    private let gpTotalTime = 15
+    private var gpTotalTime: Int { gpDifficulty.guessPlayerTimeLimit }
 
     private var gatedPlayerDifficulty: Binding<GameDifficulty> {
         Binding(
@@ -113,6 +113,10 @@ struct GameView: View {
     @State private var hlLastGuessCorrect: Bool?
     @State private var hlTimeRemaining = 15
     @State private var hlTimerActive = false
+    /// Loss XP/streak is deferred until Continue (so Pro revive can keep the climb).
+    @State private var hlPendingLossRecord = false
+    /// Skip restarting rounds when Pro lapse only clamps the difficulty picker.
+    @State private var suppressDifficultyRestart = false
 
     // Wordle
     @State private var wordleTarget: WordlePlayer?
@@ -171,38 +175,51 @@ struct GameView: View {
         }
         .onAppear {
             if round == nil { startNewRound() }
+            if !entitlements.canAccess(.hardDifficulty) {
+                clampDifficultiesToFreeTier()
+            }
         }
         .onChange(of: currentDifficulty) { _, _ in
+            guard !suppressDifficultyRestart else { return }
             gcStreak = 0
+            progress.resetModeStreak(.guessClub)
             startNewRound()
         }
         .onChange(of: gnDifficulty) { _, _ in
+            guard !suppressDifficultyRestart else { return }
             gnStreak = 0
+            progress.resetModeStreak(.guessNation)
             startNewNationRound()
         }
         .onChange(of: gpDifficulty) { _, _ in
+            guard !suppressDifficultyRestart else { return }
             gpStreak = 0
+            progress.resetModeStreak(.guessPlayer)
             startNewPlayerRound()
         }
         .onChange(of: selectedTab) { _, tab in
-            // Returning to Guess Player restarts the countdown from full, instead
+            // Returning to Guess Player / HL restarts the countdown from full, instead
             // of resuming a nearly-expired timer (which caused unfair instant losses).
             if tab == .guessPlayer, gpResult == nil, gpRound != nil {
                 resetGuessPlayerTimer()
             } else {
-                gpTimerActive = tab == .guessPlayer && gpResult == nil
+                gpTimerActive = tab == .guessPlayer && gpResult == nil && !showGamePaywall
             }
-            hlTimerActive = tab == .higherLower && !hlShowRightValue && !hlIsGameOver
+            if tab == .higherLower, !hlShowRightValue, !hlIsGameOver {
+                resetHigherLowerTimer()
+            } else {
+                hlTimerActive = false
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
                 // Fresh countdown on resume rather than the leftover value.
-                if selectedTab == .guessPlayer, gpResult == nil, gpRound != nil {
+                if selectedTab == .guessPlayer, gpResult == nil, gpRound != nil, !showGamePaywall {
                     resetGuessPlayerTimer()
                 }
-                if selectedTab == .higherLower, !hlShowRightValue, !hlIsGameOver {
-                    hlTimerActive = true
+                if selectedTab == .higherLower, !hlShowRightValue, !hlIsGameOver, !showGamePaywall {
+                    resetHigherLowerTimer()
                 }
             case .inactive, .background:
                 gpTimerActive = false
@@ -211,6 +228,20 @@ struct GameView: View {
                 break
             }
         }
+        .onChange(of: showGamePaywall) { _, isPresented in
+            if isPresented {
+                gpTimerActive = false
+                hlTimerActive = false
+            } else if selectedTab == .guessPlayer, gpResult == nil, gpRound != nil {
+                resetGuessPlayerTimer()
+            } else if selectedTab == .higherLower, !hlShowRightValue, !hlIsGameOver {
+                resetHigherLowerTimer()
+            }
+        }
+        .onChange(of: entitlements.isPro) { _, isPro in
+            guard !isPro else { return }
+            clampDifficultiesToFreeTier()
+        }
         .onReceive(countdownTimer) { _ in
             tickHigherLowerTimer()
             tickGuessPlayerTimer()
@@ -218,8 +249,22 @@ struct GameView: View {
         .paywallSheet(isPresented: $showGamePaywall, source: "game")
     }
 
+    private func clampDifficultiesToFreeTier() {
+        // Update pickers only — don't wipe the active round mid-guess.
+        suppressDifficultyRestart = true
+        if currentDifficulty != .easy { currentDifficulty = .easy }
+        if gnDifficulty != .easy { gnDifficulty = .easy }
+        if gpDifficulty != .easy { gpDifficulty = .easy }
+        suppressDifficultyRestart = false
+    }
+
+    private func resetHigherLowerTimer() {
+        hlTimeRemaining = 15
+        hlTimerActive = true
+    }
+
     private func tickHigherLowerTimer() {
-        guard selectedTab == .higherLower, hlTimerActive, !hlShowRightValue, !hlIsGameOver, !relaxedMode else { return }
+        guard selectedTab == .higherLower, hlTimerActive, !hlShowRightValue, !hlIsGameOver, !relaxedMode, !showGamePaywall else { return }
 
         if hlTimeRemaining > 0 {
             hlTimeRemaining -= 1
@@ -228,15 +273,15 @@ struct GameView: View {
             hlIsGameOver = true
             hlLastGuessCorrect = false
             hlRevealState = .wrong
+            hlPendingLossRecord = true
             HapticFeedback.error()
-            recordGameResult(.higherLower, won: false)
             withAnimation(GameMotion.fade) { hlShowRightValue = true }
             withAnimation(.default) { hlShakeTrigger = true }
         }
     }
 
     private func tickGuessPlayerTimer() {
-        guard selectedTab == .guessPlayer, gpTimerActive, gpResult == nil, !relaxedMode else { return }
+        guard selectedTab == .guessPlayer, gpTimerActive, gpResult == nil, !relaxedMode, !showGamePaywall else { return }
 
         if gpTimeRemaining > 0 {
             gpTimeRemaining -= 1
@@ -363,6 +408,7 @@ struct GameView: View {
                 showClubHint: gpShowClubHint,
                 shakeWrong: gpShakeWrong,
                 onRevealClubHint: {
+                    guard gpDifficulty.guessPlayerAllowsClubHint else { return }
                     withAnimation(.spring(response: 0.42, dampingFraction: 0.75)) {
                         gpShowClubHint = true
                     }
@@ -440,6 +486,7 @@ struct GameView: View {
     /// resetting to zero. Free users get the paywall.
     private func reviveHL() {
         PremiumGate.run(.higherLowerRevive, entitlements: entitlements, showPaywall: $showGamePaywall) {
+            hlPendingLossRecord = false
             let pool = store.fetchHigherOrLowerPool()
             hlPlayerLeft = hlPlayerRight
             guard let next = pickHLChallenger(excluding: hlPlayerLeft, from: pool) else {
@@ -448,8 +495,7 @@ struct GameView: View {
             }
             hlPlayerRight = next
             resetHLRoundState()
-            hlTimeRemaining = 15
-            hlTimerActive = true
+            resetHigherLowerTimer()
         }
     }
 
@@ -501,10 +547,12 @@ struct GameView: View {
 
     private func advanceLeagueRound() {
         let previousID = glRound?.clubID
+        let previous = glRound
         glResult = nil
         glSelected = nil
+        let next = store.randomGuessLeagueRound(excluding: Set([previousID].compactMap { $0 })) ?? previous
         withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
-            glRound = store.randomGuessLeagueRound(excluding: Set([previousID].compactMap { $0 }))
+            glRound = next
         }
     }
 
@@ -625,6 +673,7 @@ struct GameView: View {
 
     private func advanceNationRound() {
         let previousName = gnRound?.nationName
+        let previous = gnRound
         gnResult = nil
         gnGuess = ""
         gnRevealedSlots.removeAll()
@@ -639,8 +688,9 @@ struct GameView: View {
             }
         }
 
+        let next = newRound ?? store.randomNationalTeamRound(for: gnDifficulty) ?? previous
         withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
-            gnRound = newRound ?? store.randomNationalTeamRound(for: gnDifficulty)
+            gnRound = next
         }
     }
 
@@ -659,6 +709,8 @@ struct GameView: View {
         gnGuess = ""
         gnRevealedSlots.removeAll()
         gnHasUsedHint = false
+        gnStreak = 0
+        progress.resetModeStreak(.guessNation)
         if let newRound = store.randomNationalTeamRound(for: gnDifficulty) {
             gnRound = newRound
         } else {
@@ -701,6 +753,7 @@ struct GameView: View {
 
     private func advanceClubRound() {
         let previousID = round?.clubID
+        let previous = round
         gameResult = nil
         guess = ""
         revealedSlots.removeAll()
@@ -714,8 +767,9 @@ struct GameView: View {
                 break
             }
         }
+        let next = newRound ?? store.randomGameRound(for: currentDifficulty) ?? previous
         withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
-            round = newRound ?? store.randomGameRound(for: currentDifficulty)
+            round = next
         }
     }
 
@@ -734,6 +788,8 @@ struct GameView: View {
         guess = ""
         revealedSlots.removeAll()
         hasUsedHint = false
+        gcStreak = 0
+        progress.resetModeStreak(.guessClub)
         if let newRound = store.randomGameRound(for: currentDifficulty) {
             round = newRound
         } else {
@@ -776,6 +832,8 @@ struct GameView: View {
         gpResult = nil
         gpShowClubHint = false
         gpShakeWrong = false
+        gpStreak = 0
+        progress.resetModeStreak(.guessPlayer)
         if let newRound = store.randomGuessPlayerRound(for: gpDifficulty) {
             gpRound = newRound
             resetGuessPlayerTimer()
@@ -786,18 +844,22 @@ struct GameView: View {
 
     private func advancePlayerRound() {
         let previousID = gpRound?.id
+        let previous = gpRound
         gpGuess = ""
         gpResult = nil
         gpShowClubHint = false
         gpShakeWrong = false
 
+        let next = store.randomGuessPlayerRound(
+            for: gpDifficulty,
+            excluding: Set([previousID].compactMap { $0 })
+        ) ?? previous
         withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
-            gpRound = store.randomGuessPlayerRound(
-                for: gpDifficulty,
-                excluding: Set([previousID].compactMap { $0 })
-            )
+            gpRound = next
         }
-        resetGuessPlayerTimer()
+        if next != nil {
+            resetGuessPlayerTimer()
+        }
     }
 
     // MARK: - Higher or Lower Logic
@@ -810,8 +872,7 @@ struct GameView: View {
         hlPlayerLeft = randomized[0]
         hlPlayerRight = pickHLChallenger(excluding: hlPlayerLeft, from: pool) ?? randomized[1]
         resetHLRoundState()
-        hlTimeRemaining = 15
-        hlTimerActive = true
+        resetHigherLowerTimer()
     }
 
     private func pickHLChallenger(excluding anchor: HLPlayer?, from pool: [HLPlayer]) -> HLPlayer? {
@@ -850,12 +911,12 @@ struct GameView: View {
                 hlIsGameOver = true
                 hlRevealState = .wrong
                 hlLastGuessCorrect = false
+                hlPendingLossRecord = true
             }
         }
 
-        recordGameResult(.higherLower, won: isCorrect)
-
         if isCorrect {
+            recordGameResult(.higherLower, won: true)
             hlScore += 1
             if hlScore > hlHighScore { hlHighScore = hlScore }
             HapticFeedback.success()
@@ -867,6 +928,10 @@ struct GameView: View {
 
     private func cycleToNextHLRound() {
         if hlIsGameOver {
+            if hlPendingLossRecord {
+                recordGameResult(.higherLower, won: false)
+                hlPendingLossRecord = false
+            }
             hlScore = 0
             setupInitialHLRound()
             return
@@ -881,8 +946,7 @@ struct GameView: View {
 
         hlPlayerRight = next
         resetHLRoundState()
-        hlTimeRemaining = 15
-        hlTimerActive = true
+        resetHigherLowerTimer()
     }
 
     private func isSubmittableGuess(_ text: String) -> Bool {

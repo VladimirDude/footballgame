@@ -6,5 +6,5 @@ import Foundation
 enum ProgressionRewards {
     /// Reaching this level unlocks full Pro access for free — the gamification →
     /// monetization bridge (see `EntitlementService.progressionUnlocked`).
-    static let proUnlockLevel = 15
+    static let proUnlockLevel = 20
 }

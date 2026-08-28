@@ -16,6 +16,10 @@ enum ClubGuessValidator {
             }
         }
 
-        return FuzzyMatcher.matches(guess: guess, candidates: candidates)
+        return FuzzyMatcher.matches(
+            guess: guess,
+            candidates: candidates,
+            allowSingleTokenWordMatch: false
+        )
     }
 }

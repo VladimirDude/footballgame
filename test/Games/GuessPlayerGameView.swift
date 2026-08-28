@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GuessPlayerGameView: View {
     @Environment(\.gameTheme) private var theme
+    @EnvironmentObject private var entitlements: EntitlementService
 
     let round: GuessPlayerRound
     @Binding var guess: String
@@ -34,14 +35,30 @@ struct GuessPlayerGameView: View {
         }
     }
 
+    private var showsNation: Bool {
+        difficulty.guessPlayerShowsNation || gameResult != nil
+    }
+
+    private var canRevealClub: Bool {
+        difficulty.guessPlayerAllowsClubHint
+    }
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: GameDesign.spacingMD) {
                 GameSegmentedControl(
                     items: GameDifficulty.allCases,
                     selection: $difficulty,
-                    title: \.rawValue
+                    title: \.rawValue,
+                    isLocked: { $0 != .easy && !entitlements.canAccess(.hardDifficulty) }
                 )
+
+                Text(difficulty.guessPlayerSubtitle)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(theme.textMuted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
+                    .accessibilityLabel(difficulty.guessPlayerSubtitle)
 
                 GameStatsBar(
                     streak: streak,
@@ -90,13 +107,17 @@ struct GuessPlayerGameView: View {
                     tint: .cyan,
                     progress: hintsProgress
                 )
-                GameHintChip(
-                    title: "Nation",
-                    displayValue: round.nationalities.first ?? "—",
-                    emoji: CountryFlags.primaryFlag(from: round.nationalities),
-                    tint: .blue,
-                    progress: hintsProgress
-                )
+
+                if showsNation {
+                    GameHintChip(
+                        title: "Nation",
+                        displayValue: round.nationalities.first ?? "—",
+                        emoji: CountryFlags.primaryFlag(from: round.nationalities),
+                        tint: .blue,
+                        progress: hintsProgress
+                    )
+                    .transition(.gamePresent)
+                }
 
                 if showClubHint {
                     GameHintChip(
@@ -110,8 +131,9 @@ struct GuessPlayerGameView: View {
                 }
             }
             .animation(GameMotion.silky, value: showClubHint)
+            .animation(GameMotion.silky, value: showsNation)
 
-            if !showClubHint, gameResult == nil {
+            if canRevealClub, !showClubHint, gameResult == nil {
                 GameHintButton(
                     title: "Reveal club hint",
                     usedTitle: "Club revealed",
@@ -120,6 +142,11 @@ struct GuessPlayerGameView: View {
                     action: onRevealClubHint
                 )
                 .transition(.gamePresent)
+            } else if !canRevealClub, gameResult == nil {
+                Text("Hard mode — no club hint")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(theme.textMuted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(GameDesign.spacingLG)
@@ -140,7 +167,7 @@ struct GuessPlayerGameView: View {
             RoundedRectangle(cornerRadius: portraitRadius, style: .continuous)
                 .stroke(
                     LinearGradient(
-                        colors: [theme.gold.opacity(0.75), Color.white.opacity(0.25)],
+                        colors: [theme.gold.opacity(0.75), theme.panelStroke],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
@@ -149,7 +176,7 @@ struct GuessPlayerGameView: View {
                 .frame(width: portraitSize, height: portraitSize)
 
             PlayerPortraitImage(playerID: round.id, style: .hero)
-                .shadow(color: .black.opacity(0.25), radius: 6, y: 3)
+                .shadow(color: theme.textPrimary.opacity(0.18), radius: 6, y: 3)
                 .silkyProgress(portraitProgress, lift: 5, scaleFrom: 0.985)
                 .overlay(alignment: .topLeading) {
                     mysteryBadge.padding(5)
@@ -162,7 +189,7 @@ struct GuessPlayerGameView: View {
     private var mysteryBadge: some View {
         Text("?")
             .font(.caption2.weight(.black))
-            .foregroundStyle(.white)
+            .foregroundStyle(DSColor.onAccent)
             .frame(width: 24, height: 24)
             .background(
                 Circle()

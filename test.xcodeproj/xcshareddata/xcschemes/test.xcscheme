@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C0DE00000000000000000003"
+               BuildableName = "StreakWidget.appex"
+               BlueprintName = "StreakWidget"
+               ReferencedContainer = "container:test.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "E75931FD2FF3C6FC00BCFE69"
                BuildableName = "test.app"
                BlueprintName = "test"

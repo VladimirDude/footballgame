@@ -9,6 +9,17 @@
 	     TestFlight/App Store upload. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.ftmpapp.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ftmp</string>
+			</array>
+		</dict>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

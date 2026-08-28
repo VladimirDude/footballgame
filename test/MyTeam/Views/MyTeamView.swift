@@ -43,7 +43,7 @@ struct TeamHomeView: View {
                 // onboarding here — that is what used to let the next edit
                 // overwrite recoverable data with an empty team.
                 TeamDataRecoveryView(vm: vm)
-            } else if vm.hasTeam || sync.isJoined {
+            } else if vm.hasTeam {
                 dashboard
             } else {
                 TeamOnboardingView(vm: vm, sync: sync)
@@ -76,7 +76,9 @@ struct TeamHomeView: View {
         .searchable(text: $vm.searchText, prompt: "Search player...")
         .navigationTitle(vm.teamName ?? "My Team")
         .toolbarTitleMenu { teamSwitcher }
-        .navigationDestination(isPresented: $showProfile) { TeamProfileView(vm: vm, sync: sync) }
+        .navigationDestination(isPresented: $showProfile) {
+            TeamProfileView(vm: vm, sync: sync, onDeleteTeam: leaveTeam)
+        }
         .navigationDestination(isPresented: $showCoachDetail) {
             CoachDetailView(coaches: vm.coaches, teamName: vm.teamName)
         }
@@ -96,7 +98,7 @@ struct TeamHomeView: View {
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                TeamSyncMenu(vm: vm, sync: sync)
+                TeamSyncMenu(vm: vm, sync: sync, onLeave: leaveTeam)
             }
             ToolbarItem(placement: .navigationBarTrailing) { adminBadge }
         }

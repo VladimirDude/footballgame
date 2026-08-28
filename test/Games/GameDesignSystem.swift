@@ -181,24 +181,34 @@ struct GameSegmentedControl<Item: Hashable & Identifiable>: View {
     let items: [Item]
     @Binding var selection: Item
     let title: (Item) -> String
+    /// When set, locked items show a lock glyph (tap still goes through the binding for paywall).
+    var isLocked: ((Item) -> Bool)? = nil
 
     var body: some View {
         HStack(spacing: 4) {
             ForEach(items) { item in
+                let locked = isLocked?(item) == true
                 Button {
                     withAnimation(GameMotion.silkyQuick) { selection = item }
                 } label: {
-                    Text(title(item))
-                        .font(.caption.weight(.bold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 9)
-                        .foregroundStyle(selection == item ? theme.textPrimary : theme.textMuted)
-                        .background(
-                            RoundedRectangle(cornerRadius: GameDesign.radiusSM, style: .continuous)
-                                .fill(selection == item ? theme.accent : Color.clear)
-                        )
+                    HStack(spacing: 4) {
+                        if locked {
+                            Image(systemName: "lock.fill")
+                                .font(.caption2.weight(.bold))
+                        }
+                        Text(title(item))
+                            .font(.caption.weight(.bold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 9)
+                    .foregroundStyle(selection == item ? theme.textPrimary : theme.textMuted)
+                    .background(
+                        RoundedRectangle(cornerRadius: GameDesign.radiusSM, style: .continuous)
+                            .fill(selection == item ? theme.accent : Color.clear)
+                    )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(locked ? "\(title(item)), Pro" : title(item))
             }
         }
         .padding(4)
@@ -265,10 +275,10 @@ struct GamePrimaryButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
-            .foregroundStyle(isEnabled ? theme.buttonLabelOnLight : theme.textMuted)
+            .foregroundStyle(isEnabled ? DSColor.onAccent : theme.textMuted)
             .background(
                 RoundedRectangle(cornerRadius: GameDesign.radiusMD, style: .continuous)
-                    .fill(isEnabled ? Color.white : theme.surfaceFill)
+                    .fill(isEnabled ? theme.accent : theme.surfaceFill)
             )
         }
         .buttonStyle(GamePressButtonStyle())
@@ -293,11 +303,11 @@ struct GameContinueButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
-            .foregroundStyle(won ? theme.buttonLabelOnLight : theme.textPrimary)
+            .foregroundStyle(DSColor.onAccent)
             .background(
                 RoundedRectangle(cornerRadius: GameDesign.radiusMD, style: .continuous)
                     .fill(won
-                          ? AnyShapeStyle(Color.white)
+                          ? AnyShapeStyle(theme.accent)
                           : AnyShapeStyle(LinearGradient(
                               colors: [GameDesign.danger, Color(red: 0.78, green: 0.18, blue: 0.2)],
                               startPoint: .topLeading,

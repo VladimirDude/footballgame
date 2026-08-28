@@ -49,10 +49,16 @@ struct PlayerDetail: Identifiable, Hashable {
     let name: String
     let clubID: String
     let clubName: String
+    let league: String?
     let position: String
     let positionGroup: PositionGroup
     let marketValue: Int
+    let highestMarketValue: Int?
     let nationalities: [String]
+    let countryOfBirth: String?
+    let dateOfBirth: String?
+    let foot: String?
+    let heightCm: Int?
     let squadRank: Int
     let squadSize: Int
     let hasPortrait: Bool
@@ -60,6 +66,42 @@ struct PlayerDetail: Identifiable, Hashable {
     var formattedMarketValue: String {
         MarketValueFormatter.format(marketValue)
     }
+
+    var formattedPeakValue: String? {
+        guard let highestMarketValue, highestMarketValue > 0 else { return nil }
+        return MarketValueFormatter.format(highestMarketValue)
+    }
+
+    var age: Int? {
+        guard let dateOfBirth,
+              let born = Self.dobFormatter.date(from: String(dateOfBirth.prefix(10))) else {
+            return nil
+        }
+        return Calendar.current.dateComponents([.year], from: born, to: Date()).year
+    }
+
+    var formattedFoot: String? {
+        switch foot?.lowercased() {
+        case "left": "Left"
+        case "right": "Right"
+        case "both": "Both"
+        default: nil
+        }
+    }
+
+    var formattedHeight: String? {
+        guard let heightCm, heightCm > 0 else { return nil }
+        return "\(heightCm) cm"
+    }
+
+    private static let dobFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
 }
 
 enum MarketValueFormatter {

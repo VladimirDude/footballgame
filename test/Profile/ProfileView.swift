@@ -6,6 +6,11 @@ struct ProfileView: View {
     @EnvironmentObject private var progress: GameProgressStore
     @EnvironmentObject private var entitlements: EntitlementService
     @State private var showDaily = false
+    @State private var showStreakTutorial = false
+    @State private var showStreakRepairPaywall = false
+    @State private var showRepairConfirm = false
+    @AppStorage("showDailyStreakWidget") private var showStreakWidget = false
+    @AppStorage(OnboardingStorage.openDailyAfterOnboardingKey) private var openDailyAfterOnboarding = false
 
     var body: some View {
         NavigationStack {
@@ -17,18 +22,62 @@ struct ProfileView: View {
                     }
                     playSection
                     dailyCard
+                    if showStreakWidget {
+                        DailyStreakWidgetCard(
+                            streak: progress.progress.dailyStreak,
+                            completedToday: progress.dailyCompletedToday,
+                            dayLabel: DailyChallenge.label()
+                        )
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.96, anchor: .top)),
+                            removal: .opacity
+                        ))
+                    }
                     statsGrid
                     perModeSection
                     achievementsSection
                 }
                 .padding(DSSpacing.md)
                 .adaptiveContentWidth(AdaptiveLayout.settingsMaxWidth)
+                .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showStreakWidget)
+                .animation(.spring(response: 0.35, dampingFraction: 0.85), value: progress.canOfferStreakRepair)
             }
             .background(DSColor.groupedBackground.ignoresSafeArea())
             .navigationTitle("You")
         }
         .fullScreenCover(isPresented: $showDaily) {
             DailyChallengeView(questions: ClubDataStore.shared.makeDailyQuestions(seed: DailyChallenge.seed()))
+        }
+        .onAppear {
+            presentPendingDailyIfNeeded()
+        }
+        .onChange(of: openDailyAfterOnboarding) { _, pending in
+            guard pending else { return }
+            presentPendingDailyIfNeeded()
+        }
+        .sheet(isPresented: $showStreakTutorial) {
+            StreakWidgetTutorial()
+        }
+        .paywallSheet(isPresented: $showStreakRepairPaywall, source: "streak_repair")
+        .confirmationDialog(
+            "Repair \(progress.progress.dailyStreak)-day streak?",
+            isPresented: $showRepairConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Repair streak") {
+                _ = progress.repairDailyStreak()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Uses your Pro repair (once every 2 months). Then play today’s Daily Challenge to keep going.")
+        }
+    }
+
+    private func presentPendingDailyIfNeeded() {
+        guard openDailyAfterOnboarding else { return }
+        openDailyAfterOnboarding = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            showDaily = true
         }
     }
 
@@ -85,31 +134,163 @@ struct ProfileView: View {
     // MARK: - Daily challenge
 
     private var dailyCard: some View {
-        Button { showDaily = true } label: {
-            HStack(spacing: DSSpacing.md) {
-                ZStack {
-                    Circle().fill(DSColor.accent.opacity(0.15)).frame(width: 46, height: 46)
-                    Image(systemName: "calendar.badge.clock").font(.title3).foregroundStyle(DSColor.accent)
+        VStack(spacing: DSSpacing.sm) {
+            Button { showDaily = true } label: {
+                HStack(spacing: DSSpacing.md) {
+                    ZStack {
+                        Circle().fill(DSColor.accent.opacity(0.15)).frame(width: 46, height: 46)
+                        Image(systemName: "calendar.badge.clock").font(.title3).foregroundStyle(DSColor.accent)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Daily Challenge").dsFont(.headline).foregroundStyle(DSColor.textPrimary)
+                        Text(progress.dailyCompletedToday
+                             ? "Done today · \(progress.progress.dailyStreak)-day streak"
+                             : "\(DailyChallenge.questionCount) questions · \(DailyChallenge.label())")
+                            .dsFont(.subheadline).foregroundStyle(DSColor.textSecondary)
+                    }
+                    Spacer(minLength: 0)
+                    Text(progress.dailyCompletedToday ? "Replay" : "Play")
+                        .dsFont(.subheadline).fontWeight(.bold)
+                        .foregroundStyle(DSColor.onAccent)
+                        .padding(.horizontal, DSSpacing.sm).padding(.vertical, DSSpacing.xxs)
+                        .background(Capsule().fill(DSColor.accent))
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Daily Challenge").dsFont(.headline).foregroundStyle(DSColor.textPrimary)
-                    Text(progress.dailyCompletedToday
-                         ? "Done today · \(progress.progress.dailyStreak)-day streak"
-                         : "\(DailyChallenge.questionCount) questions · \(DailyChallenge.label())")
-                        .dsFont(.subheadline).foregroundStyle(DSColor.textSecondary)
-                }
-                Spacer(minLength: 0)
-                Text(progress.dailyCompletedToday ? "Replay" : "Play")
-                    .dsFont(.subheadline).fontWeight(.bold)
-                    .foregroundStyle(DSColor.onAccent)
-                    .padding(.horizontal, DSSpacing.sm).padding(.vertical, DSSpacing.xxs)
-                    .background(Capsule().fill(DSColor.accent))
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+
+            Divider().opacity(0.5)
+            streakRepairRow
+
+            Divider().opacity(0.5)
+
+            Button {
+                if showStreakWidget {
+                    showStreakWidget = false
+                } else {
+                    showStreakWidget = true
+                    showStreakTutorial = true
+                }
+                HapticFeedback.light()
+            } label: {
+                HStack(spacing: DSSpacing.md) {
+                    ZStack {
+                        Circle()
+                            .fill((showStreakWidget ? DSColor.textTertiary : DSColor.success).opacity(0.15))
+                            .frame(width: 46, height: 46)
+                        Image(systemName: showStreakWidget ? "minus.circle.fill" : "square.grid.2x2.fill")
+                            .font(.title3)
+                            .foregroundStyle(showStreakWidget ? DSColor.textSecondary : DSColor.success)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(showStreakWidget ? "Remove streak widget" : "Add streak widget")
+                            .dsFont(.headline)
+                            .foregroundStyle(DSColor.textPrimary)
+                        Text(showStreakWidget
+                             ? "Hide your streak card from this screen"
+                             : "Pin your \(progress.progress.dailyStreak)-day streak below")
+                            .dsFont(.subheadline)
+                            .foregroundStyle(DSColor.textSecondary)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(showStreakWidget ? "Remove streak widget" : "Add streak widget")
         }
-        .buttonStyle(.plain)
         .dsCard()
     }
+
+    private var streakRepairRow: some View {
+        let missed = progress.dailyStreakMissedOneDay
+        let onCooldown = progress.streakRepairOnCooldown
+        let isPro = entitlements.canAccess(.streakRepair)
+        let actionable = missed && !onCooldown
+
+        let title: String = {
+            if missed && onCooldown { return "Streak repair used" }
+            if missed { return "Repair streak" }
+            if onCooldown { return "Streak repair" }
+            return "Streak repair"
+        }()
+
+        let subtitle: String = {
+            if onCooldown, let available = progress.streakRepairAvailableAt {
+                return "Next use \(Self.repairCooldownFormatter.string(from: available))"
+            }
+            if missed, isPro {
+                return "Missed a day · keep your \(progress.progress.dailyStreak)-day streak"
+            }
+            if missed {
+                return "Missed a day · unlock Pro to save this streak"
+            }
+            if isPro {
+                return "Save one missed day · once every 2 months"
+            }
+            return "Pro · save one missed day every 2 months"
+        }()
+
+        return Button {
+            if onCooldown { return }
+            if actionable {
+                if isPro {
+                    showRepairConfirm = true
+                } else {
+                    AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.streakRepair.rawValue))
+                    showStreakRepairPaywall = true
+                }
+            } else if !isPro {
+                AnalyticsService.shared.log(.featureBlocked(feature: PremiumFeature.streakRepair.rawValue))
+                showStreakRepairPaywall = true
+            }
+        } label: {
+            HStack(spacing: DSSpacing.md) {
+                ZStack {
+                    Circle()
+                        .fill((missed ? DSColor.warning : DSColor.accent).opacity(0.15))
+                        .frame(width: 46, height: 46)
+                    Image(systemName: missed ? "flame.fill" : "shield.checkered")
+                        .font(.title3)
+                        .foregroundStyle(missed ? DSColor.warning : DSColor.accent)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(title)
+                            .dsFont(.headline)
+                            .foregroundStyle(DSColor.textPrimary)
+                        if !isPro {
+                            PremiumBadge()
+                        }
+                    }
+                    Text(subtitle)
+                        .dsFont(.subheadline)
+                        .foregroundStyle(DSColor.textSecondary)
+                }
+                Spacer(minLength: 0)
+                if actionable {
+                    Text(isPro ? "Use" : "Pro")
+                        .dsFont(.subheadline).fontWeight(.bold)
+                        .foregroundStyle(DSColor.onAccent)
+                        .padding(.horizontal, DSSpacing.sm).padding(.vertical, DSSpacing.xxs)
+                        .background(Capsule().fill(missed ? DSColor.warning : DSColor.accent))
+                }
+            }
+            .contentShape(Rectangle())
+            .opacity(onCooldown ? 0.55 : 1)
+        }
+        .buttonStyle(.plain)
+        .disabled(onCooldown || (isPro && !actionable))
+        .accessibilityLabel(title)
+        .accessibilityHint(subtitle)
+    }
+
+    private static let repairCooldownFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        return f
+    }()
 
     // MARK: - Level header
 
@@ -234,6 +415,8 @@ struct ProfileView: View {
 
     // MARK: - Achievements
 
+    @State private var selectedAchievement: Achievement?
+
     private var achievementsSection: some View {
         let unlockedCount = progress.progress.unlockedAchievements.count
         return VStack(alignment: .leading, spacing: DSSpacing.sm) {
@@ -249,29 +432,53 @@ struct ProfileView: View {
                 }
             }
         }
+        .sheet(item: $selectedAchievement) { achievement in
+            AchievementDetailSheet(
+                achievement: achievement,
+                progress: progress.progress,
+                isPro: entitlements.isPro
+            )
+        }
     }
 
     private func achievementBadge(_ achievement: Achievement) -> some View {
         let unlocked = progress.progress.unlockedAchievements.contains(achievement.id)
         let proLocked = achievement.isPro && !entitlements.isPro && !unlocked
         let color = unlocked ? tierColor(achievement.tier) : DSColor.textTertiary
-        return VStack(spacing: DSSpacing.xxs) {
-            ZStack {
-                Circle().fill(color.opacity(unlocked ? 0.2 : 0.1)).frame(width: 52, height: 52)
-                Image(systemName: unlocked ? achievement.icon : (proLocked ? "lock.fill" : achievement.icon))
-                    .font(.title3)
-                    .foregroundStyle(color)
-                    .opacity(unlocked ? 1 : 0.5)
+        let metric = achievement.progress(progress.progress)
+
+        return Button {
+            selectedAchievement = achievement
+            HapticFeedback.light()
+        } label: {
+            VStack(spacing: DSSpacing.xxs) {
+                ZStack {
+                    Circle().fill(color.opacity(unlocked ? 0.2 : 0.1)).frame(width: 52, height: 52)
+                    Image(systemName: unlocked ? achievement.icon : (proLocked ? "lock.fill" : achievement.icon))
+                        .font(.title3)
+                        .foregroundStyle(color)
+                        .opacity(unlocked ? 1 : 0.5)
+                }
+                Text(achievement.title)
+                    .dsFont(.caption2)
+                    .foregroundStyle(unlocked ? DSColor.textPrimary : DSColor.textTertiary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(height: 26)
+
+                if !unlocked {
+                    Text(metric.label)
+                        .font(.system(size: 9, weight: .semibold, design: .rounded))
+                        .foregroundStyle(DSColor.textTertiary)
+                        .monospacedDigit()
+                }
             }
-            Text(achievement.title)
-                .dsFont(.caption2)
-                .foregroundStyle(unlocked ? DSColor.textPrimary : DSColor.textTertiary)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-                .frame(height: 26)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(achievement.title). \(unlocked ? "Unlocked" : "Locked"). \(achievement.detail)")
+        .accessibilityLabel("\(achievement.title). \(unlocked ? "Unlocked" : "Locked"). \(achievement.detail). Progress \(metric.label)")
+        .accessibilityHint("Shows achievement details")
     }
 
     private func tierColor(_ tier: Achievement.Tier) -> Color {

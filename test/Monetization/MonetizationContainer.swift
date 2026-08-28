@@ -26,11 +26,10 @@ final class MonetizationContainer: ObservableObject {
         entitlements.start()
     }
 
-    /// In DEBUG we use the in-memory mock so the full paywall → purchase → unlock
-    /// flow works in the simulator with no App Store Connect products. In release
-    /// we use real StoreKit. Flip DEBUG to real StoreKit once a
-    /// `Products.storekit` config is attached to the scheme (Edit Scheme ▸ Run ▸
-    /// Options ▸ StoreKit Configuration) or sandbox products exist.
+    /// DEBUG uses the in-memory mock so buy/restore works in Simulator with no
+    /// Apple Account. Release uses real StoreKit (needs App Store Connect products
+    /// or a Sandbox Apple ID). Attach `Products.storekit` to the scheme only when
+    /// you explicitly want to test the StoreKit path with `useMock: false`.
     nonisolated static var defaultUseMock: Bool {
         #if DEBUG
         return true

@@ -16,6 +16,7 @@ struct PlayerProfileView: View {
                     VStack(spacing: 16) {
                         heroSection(detail)
                         statsSection(detail)
+                        aboutSection(detail)
                         nationalitySection(detail)
                         clubSection(detail)
                     }
@@ -47,6 +48,12 @@ struct PlayerProfileView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(Capsule().fill(Color.white.opacity(0.18)))
+
+                if let age = detail.age {
+                    Text("Age \(age)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.75))
+                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -70,6 +77,14 @@ struct PlayerProfileView: View {
                 icon: "eurosign.circle.fill",
                 tint: .green
             )
+            if let peak = detail.formattedPeakValue {
+                StatTile(
+                    title: "Peak Value",
+                    value: peak,
+                    icon: "chart.line.uptrend.xyaxis",
+                    tint: .orange
+                )
+            }
             StatTile(
                 title: "Squad Rank",
                 value: "#\(detail.squadRank) of \(detail.squadSize)",
@@ -82,12 +97,41 @@ struct PlayerProfileView: View {
                 icon: detail.positionGroup.icon,
                 tint: .blue
             )
-            StatTile(
-                title: "Photo",
-                value: detail.hasPortrait ? "Available" : "Placeholder",
-                icon: detail.hasPortrait ? "photo.fill" : "person.fill.questionmark",
-                tint: detail.hasPortrait ? .purple : .gray
-            )
+        }
+    }
+
+    @ViewBuilder
+    private func aboutSection(_ detail: PlayerDetail) -> some View {
+        let rows: [(String, String, String)] = [
+            detail.age.map { ("Age", "\($0)", "calendar") },
+            detail.formattedFoot.map { ("Preferred foot", $0, "figure.walk") },
+            detail.formattedHeight.map { ("Height", $0, "ruler") },
+            detail.countryOfBirth.map { ("Born in", $0, "mappin.and.ellipse") },
+            detail.dateOfBirth.map { ("Date of birth", Self.displayDOB($0), "calendar") },
+        ].compactMap { $0 }
+
+        if !rows.isEmpty {
+            BrowseCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader(title: "About", icon: "person.text.rectangle.fill")
+                    ForEach(rows, id: \.0) { title, value, icon in
+                        HStack(spacing: 12) {
+                            Image(systemName: icon)
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(BrowseTheme.accent)
+                                .frame(width: 22)
+                            Text(title)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(value)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.trailing)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -128,9 +172,15 @@ struct PlayerProfileView: View {
                             Text(detail.clubName)
                                 .font(.headline)
                                 .foregroundStyle(.primary)
-                            Text("View full squad")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            if let league = detail.league {
+                                Text(league)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("View full squad")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
 
                         Spacer()
@@ -143,5 +193,19 @@ struct PlayerProfileView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    private static func displayDOB(_ iso: String) -> String {
+        let raw = String(iso.prefix(10))
+        let inFormatter = DateFormatter()
+        inFormatter.calendar = Calendar(identifier: .gregorian)
+        inFormatter.locale = Locale(identifier: "en_US_POSIX")
+        inFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+        inFormatter.dateFormat = "yyyy-MM-dd"
+        guard let date = inFormatter.date(from: raw) else { return raw }
+        let out = DateFormatter()
+        out.dateStyle = .medium
+        out.timeStyle = .none
+        return out.string(from: date)
     }
 }

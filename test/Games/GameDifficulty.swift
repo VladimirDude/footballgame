@@ -7,6 +7,33 @@ enum GameDifficulty: String, CaseIterable, Identifiable {
 
     var id: String { self.rawValue }
 
+    /// Countdown for Guess the Player (Relaxed Mode ignores this).
+    var guessPlayerTimeLimit: Int {
+        switch self {
+        case .easy: 20
+        case .medium: 15
+        case .hard: 10
+        }
+    }
+
+    /// Hard mode: no club reveal — you only get position (+ nation on Easy/Medium).
+    var guessPlayerAllowsClubHint: Bool {
+        self != .hard
+    }
+
+    /// Hard mode hides nationality until the round is over.
+    var guessPlayerShowsNation: Bool {
+        self != .hard
+    }
+
+    var guessPlayerSubtitle: String {
+        switch self {
+        case .easy: "Big-club stars · 20s · club hint"
+        case .medium: "Mid-table names · 15s · club hint"
+        case .hard: "Obscure squads · 10s · no club hint"
+        }
+    }
+
     var associatedClubs: Set<String> {
         switch self {
         case .easy:

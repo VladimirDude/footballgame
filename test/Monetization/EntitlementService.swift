@@ -34,11 +34,18 @@ final class EntitlementService: ObservableObject {
     /// listening for out-of-band changes (renewals, expirations, refunds), and
     /// watches progression so a level-up can unlock Pro live.
     func start() {
-        Task { await refresh() }
+        Task {
+            // Seed from disk so paid users aren't briefly gated as free at launch.
+            if let cached = await repository.peekCache(), cached.isProActive() {
+                entitlement = cached
+            }
+            await refresh()
+        }
         updatesTask = Task { [weak self] in
             guard let self else { return }
             for await updated in await repository.entitlementUpdates {
                 self.entitlement = updated
+                await repository.cache(updated)
             }
         }
         progressionCancellable = progressStore.$progress
