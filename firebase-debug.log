@@ -1,0 +1,40 @@
+[debug] [2026-11-26T10:34:24.353Z] ----------------------------------------------------------------------
+[debug] [2026-11-26T10:34:24.356Z] Command:       /usr/local/Cellar/node/23.11.0/bin/node /Users/narekektubaryan/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase deploy --only hosting
+[debug] [2026-11-26T10:34:24.357Z] CLI Version:   15.37.0
+[debug] [2026-11-26T10:34:24.358Z] Platform:      darwin
+[debug] [2026-11-26T10:34:24.359Z] Node Version:  v23.11.0
+[debug] [2026-11-26T10:34:24.359Z] Detected Agent: unknown
+[debug] [2026-11-26T10:34:24.360Z] Time:          Thu Nov 26 2026 14:34:24 GMT+0400 (Armenia Standard Time)
+[debug] [2026-11-26T10:34:24.360Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-11-26T10:34:25.272Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-11-26T10:34:25.274Z] > authorizing via signed-in user (ektubaryannarek1993@gmail.com)
+[debug] [2026-11-26T10:34:25.274Z] [iam] checking project ftmp-8a367 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-11-26T10:34:25.283Z] Checked if tokens are valid: true, expires at: 1795692846050
+[debug] [2026-11-26T10:34:25.283Z] Checked if tokens are valid: true, expires at: 1795692846050
+[debug] [2026-11-26T10:34:25.284Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/ftmp-8a367:testIamPermissions [none]
+[debug] [2026-11-26T10:34:25.285Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/ftmp-8a367:testIamPermissions  x-goog-user-project=ftmp-8a367
+[debug] [2026-11-26T10:34:25.285Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/ftmp-8a367:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-11-26T10:34:25.915Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/ftmp-8a367:testIamPermissions 403
+[debug] [2026-11-26T10:34:25.915Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/ftmp-8a367:testIamPermissions {"error":{"code":403,"message":"Caller does not have required permission to use project ftmp-8a367. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=ftmp-8a367 and then retry. Propagation of the new permission may take a few minutes.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"USER_PROJECT_DENIED","domain":"googleapis.com","metadata":{"consoleUrl":"https://console.developers.google.com/iam-admin/iam?project=ftmp-8a367","consumer":"projects/ftmp-8a367","containerInfo":"ftmp-8a367","service":"cloudresourcemanager.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Caller does not have required permission to use project ftmp-8a367. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=ftmp-8a367 and then retry. Propagation of the new permission may take a few minutes."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developer console IAM admin","url":"https://console.developers.google.com/iam-admin/iam?project=ftmp-8a367"}]}]}}
+[debug] [2026-11-26T10:34:25.917Z] [iam] error while checking permissions, command may fail: Request to https://cloudresourcemanager.googleapis.com/v1/projects/ftmp-8a367:testIamPermissions had HTTP Error: 403, Caller does not have required permission to use project ftmp-8a367. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=ftmp-8a367 and then retry. Propagation of the new permission may take a few minutes.
+[debug] [2026-11-26T10:34:25.918Z] Checked if tokens are valid: true, expires at: 1795692846050
+[debug] [2026-11-26T10:34:25.918Z] Checked if tokens are valid: true, expires at: 1795692846050
+[debug] [2026-11-26T10:34:25.920Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/ftmp-8a367/services/firebasehosting.googleapis.com [none]
+[debug] [2026-11-26T10:34:25.920Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/ftmp-8a367/services/firebasehosting.googleapis.com  x-goog-user-project=ftmp-8a367
+[debug] [2026-11-26T10:34:27.195Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/ftmp-8a367/services/firebasehosting.googleapis.com 403
+[debug] [2026-11-26T10:34:27.195Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/ftmp-8a367/services/firebasehosting.googleapis.com [omitted]
+[debug] [2026-11-26T10:34:27.195Z] [hosting] failed to ensure Hosting API is enabled: Request to https://serviceusage.googleapis.com/v1/projects/ftmp-8a367/services/firebasehosting.googleapis.com had HTTP Error: 403, Caller does not have required permission to use project ftmp-8a367. Grant the caller the roles/serviceusage.serviceUsageConsumer role, or a custom role with the serviceusage.services.use permission, by visiting https://console.developers.google.com/iam-admin/iam?project=ftmp-8a367 and then retry. Propagation of the new permission may take a few minutes.
+[warn] ⚠  hosting: Unable to check whether firebasehosting.googleapis.com is enabled on project ftmp-8a367. Grant the caller the roles/serviceusage.serviceUsageConsumer role to check API enablement, or ensure the API is enabled at https://console.cloud.google.com/apis/library/firebasehosting.googleapis.com?project=ftmp-8a367 if subsequent requests fail. 
+[debug] [2026-11-26T10:34:27.197Z] Checked if tokens are valid: true, expires at: 1795692846050
+[debug] [2026-11-26T10:34:27.197Z] Checked if tokens are valid: true, expires at: 1795692846050
+[debug] [2026-11-26T10:34:27.197Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/ftmp-8a367 [none]
+[debug] [2026-11-26T10:34:28.033Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/ftmp-8a367 403
+[debug] [2026-11-26T10:34:28.033Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/ftmp-8a367 {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-11-26T10:34:28.033Z] Request to https://firebase.googleapis.com/v1beta1/projects/ftmp-8a367 had HTTP Error: 403, The caller does not have permission
+[debug] [2026-11-26T10:34:28.034Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/ftmp-8a367 had HTTP Error: 403, The caller does not have permission
+    at responseToError (/Users/narekektubaryan/.npm/_npx/7750544ccf494d8b/node_modules/firebase-tools/lib/responseToError.js:53:12)
+    at RetryOperation._fn (/Users/narekektubaryan/.npm/_npx/7750544ccf494d8b/node_modules/firebase-tools/lib/apiv2.js:415:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to get Firebase project ftmp-8a367. Please make sure the project exists and your account has permission to access it.

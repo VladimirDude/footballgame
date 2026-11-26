@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct MainTabView: View {
+    /// Hides the "My Team" tab without removing the feature's code.
+    static let showsMyTeamTab = false
+
     @AppStorage(AppAccent.storageKey) private var accentRaw = AppAccent.classic.rawValue
     @Environment(\.colorScheme) private var colorScheme
 
@@ -12,12 +15,15 @@ struct MainTabView: View {
                     Text("You")
                 }
 
-            NavigationStack {
-                MyTeamView()
-            }
-            .tabItem {
-                Image(systemName: "person.3.fill")
-                Text("My Team")
+            // "My Team" tab hidden for now. Flip `showsMyTeamTab` to bring it back.
+            if Self.showsMyTeamTab {
+                NavigationStack {
+                    MyTeamView()
+                }
+                .tabItem {
+                    Image(systemName: "person.3.fill")
+                    Text("My Team")
+                }
             }
 
             SettingsView()

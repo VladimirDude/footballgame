@@ -1,8 +1,8 @@
 {
-  "version": 6,
-  "updatedAt": "2026-08-28T12:52:11.000Z",
+  "version": 2,
+  "updatedAt": "2026-11-26T10:34:22.000Z",
   "database": {
     "url": "https://ftmp-8a367.web.app/data/ClubDatabase.json",
-    "sha256": "d7f2845be7dea2a23994d2165bca80ce22e7ec1bccb254fd746898d18a7b76b6"
+    "sha256": "4cab946f7f7e59479fcc472a42e0d621b05ff84ee29745c39215f74441818ab3"
   }
 }
